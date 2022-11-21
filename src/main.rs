@@ -57,13 +57,35 @@ fn main() {
     
 }
 
-#[derive(Debug, PartialEq, Eq)]
-enum Player {
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+enum Team {
     A,
     B,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+fn not_team(p: Team) -> Team{
+    match p {
+	Team::A => Team::B,
+	Team::B => Team::A,
+    }
+}
+
+fn team_color(p: Team) -> Color {
+    match p {
+        Team::B => Color::new(0.65, 0.4, 0.8, 1.0),
+        Team::A =>  Color::new(0.85, 0.65, 0.4, 1.0),
+    }
+}
+
+fn team_name(p: Team) -> &'static str {
+    match p {
+        Team::B => "Purple",
+        Team::A =>  "Orange",
+    }
+}
+
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum CardColor {
     Gold,
     Yellow,
@@ -93,11 +115,11 @@ fn cardcolor_to_vec(cc: &CardColor) -> [u8; 4] {
         CardColor::Death   => [80,  80,  80,  255],
         CardColor::Heal    => [30,  220, 100, 255],
 	*/
-	CardColor::Gold    => [60, 220, 50,  255],
-        CardColor::Yellow  => [160, 200, 160, 255],
-        CardColor::Gray    => [200, 200, 200, 255],
-        CardColor::Red     => [200, 160, 160, 255],
-        CardColor::Crimson => [250, 50,  50, 255],
+	CardColor::Gold    => [40, 200, 30,  255],
+        CardColor::Yellow  => [170, 210, 170, 255],
+        CardColor::Gray    => [210, 210, 220, 255],
+        CardColor::Red     => [210, 170, 170, 255],
+        CardColor::Crimson => [230, 40,  40, 255],
         CardColor::Death   => [80,  80,  80,  255],
         CardColor::Heal    => [30,  120, 220, 255],
     }
@@ -112,6 +134,13 @@ fn cardcolor_to_color(cc: &CardColor) -> Color {
     Color::new(r, g, b, a)
 }
 
+fn color_to_vec(c: Color) -> [u8; 4] {
+    let r = (c.r * 255.0) as u8;
+    let g = (c.g * 255.0) as u8;
+    let b = (c.b * 255.0) as u8;
+    let a = (c.a * 255.0) as u8;
+    [r,g,b,a]
+}
 
 struct WordCard {
     word: String,
@@ -156,9 +185,13 @@ impl WordCard {
 	let c1 = if self.flipped {
 	    cardcolor_to_color(&self.color)
 	} else {
-	    Color::new(0.9, 0.8, 0.7, 1.0)	    
+	    Color::new(0.9, 0.8, 0.7, 1.0)
 	};
-	let c2 = Color::new(0.1, 0.1, 0.1, 1.0);
+	let c2 = if self.flipped {
+	    Color::new(0.3, 0.3, 0.3, 1.0)
+	} else {
+	    Color::new(0.1, 0.1, 0.1, 1.0)
+	};
 
         macro_rules! ezdraw {
             ($a:expr) => {
@@ -197,8 +230,8 @@ impl WordCard {
 
         // draw text
         let (text_scale, mut text_color) = match self.flipped {
-            true => (w/8.0, Color::new(0.05, 0.05, 0.05, 1.0)),
-            false => (w/7.0, Color::new(0.05, 0.05, 0.05, 1.0)),
+            true => (w/9.0, Color::new(0.05, 0.05, 0.05, 1.0)),
+            false => (w/6.0, Color::new(0.05, 0.05, 0.05, 1.0)),
         };
         if let CardColor::Death = self.color {
             if self.flipped == true {
@@ -229,8 +262,11 @@ impl WordCard {
 struct MyRunner {
     clients: Vec<CPClient>,
     word_cards: Vec<Vec<WordCard>>,
-    current_turn: Player,
-    winner: Option<Player>,
+    now_team: Team,
+    guesses: u32,
+    winner: Option<Team>,
+    a_health: i32,
+    b_health: i32,
 }
 
 impl MyRunner {
@@ -244,8 +280,11 @@ impl MyRunner {
         let mut runner = MyRunner {
             clients: targetlib::get_client_info(),
             word_cards: Vec::new(),
-            current_turn: Player::A,
+            now_team: Team::A,
+	    guesses: 0,
             winner: None,
+	    a_health: 10,
+	    b_health: 12,
         };
 
         // randomly choose card colors
@@ -286,7 +325,7 @@ impl MyRunner {
                 runner.word_cards[j].push(WordCard {
                     word: (*chosen_words[i_flat as usize]).into(),
                     color: color,
-                    flipped: true,//false,
+                    flipped: false,
                 });
             }
         }
@@ -313,14 +352,7 @@ impl MyRunner {
     }
 
 
-    fn end_turn(&mut self) {
-        self.current_turn = match self.current_turn {
-	    Player::A => Player::B,
-	    Player::B => Player::A,
-	};
-    }
-
-    fn end_game(&mut self, winner: Player) {
+    fn end_game(&mut self, winner: Team) {
         self.winner = Some(winner);
         for row in &mut self.word_cards {
             for card in row {
@@ -330,13 +362,6 @@ impl MyRunner {
     }
     
     fn get_cp_spec(&self, ctlr_num: usize, w: u32, h: u32) -> CPSpec {
-        /*
-	    let cc = match ctlr_num {
-            0 => CardColor::Red,
-            1 => CardColor::Blue,
-            _ => CardColor::Death,
-        };
-
         let main_w = (w*8)/10;
         let plr_pnl_w = (w - main_w)/2;
         let btn_w = main_w/7;
@@ -345,59 +370,76 @@ impl MyRunner {
         let y_space = (btn_h as f32 * (9.0 - 5.0)/6.0) as u32;
         let mut buttons: Vec<Button> = vec![
         ];
-        if cc == opposite_color(&self.current_turn) {
-            buttons.push(Button::new(100,
-                        w - plr_pnl_w + 4, h - plr_pnl_w + 4,
-                        plr_pnl_w - 8, plr_pnl_w - 8));
-        }
+        let team_color = match ctlr_num {
+            0 => color_to_vec(team_color(Team::A)),
+            1 => color_to_vec(team_color(Team::B)),
+	    _ => [100, 100, 100, 255],
+        };
         let mut panels: Vec<Panel> = vec![
             Panel::new(101,
                        0, 0, plr_pnl_w, h,
-                       cardcolor_to_vec(&cc)),
+                       team_color),
             Panel::new(102,
                        w - plr_pnl_w, 0, plr_pnl_w, h,
-                       cardcolor_to_vec(&cc)),
+                       team_color),
         ];
 	// If game is over, provide button to exit back to launcher
-	if self.winner != CardColor::Neutral {
+	if self.winner != None {
             buttons.push(
                 Button::new(99,
                             w - plr_pnl_w + 4, (h - plr_pnl_w)/2,
                             plr_pnl_w - 8, plr_pnl_w));
 	}
+
+	// buttons for number of guesses
+	if self.guesses == 0 &&
+	    (ctlr_num == 0 && self.now_team == Team::A ||
+	     ctlr_num == 1 && self.now_team == Team::B) {
+		for i in 0..4_u32 {
+		    buttons.push(Button::new(
+			201 + i, 
+			8, h/6 + i*(plr_pnl_w + 4),
+			plr_pnl_w - 16, plr_pnl_w - 16,
+		    ));
+		}
+	}
+	
         for j in 0..5_u32 {
             for i in 0..5_u32 {
                 let card = &self.word_cards[j as usize][i as usize];
-                if !card.flipped {
-                    panels.push(
-                        Panel::new(j*5 + i,
-                                   plr_pnl_w + x_space + i*(btn_w + x_space) - 10,
-                                   y_space + j*(btn_h + y_space) - 10,
-                                   btn_w + 20, btn_h + 20,
-                                   cardcolor_to_vec(&card.color))
-                    );
-                    // Clue giver of the opposite team as is guessing gets buttons
-                    if cc == opposite_color(&self.current_turn) {
-                        buttons.push(
-                            Button::new(j*5 + i,
-                                        plr_pnl_w + x_space + i*(btn_w + x_space),
-                                        y_space + j*(btn_h + y_space),
-                                        btn_w, btn_h)
-                        );
+		// card face up
+		if card.flipped {
+		    if ctlr_num < 2 {
+			panels.push(Panel::new(
+			    j*5 + i,
+                            plr_pnl_w + x_space + i*(btn_w + x_space) + 20,
+                            y_space + j*(btn_h + y_space) + 10,
+                            btn_w - 40, btn_h - 20,
+                            cardcolor_to_vec(&card.color)
+			));
+		    }
+		// card face down
+		} else {
+		    if ctlr_num < 2 {
+			panels.push(Panel::new(
+			    j*5 + i,
+                            plr_pnl_w + x_space + i*(btn_w + x_space) - 10,
+                            y_space + j*(btn_h + y_space) - 10,
+                            btn_w + 20, btn_h + 20,
+                            cardcolor_to_vec(&card.color)
+			));
+		    } else if self.guesses != 0{
+			buttons.push(Button::new(
+			    j*5 + i,
+			    plr_pnl_w + x_space + i*(btn_w + x_space),
+			    y_space + j*(btn_h + y_space),
+			    btn_w, btn_h
+			));
                     }
-                } else {
-                    panels.push(
-                        Panel::new(j*5 + i,
-                                   plr_pnl_w + x_space + i*(btn_w + x_space) - 10,
-                                   y_space + j*(btn_h + y_space) - 10,
-                                   btn_w + 20, btn_h + 20,
-                                   cardcolor_to_vec(&card.color))
-                    );
-                }
+		}
             }
         }
-	 */
-        CPSpec::new(vec![], vec![], vec![], vec![])
+        CPSpec::new(panels, buttons, vec![], vec![])
     }
     
 }
@@ -407,62 +449,97 @@ impl EventHandler<ggez::GameError> for MyRunner {
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         let mut controller_change = false;
-        let mut end_turn = false;
-        let mut end_game: Option<CardColor> = None;
+	let mut card_value: Option<CardColor> = None;
+	let mut guess_number = 0;
+        //let mut end_game: Option<CardColor> = None;
         for client in self.clients.iter() {
             for event in targetlib::get_events(&client) {
                 match event.datum {
                     ControlDatum::Press => {
                         controller_change = true;
-                        if event.element_id == 100 {
-                            end_turn = true;
-                            break;
-                        }
                         if event.element_id == 99 {
 			    ggez::event::quit(ctx);
 			    std::process::exit(0);
-                        }
-                        /*
+                        } else if event.element_id > 200 {
+			    guess_number = 5 - (event.element_id - 200); // im so sorry
+			    break;
+			}
 			let j = event.element_id as usize / 5;
                         let i = event.element_id as usize % 5;
-                        if self.word_cards[j][i].color == CardColor::Death {
-                            //end_game = Some(opposite_color(&self.current_turn));
-                            //end_turn = true;
-                            break;
-                        }
                         self.word_cards[j][i].flipped = true;
-                        if self.num_flipped(CardColor::Red) == 8 { // TODO: magic numbers
-                            end_game = Some(CardColor::Red);
-                            end_turn = true;
-                            break;
-                        }
-                        if self.num_flipped(CardColor::Blue) == 9 {
-                            end_game = Some(CardColor::Blue);
-                            end_turn = true;
-                            break;
-                        }
-                        if self.word_cards[j][i].color != self.current_turn {
-                            end_turn = true;
-                            break;
-                        }
-
-			*/
+			card_value = Some(self.word_cards[j][i].color);
                     }
                     _ => (),
                 }
             }
-            if end_turn {
-                break;
+        }
+	// FYI if you're reading this then I'm sorry the code in this file is so bad.
+	// I'll separate out functions later.
+	if guess_number != 0 {
+	    self.guesses = guess_number;
+	}
+	if let Some(cc) = card_value {
+	    self.guesses -= 1;
+	    if self.guesses == 0 {
+		self.now_team = not_team(self.now_team);
+	    } else if self.guesses < 0 {
+		panic!("negative guesses");
+	    }
+	    match cc {
+		CardColor::Gold => {
+		    if self.now_team == Team::A {
+			self.b_health -= 2;
+		    } else {
+			self.a_health -= 2;
+		    }
+		},
+		CardColor::Yellow => {
+		    if self.now_team == Team::A {
+			self.b_health -= 1;
+		    } else {
+			self.a_health -= 1;
+		    }
+		},
+		CardColor::Gray => (),
+		CardColor::Red => {
+		    if self.now_team == Team::A {
+			self.a_health -= 1;
+		    } else {
+			self.b_health -= 1;
+		    }
+		},
+		CardColor::Crimson => {
+		    if self.now_team == Team::A {
+			self.a_health -= 2;
+		    } else {
+			self.b_health -= 2;
+		    }
+		},
+		CardColor::Death => {
+		    if self.now_team == Team::A {
+			self.a_health -= 5;
+		    } else {
+			self.b_health -= 5;
+		    }
+		},
+		CardColor::Heal => {
+		    if self.now_team == Team::A {
+			self.a_health += 3;
+		    } else {
+			self.b_health += 3;
+		    }
+		},
             }
+	}
+
+        if self.a_health <= 0 {
+            self.end_game(Team::B);
         }
-	/*
-        if let Some(cc) = end_game {
-            self.end_game(cc);
+        if self.b_health <= 0 {
+            self.end_game(Team::A);
         }
-        if end_turn {
-            self.end_turn();
-        }
-	 */
+	
+
         if targetlib::clients_changed() || controller_change {
             self.clients = targetlib::get_client_info();
             // asign specs
@@ -486,31 +563,30 @@ impl EventHandler<ggez::GameError> for MyRunner {
             }
         }
         graphics::clear(ctx, Color::WHITE); 
-
+    
         // determine dimensions of different areas
         let (sw, sh) = (START_WIDTH, START_HEIGHT);//self.size;
-        let prompt_h = sh/20.0;
-        let prompt_w = sw;
-        let card_area_w = sw;
-        let card_area_h = sh - prompt_h;
-        let card_area_x = 0.0;
-        let card_area_y = prompt_h;
+        let prompt_area_h = sh/10.0;
+	let prompt_h = prompt_area_h/2.0;
+        let prompt_area_w = sw;
+	let health_area_w = sw/12.0;
+	let lower_pad_h = sh/20.0;
+        let card_area_w = sw - 2.0*health_area_w;
+        let card_area_h = sh - prompt_area_h - lower_pad_h;
+        let card_area_x = health_area_w;
+        let card_area_y = prompt_area_h;
+	let health_area_h = card_area_h;
 
         // if game over, draw end game prompt
-        if let Some(w_player) = &self.winner {
-            let (w_team, w_color) = match w_player {
-                Player::B => ("Blue", Color::new(0.7, 0.7, 0.85, 1.0)),
-                Player::A =>  ("Red", Color::new(0.85, 0.7, 0.7, 1.0)),
-                _ => panic!("Bad card color for winner: {:?}", self.winner),
-            };
+        if let Some(w_team) = &self.winner {
             let text_win = graphics::Text::new(graphics::TextFragment {
-                text: format!("{} Team Wins!", w_team),
+                text: format!("{} Team Wins!", team_name(*w_team)),
                 color: Some(Color::BLACK),
                 font: Some(graphics::Font::default()),
                 scale: Some(graphics::PxScale::from(prompt_h/0.9)),
             });
             let dims_win = text_win.dimensions(ctx);
-            let text_x_win = (prompt_w - dims_win.w)/2.0;
+            let text_x_win = (prompt_area_w - dims_win.w)/2.0;
             let text_y_win = prompt_h/5.0;
             let r = graphics::Mesh::new_rounded_rectangle( // draw current turn color box
                 ctx,
@@ -518,65 +594,90 @@ impl EventHandler<ggez::GameError> for MyRunner {
                 graphics::Rect::new(text_x_win - 4.0, text_y_win - 4.0,
                                     dims_win.w + 8.0, dims_win.h + 5.0),
                 4.0,
-                w_color,
+                team_color(*w_team),
             )?;        
             ezdraw!(r);
             ezdrawxy!(text_win, text_x_win, text_y_win);
         }
-        
+
         // draw prompt text
-        else {
-            let going_team = match self.current_turn {
-                Player::B => "Blue", Player::A => "Red", _ => ""};
-            let idle_team = match self.current_turn {
-                Player::B => "Red", Player::A => "Blue", _ => ""};
-            let team_color = match self.current_turn {
-                Player::B => Color::new(0.7, 0.7, 0.85, 1.0),
-                Player::A =>  Color::new(0.85, 0.7, 0.7, 1.0),
-                _ => panic!("Bad card color for turn: {:?}", self.current_turn),
-            };
-            
+        else if self.guesses != 0 {
             let text_1 = graphics::Text::new(graphics::TextFragment {
-                text: format!("{} team's turn to guess", going_team),
+                text: format!("{} team's turn to guess ({})",
+			      team_name(self.now_team), self.guesses),
                 color: Some(Color::BLACK),
                 font: Some(graphics::Font::default()),
                 scale: Some(graphics::PxScale::from(prompt_h/1.1)),
             });
             let dims_1 = text_1.dimensions(ctx);
-            let text_x_1 = (prompt_w - dims_1.w)/2.0;
+            let text_x_1 = (prompt_area_w - dims_1.w)/2.0;
             let text_y_1 = prompt_h/5.0;
             let r = graphics::Mesh::new_rounded_rectangle( // draw current turn color box
                 ctx,
                 graphics::DrawMode::fill(),
                 graphics::Rect::new(text_x_1 - 4.0, text_y_1 - 4.0, dims_1.w + 8.0, dims_1.h + 5.0),
                 4.0,
-                team_color,
+                team_color(self.now_team),
             )?;        
             ezdraw!(r);
             ezdrawxy!(text_1, text_x_1, text_y_1);
-
+	    
             let text_2 = graphics::Text::new(graphics::TextFragment {
                 text: format!("{} team's Clue Giver must touch the button \
                                corresponding to {} team's guess",
-                              idle_team, going_team),
+                              team_name(not_team(self.now_team)), team_name(self.now_team)),
                 color: Some(Color::BLACK),
                 font: Some(graphics::Font::default()),
                 scale: Some(graphics::PxScale::from(prompt_h/1.8)),
             });
             let dims_2 = text_2.dimensions(ctx);
-            let text_x_2 = (prompt_w - dims_2.w)/2.0;
+            let text_x_2 = (prompt_area_w - dims_2.w)/2.0;
             let text_y_2 = text_y_1 + dims_1.h + prompt_h/10.0;
             ezdrawxy!(text_2, text_x_2, text_y_2);
-            /*let (text_x, text_y) = match self.flipped {
-            true => (x + w*0.10,
-            y + h*0.68,
-        ),
-            false => (x + (w - dims.w)/2.0,
-            y + (h - dims.h)/2.0,
-        ),
-        };*/
         }
-
+    
+	// display team's health
+	let a_health_size = 0.8 + (self.a_health as f32)/10.0;
+        let text_a_health = graphics::Text::new(graphics::TextFragment {
+            text: format!("{}", self.a_health),
+            color: Some(Color::BLACK),
+            font: Some(graphics::Font::default()),
+            scale: Some(graphics::PxScale::from(prompt_h*a_health_size)),
+        });
+	let dims_a = text_a_health.dimensions(ctx);
+	let a_health_x = (health_area_w - dims_a.w)/2.0;
+	let a_health_y = (health_area_h - dims_a.h)/2.0;
+        let ra = graphics::Mesh::new_rounded_rectangle( // draw health box
+            ctx,
+            graphics::DrawMode::fill(),
+            graphics::Rect::new(a_health_x - 4.0, a_health_y - 4.0,
+				dims_a.w + 8.0, dims_a.h + 5.0),
+            4.0,
+	    Color::new(0.85, 0.65, 0.4, 1.0),
+        )?;        
+        ezdraw!(ra);
+	ezdrawxy!(text_a_health, a_health_x, a_health_y);
+	let b_health_size = 0.8 + (self.b_health as f32)/10.0;
+        let text_b_health = graphics::Text::new(graphics::TextFragment {
+            text: format!("{}", self.b_health),
+            color: Some(Color::BLACK),
+            font: Some(graphics::Font::default()),
+            scale: Some(graphics::PxScale::from(prompt_h*b_health_size)),
+        });
+	let dims_b = text_b_health.dimensions(ctx);
+    	let b_health_x = health_area_w + card_area_w + (health_area_w - dims_b.w)/2.0;
+	let b_health_y = (health_area_h - dims_b.h)/2.0;
+        let rb = graphics::Mesh::new_rounded_rectangle( // draw health box
+            ctx,
+            graphics::DrawMode::fill(),
+            graphics::Rect::new(b_health_x - 4.0, b_health_y - 4.0,
+				dims_b.w + 8.0, dims_b.h + 5.0),
+            4.0,
+	    Color::new(0.65, 0.4, 0.8, 1.0),
+	)?;
+        ezdraw!(rb);
+	ezdrawxy!(text_b_health, b_health_x, b_health_y);
+    
         // draw cards
         for (j, card_row) in self.word_cards.iter().enumerate() {
             for (i, card) in card_row.iter().enumerate() {
@@ -587,19 +688,19 @@ impl EventHandler<ggez::GameError> for MyRunner {
                 graphics::draw(ctx, &texty, params)?;
                 ezdrawxy!(texty, 100.0 + (i as f32)*180.0, 50.0 + (j as f32)*160.0);
                  */
-                let card_w = card_area_w/7.0;
-                let card_h = card_area_h/9.0;
-                let x_space = card_w * (7.0 - 5.0)/6.0;
-                let y_space = card_h * (9.0 - 5.0)/6.0;
+                let card_w = card_area_w/6.0;
+                let card_h = card_area_h/7.0;
+                let x_space = card_w * (6.0 - 5.0)/4.0;
+                let y_space = card_h * (7.0 - 5.0)/4.0;
                 card.draw(ctx,
-                          card_area_x + x_space + (i as f32)*(card_w+x_space),
-                          card_area_y + y_space + (j as f32)*(card_h+y_space),
+                          card_area_x + (i as f32)*(card_w+x_space),
+                          card_area_y + (j as f32)*(card_h+y_space),
                           card_w, card_h
                 )?;
             }
         }
   
         graphics::present(ctx)
-    }
+}
 
 }
