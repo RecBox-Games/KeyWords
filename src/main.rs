@@ -58,29 +58,60 @@ fn main() {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+enum Player {
+    A,
+    B,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 enum CardColor {
-    Neutral,
+    Gold,
+    Yellow,
+    Gray,
     Red,
-    Blue,
+    Crimson,
     Death,
+    Heal,
 }
 
 fn opposite_color(cc: &CardColor) -> CardColor {
     match cc {
-        CardColor::Red  => CardColor::Blue,
-        CardColor::Blue => CardColor::Red,
+        CardColor::Crimson  => CardColor::Gold,
+        CardColor::Red => CardColor::Yellow,
         _ => panic!("No opposite of {:?}", cc),
     }
 }
 
 fn cardcolor_to_vec(cc: &CardColor) -> [u8; 4] {
     match cc {
-        CardColor::Neutral => [220, 220, 220, 255],
-        CardColor::Red     => [240, 200, 200, 255],
-        CardColor::Blue    => [200, 200, 240, 255],
-        CardColor::Death   => [120, 120, 120, 255],
+        /*
+	CardColor::Gold    => [240, 200, 50,  255],
+        CardColor::Yellow  => [220, 220, 150, 255],
+        CardColor::Gray    => [180, 170, 160, 255],
+        CardColor::Red     => [220, 120, 120, 255],
+        CardColor::Crimson => [200, 40,  40,  255],
+        CardColor::Death   => [80,  80,  80,  255],
+        CardColor::Heal    => [30,  220, 100, 255],
+	*/
+	CardColor::Gold    => [60, 220, 50,  255],
+        CardColor::Yellow  => [160, 200, 160, 255],
+        CardColor::Gray    => [200, 200, 200, 255],
+        CardColor::Red     => [200, 160, 160, 255],
+        CardColor::Crimson => [250, 50,  50, 255],
+        CardColor::Death   => [80,  80,  80,  255],
+        CardColor::Heal    => [30,  120, 220, 255],
     }
 }
+
+fn cardcolor_to_color(cc: &CardColor) -> Color {
+    let v = cardcolor_to_vec(cc);
+    let r = v[0] as f32 / 255.0;
+    let g = v[1] as f32 / 255.0;
+    let b = v[2] as f32 / 255.0;
+    let a = v[3] as f32 / 255.0;
+    Color::new(r, g, b, a)
+}
+
 
 struct WordCard {
     word: String,
@@ -92,7 +123,8 @@ impl WordCard {
 
     fn draw(&self, ctx: &mut Context, x: f32, y: f32, w: f32, h: f32) -> GameResult<()> {
         // determine exact colors for the card
-        let (c1, c2, c3) = if self.flipped {
+        // TODO
+	/*let (c1, c2, c3) = if self.flipped {
             match self.color {
                 CardColor::Neutral =>
                     (Color::new(0.75, 0.75, 0.75, 1.0),
@@ -120,6 +152,13 @@ impl WordCard {
              Color::new(0.6, 0.5, 0.2, 1.0),
              Color::new(0.9, 0.8, 0.7, 1.0),)
         };
+	 */
+	let c1 = if self.flipped {
+	    cardcolor_to_color(&self.color)
+	} else {
+	    Color::new(0.9, 0.8, 0.7, 1.0)	    
+	};
+	let c2 = Color::new(0.1, 0.1, 0.1, 1.0);
 
         macro_rules! ezdraw {
             ($a:expr) => {
@@ -152,13 +191,13 @@ impl WordCard {
             graphics::DrawMode::fill(),
             graphics::Rect::new(x+7.0, y+7.0, w-14.0, h-14.0),
             h/10.0,
-            c3,
+            c1,
         )?;        
         ezdraw!(r1); ezdraw!(r2); ezdraw!(r3);
 
         // draw text
         let (text_scale, mut text_color) = match self.flipped {
-            true => (w/8.0, Color::new(0.5, 0.5, 0.5, 1.0)),
+            true => (w/8.0, Color::new(0.05, 0.05, 0.05, 1.0)),
             false => (w/7.0, Color::new(0.05, 0.05, 0.05, 1.0)),
         };
         if let CardColor::Death = self.color {
@@ -190,8 +229,8 @@ impl WordCard {
 struct MyRunner {
     clients: Vec<CPClient>,
     word_cards: Vec<Vec<WordCard>>,
-    current_turn: CardColor, // red or blue
-    winner: CardColor,
+    current_turn: Player,
+    winner: Option<Player>,
 }
 
 impl MyRunner {
@@ -205,34 +244,49 @@ impl MyRunner {
         let mut runner = MyRunner {
             clients: targetlib::get_client_info(),
             word_cards: Vec::new(),
-            current_turn: CardColor::Blue,
-            winner: CardColor::Neutral,
+            current_turn: Player::A,
+            winner: None,
         };
 
         // randomly choose card colors
-        let card_indices: Vec<usize> = (0..25).collect();
-        let non_neutrals = card_indices.clone().into_iter().choose_multiple(&mut rng, 18);
-        let blue_and_death = non_neutrals.clone().into_iter().choose_multiple(&mut rng, 10);
-        let death = blue_and_death.clone().into_iter().choose_multiple(&mut rng, 1);
-
+        let golds: Vec<usize> = (0..25).collect();
+        let yellows = golds.clone().into_iter()
+	    .choose_multiple(&mut rng, 25-4);
+        let grays = yellows.clone().into_iter()
+	    .choose_multiple(&mut rng, 25-4-5);
+        let reds = grays.clone().into_iter()
+	    .choose_multiple(&mut rng, 25-4-5-5);
+        let crimsons = reds.clone().into_iter()
+	    .choose_multiple(&mut rng, 25-4-5-5-5);
+        let deaths = crimsons.clone().into_iter()
+	    .choose_multiple(&mut rng, 25-4-5-5-5-4);
+        let heals = deaths.clone().into_iter()
+	    .choose_multiple(&mut rng, 25-4-5-5-5-4-1);
+	
         // initiate cards
         for j in 0..5 {
             runner.word_cards.push(Vec::new());
             for i in 0..5 {
                 let i_flat = j*5 + i;
-                let color = if death.contains(&i_flat) {
+                let color = if heals.contains(&i_flat) {
+                    CardColor::Heal
+                } else if deaths.contains(&i_flat) {
                     CardColor::Death
-                } else if blue_and_death.contains(&i_flat) {
-                    CardColor::Blue
-                } else if non_neutrals.contains(&i_flat) {
+                } else if crimsons.contains(&i_flat) {
+                    CardColor::Crimson
+                } else if reds.contains(&i_flat) {
                     CardColor::Red
+                } else if grays.contains(&i_flat) {
+                    CardColor::Gray
+                } else if yellows.contains(&i_flat) {
+                    CardColor::Yellow
                 } else {
-                    CardColor::Neutral
+                    CardColor::Gold
                 };
                 runner.word_cards[j].push(WordCard {
                     word: (*chosen_words[i_flat as usize]).into(),
                     color: color,
-                    flipped: false,
+                    flipped: true,//false,
                 });
             }
         }
@@ -242,7 +296,7 @@ impl MyRunner {
             targetlib::assign_spec(client,
                                    runner.get_cp_spec(n, client.w, client.h));
         }
-
+	
         Ok(runner)
     }
 
@@ -260,11 +314,14 @@ impl MyRunner {
 
 
     fn end_turn(&mut self) {
-        self.current_turn = opposite_color(&self.current_turn);
+        self.current_turn = match self.current_turn {
+	    Player::A => Player::B,
+	    Player::B => Player::A,
+	};
     }
 
-    fn end_game(&mut self, winner: CardColor) {
-        self.winner = winner;
+    fn end_game(&mut self, winner: Player) {
+        self.winner = Some(winner);
         for row in &mut self.word_cards {
             for card in row {
                 card.flipped = true;
@@ -273,7 +330,8 @@ impl MyRunner {
     }
     
     fn get_cp_spec(&self, ctlr_num: usize, w: u32, h: u32) -> CPSpec {
-        let cc = match ctlr_num {
+        /*
+	    let cc = match ctlr_num {
             0 => CardColor::Red,
             1 => CardColor::Blue,
             _ => CardColor::Death,
@@ -338,7 +396,8 @@ impl MyRunner {
                 }
             }
         }
-        CPSpec::new(panels, buttons, vec![], vec![])
+	 */
+        CPSpec::new(vec![], vec![], vec![], vec![])
     }
     
 }
@@ -363,11 +422,12 @@ impl EventHandler<ggez::GameError> for MyRunner {
 			    ggez::event::quit(ctx);
 			    std::process::exit(0);
                         }
-                        let j = event.element_id as usize / 5;
+                        /*
+			let j = event.element_id as usize / 5;
                         let i = event.element_id as usize % 5;
                         if self.word_cards[j][i].color == CardColor::Death {
-                            end_game = Some(opposite_color(&self.current_turn));
-                            end_turn = true;
+                            //end_game = Some(opposite_color(&self.current_turn));
+                            //end_turn = true;
                             break;
                         }
                         self.word_cards[j][i].flipped = true;
@@ -385,6 +445,8 @@ impl EventHandler<ggez::GameError> for MyRunner {
                             end_turn = true;
                             break;
                         }
+
+			*/
                     }
                     _ => (),
                 }
@@ -393,13 +455,14 @@ impl EventHandler<ggez::GameError> for MyRunner {
                 break;
             }
         }
+	/*
         if let Some(cc) = end_game {
             self.end_game(cc);
         }
         if end_turn {
             self.end_turn();
         }
-
+	 */
         if targetlib::clients_changed() || controller_change {
             self.clients = targetlib::get_client_info();
             // asign specs
@@ -434,10 +497,10 @@ impl EventHandler<ggez::GameError> for MyRunner {
         let card_area_y = prompt_h;
 
         // if game over, draw end game prompt
-        if self.winner != CardColor::Neutral {
-            let (w_team, w_color) = match self.winner {
-                CardColor::Blue => ("Blue", Color::new(0.7, 0.7, 0.85, 1.0)),
-                CardColor::Red =>  ("Red", Color::new(0.85, 0.7, 0.7, 1.0)),
+        if let Some(w_player) = &self.winner {
+            let (w_team, w_color) = match w_player {
+                Player::B => ("Blue", Color::new(0.7, 0.7, 0.85, 1.0)),
+                Player::A =>  ("Red", Color::new(0.85, 0.7, 0.7, 1.0)),
                 _ => panic!("Bad card color for winner: {:?}", self.winner),
             };
             let text_win = graphics::Text::new(graphics::TextFragment {
@@ -463,18 +526,18 @@ impl EventHandler<ggez::GameError> for MyRunner {
         
         // draw prompt text
         else {
-            let a_team = match self.current_turn {
-                CardColor::Blue => "Blue", CardColor::Red => "Red", _ => ""};
-            let b_team = match self.current_turn {
-                CardColor::Blue => "Red", CardColor::Red => "Blue", _ => ""};
+            let going_team = match self.current_turn {
+                Player::B => "Blue", Player::A => "Red", _ => ""};
+            let idle_team = match self.current_turn {
+                Player::B => "Red", Player::A => "Blue", _ => ""};
             let team_color = match self.current_turn {
-                CardColor::Blue => Color::new(0.7, 0.7, 0.85, 1.0),
-                CardColor::Red =>  Color::new(0.85, 0.7, 0.7, 1.0),
+                Player::B => Color::new(0.7, 0.7, 0.85, 1.0),
+                Player::A =>  Color::new(0.85, 0.7, 0.7, 1.0),
                 _ => panic!("Bad card color for turn: {:?}", self.current_turn),
             };
             
             let text_1 = graphics::Text::new(graphics::TextFragment {
-                text: format!("{} team's turn to guess", a_team),
+                text: format!("{} team's turn to guess", going_team),
                 color: Some(Color::BLACK),
                 font: Some(graphics::Font::default()),
                 scale: Some(graphics::PxScale::from(prompt_h/1.1)),
@@ -495,7 +558,7 @@ impl EventHandler<ggez::GameError> for MyRunner {
             let text_2 = graphics::Text::new(graphics::TextFragment {
                 text: format!("{} team's Clue Giver must touch the button \
                                corresponding to {} team's guess",
-                              b_team, a_team),
+                              idle_team, going_team),
                 color: Some(Color::BLACK),
                 font: Some(graphics::Font::default()),
                 scale: Some(graphics::PxScale::from(prompt_h/1.8)),
