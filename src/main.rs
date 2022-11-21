@@ -479,12 +479,6 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	    self.guesses = guess_number;
 	}
 	if let Some(cc) = card_value {
-	    self.guesses -= 1;
-	    if self.guesses == 0 {
-		self.now_team = not_team(self.now_team);
-	    } else if self.guesses < 0 {
-		panic!("negative guesses");
-	    }
 	    match cc {
 		CardColor::Gold => {
 		    if self.now_team == Team::A {
@@ -530,6 +524,12 @@ impl EventHandler<ggez::GameError> for MyRunner {
 		    }
 		},
             }
+	    self.guesses -= 1;
+	    if self.guesses == 0 {
+		self.now_team = not_team(self.now_team);
+	    } else if self.guesses < 0 {
+		panic!("negative guesses");
+	    }
 	}
 
         if self.a_health <= 0 {
