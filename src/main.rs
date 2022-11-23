@@ -33,7 +33,7 @@ fn main() {
     my_window_mode.min_height = 300.0;
     my_window_mode.width      = START_WIDTH;
     my_window_mode.height     = START_HEIGHT;
-    my_window_mode.fullscreen_type = conf::FullscreenType::True;
+    //my_window_mode.fullscreen_type = conf::FullscreenType::True;
 
     // Make a Context and an EventLoop.
     let (ctx, event_loop) =
@@ -203,6 +203,29 @@ impl WordCard {
                 graphics::draw(ctx, & $a,  (Point2{x:$x, y:$y},))?
             }
         }
+
+	// draw a chest
+
+	graphics::set_default_filter(ctx, graphics::FilterMode::Nearest);
+
+	let g = graphics::Image::new(ctx, "/chest_sprites.png").unwrap();
+
+	let mut parm = graphics::DrawParam::new()
+	    .scale(Point2{x:2.0, y:2.0});
+	
+	graphics::draw(ctx, &g, graphics::DrawParam::new()
+		       .scale(Point2{x:2.0, y:2.0})
+	).unwrap();
+	
+	graphics::draw(ctx, &g, graphics::DrawParam::new()
+		       .dest(Point2{x:0.0, y:256.0})
+		       .scale(Point2{x:2.0, y:2.0})
+	).unwrap();
+
+	graphics::draw(ctx, &g, parm
+		       .src(graphics::Rect{x:2.0/10.0, y:0.0, w:0.1, h:1.0})
+		       .dest(Point2{x:0.0, y:512.0})
+	).unwrap();
         
         // draw rects
         let r1 = graphics::Mesh::new_rounded_rectangle(
