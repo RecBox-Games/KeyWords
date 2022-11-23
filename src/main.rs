@@ -13,6 +13,11 @@ use rand::{seq::IteratorRandom, thread_rng};
 use std::error::Error;
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
+
+mod elem;
+use crate::elem::*;
+
+
 const START_WIDTH:  f32 = 1920.0;
 const START_HEIGHT: f32 = 1080.0;
 
@@ -36,17 +41,20 @@ fn main() {
     //my_window_mode.fullscreen_type = conf::FullscreenType::True;
 
     // Make a Context and an EventLoop.
-    let (ctx, event_loop) =
+    let (mut ctx, event_loop) =
        ContextBuilder::new("CodeWords", "weston")
 	.window_setup(my_window_settings)
 	.window_mode(my_window_mode)
         .build()
         .unwrap();
 
+    graphics::set_default_filter(&mut ctx, graphics::FilterMode::Nearest);
+
+    
     // Create an instance of your event handler.
     // Usually, you should provide it with the Context object
     // so it can load resources like images during setup.
-    let my_runner = match MyRunner::new() {
+    let my_runner = match MyRunner::new(&mut ctx) {
         Ok(r) => r,
         Err(e) => panic!("failed to create MyRunner: {}", e)
     };
@@ -205,7 +213,7 @@ impl WordCard {
         }
 
 	// draw a chest
-
+	/*
 	graphics::set_default_filter(ctx, graphics::FilterMode::Nearest);
 
 	let g = graphics::Image::new(ctx, "/chest_sprites.png").unwrap();
@@ -226,7 +234,8 @@ impl WordCard {
 		       .src(graphics::Rect{x:2.0/10.0, y:0.0, w:0.1, h:1.0})
 		       .dest(Point2{x:0.0, y:512.0})
 	).unwrap();
-        
+         */
+	
         // draw rects
         let r1 = graphics::Mesh::new_rounded_rectangle(
             ctx,
@@ -290,16 +299,33 @@ struct MyRunner {
     winner: Option<Team>,
     a_health: i32,
     b_health: i32,
+    sprite: SpriteElem,
 }
 
 impl MyRunner {
-    fn new() -> Result<Self> {
+    fn new(ctx: &mut Context) -> Result<Self> {
         // errs when cant read file
         let s = fs::read_to_string("/home/requin/rqn/words/game_words.txt")?;
         let all_words_ = s.split("\n").collect::<Vec<&str>>(); 
         let all_words = all_words_[..all_words_.len()-1].iter(); // always a newline at the end so last element is empty
         let mut rng = thread_rng();
         let chosen_words = all_words.choose_multiple(&mut rng, 25);
+	let mut sprite = SpriteElem::new(ctx, 0.0, 0.0, 2.0, "/chest_sprites.png");
+	sprite.set_animation(
+	    vec![graphics::Rect::new(0.0, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.1, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.2, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.2, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.1, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.0, 0.0, 0.1, 1.0)],
+	    12,
+	    true,
+	);
         let mut runner = MyRunner {
             clients: targetlib::get_client_info(),
             word_cards: Vec::new(),
@@ -308,6 +334,7 @@ impl MyRunner {
             winner: None,
 	    a_health: 10,
 	    b_health: 12,
+	    sprite: sprite,
         };
 
         // randomly choose card colors
@@ -471,6 +498,7 @@ impl MyRunner {
 impl EventHandler<ggez::GameError> for MyRunner {
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+	self.sprite.update();
         let mut controller_change = false;
 	let mut card_value: Option<CardColor> = None;
 	let mut guess_number = 0;
@@ -722,8 +750,10 @@ impl EventHandler<ggez::GameError> for MyRunner {
                 )?;
             }
         }
-  
+
+	self.sprite.draw(ctx, Point2{x:0.0, y:0.0});
+	    
         graphics::present(ctx)
-}
+    }
 
 }
