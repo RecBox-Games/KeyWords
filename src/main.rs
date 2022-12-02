@@ -94,7 +94,7 @@ fn team_name(p: Team) -> &'static str {
 
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum CardColor {
+enum ChestType {
     Gold,
     Yellow,
     Gray,
@@ -104,36 +104,28 @@ enum CardColor {
     Heal,
 }
 
-fn opposite_color(cc: &CardColor) -> CardColor {
+fn opposite_color(cc: &ChestType) -> ChestType {
     match cc {
-        CardColor::Crimson  => CardColor::Gold,
-        CardColor::Red => CardColor::Yellow,
+        ChestType::Crimson  => ChestType::Gold,
+        ChestType::Red => ChestType::Yellow,
         _ => panic!("No opposite of {:?}", cc),
     }
 }
 
-fn cardcolor_to_vec(cc: &CardColor) -> [u8; 4] {
+// TODO: cardcolor -> chest_type
+fn cardcolor_to_vec(cc: &ChestType) -> [u8; 4] {
     match cc {
-        /*
-	CardColor::Gold    => [240, 200, 50,  255],
-        CardColor::Yellow  => [220, 220, 150, 255],
-        CardColor::Gray    => [180, 170, 160, 255],
-        CardColor::Red     => [220, 120, 120, 255],
-        CardColor::Crimson => [200, 40,  40,  255],
-        CardColor::Death   => [80,  80,  80,  255],
-        CardColor::Heal    => [30,  220, 100, 255],
-	*/
-	CardColor::Gold    => [40, 200, 30,  255],
-        CardColor::Yellow  => [170, 210, 170, 255],
-        CardColor::Gray    => [210, 210, 220, 255],
-        CardColor::Red     => [210, 170, 170, 255],
-        CardColor::Crimson => [230, 40,  40, 255],
-        CardColor::Death   => [80,  80,  80,  255],
-        CardColor::Heal    => [30,  120, 220, 255],
+	ChestType::Gold    => [40, 200, 30,  255],
+        ChestType::Yellow  => [170, 210, 170, 255],
+        ChestType::Gray    => [210, 210, 220, 255],
+        ChestType::Red     => [210, 170, 170, 255],
+        ChestType::Crimson => [230, 40,  40, 255],
+        ChestType::Death   => [80,  80,  80,  255],
+        ChestType::Heal    => [30,  120, 220, 255],
     }
 }
 
-fn cardcolor_to_color(cc: &CardColor) -> Color {
+fn cardcolor_to_color(cc: &ChestType) -> Color {
     let v = cardcolor_to_vec(cc);
     let r = v[0] as f32 / 255.0;
     let g = v[1] as f32 / 255.0;
@@ -150,159 +142,111 @@ fn color_to_vec(c: Color) -> [u8; 4] {
     [r,g,b,a]
 }
 
-struct WordCard {
+fn x_offset_of_chest_type(ct: ChestType) -> f32 {
+   match ct {
+	ChestType::Gold    => 0.4,
+        ChestType::Yellow  => 0.5,
+        ChestType::Gray    => 0.3,
+        ChestType::Red     => 0.6,
+        ChestType::Crimson => 0.7,
+        ChestType::Death   => 0.8,
+        ChestType::Heal    => 0.9,
+    }
+}
+
+
+struct WordChest {
     word: String,
     // TODO: text_graphic so we dont render each frame
-    color: CardColor,
+    chest_type: ChestType,
     flipped: bool,
+    elems: Container,
 }
-impl WordCard {
+impl WordChest {
 
+    fn new(ctx: &mut Context, x: f32, y: f32, chest_type: ChestType, word: String) -> Self {
+	// TODO: use new().set_animation() pattern?
+	let mut chest_sprite = SpriteElem::new(ctx, 0.0, 0.0, 2.2, 1.6, "/chest_sprites.png");
+	chest_sprite.set_animation(
+	    vec![graphics::Rect::new(0.0, 0.0, 0.1, 1.0)],
+	    1,
+	    false,
+	);
+	let mut word_text = TextElem::new(0.0, 0.0, word.clone(), 38.0, Color::new(0.9, 0.8, 0.7, 1.0));
+	let tx = chest_sprite.width(ctx)*0.03 + (chest_sprite.width(ctx) - word_text.width(ctx))/2.0;
+	let ty = chest_sprite.height(ctx) - 40.0;
+	word_text.set_location(tx, ty);
+
+	let elems = Container::new(x, y, vec![Box::new(chest_sprite), Box::new(word_text)]);
+	
+	WordChest {
+	    word: word,
+	    chest_type: chest_type,
+	    flipped: false,
+	    elems: elems,
+	}
+    }
+
+    fn flip(&mut self, ctx: &mut Context) {
+	self.flipped = true;
+	let mut chest_sprite = SpriteElem::new(ctx, 0.0, 0.0, 2.2, 1.6, "/chest_sprites.png");
+	chest_sprite.set_animation(
+	    vec![graphics::Rect::new(0.1, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.2, 0.0, 0.1, 1.0),
+		 graphics::Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
+		 graphics::Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
+		 graphics::Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
+		 graphics::Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
+		 graphics::Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
+		 graphics::Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
+		 graphics::Rect::new(0.3, 0.0, 0.1, 1.0)],
+	    12,
+	    false,
+	);
+	let mut word_text = TextElem::new(0.0, 0.0, self.word.clone(), 38.0, Color::new(0.15, 0.12, 0.09, 1.0));
+	let tx = chest_sprite.width(ctx)*0.03 + (chest_sprite.width(ctx) - word_text.width(ctx))/2.0;
+	let ty = chest_sprite.height(ctx) - 40.0;
+	word_text.set_location(tx, ty);
+
+	let x = self.elems.x();
+	let y = self.elems.y();
+	self.elems = Container::new(x, y, vec![Box::new(chest_sprite), Box::new(word_text)]); // does this leak the old boxes?
+    }
+    
     fn draw(&self, ctx: &mut Context, x: f32, y: f32, w: f32, h: f32) -> GameResult<()> {
-        // determine exact colors for the card
-        // TODO
-	/*let (c1, c2, c3) = if self.flipped {
-            match self.color {
-                CardColor::Neutral =>
-                    (Color::new(0.75, 0.75, 0.75, 1.0),
-                     //Color::new(0.45, 0.5, 0.4, 1.0),
-                     Color::new(0.85, 0.85, 0.85, 1.0),
-                     Color::new(0.85, 0.85, 0.85, 1.0)),
-                CardColor::Blue =>
-                    (Color::new(0.6, 0.6, 0.8, 1.0),
-                     //Color::new(0.35, 0.35, 0.55, 1.0),
-                     Color::new(0.7, 0.7, 0.85, 1.0),
-                     Color::new(0.7, 0.7, 0.85, 1.0)),
-                CardColor::Red =>
-                    (Color::new(0.8, 0.6, 0.6, 1.0),
-                     //Color::new(0.55, 0.35, 0.35, 1.0),
-                     Color::new(0.85, 0.7, 0.7, 1.0),
-                     Color::new(0.85, 0.7, 0.7, 1.0)),
-                CardColor::Death =>
-                    (Color::new(0.4, 0.4, 0.4, 1.0),
-                     //Color::new(0.1, 0.1, 0.1, 1.0),
-                     Color::new(0.5, 0.5, 0.5, 1.0),
-                     Color::new(0.5, 0.5, 0.5, 1.0)),
-            }
-        } else {
-            (Color::new(0.8, 0.7, 0.6, 1.0),
-             Color::new(0.6, 0.5, 0.2, 1.0),
-             Color::new(0.9, 0.8, 0.7, 1.0),)
-        };
-	 */
-	let c1 = if self.flipped {
-	    cardcolor_to_color(&self.color)
-	} else {
-	    Color::new(0.9, 0.8, 0.7, 1.0)
-	};
-	let c2 = if self.flipped {
-	    Color::new(0.3, 0.3, 0.3, 1.0)
-	} else {
-	    Color::new(0.1, 0.1, 0.1, 1.0)
-	};
-
-        macro_rules! ezdraw {
-            ($a:expr) => {
-                graphics::draw(ctx, & $a,  (Point2{x:0.0, y:0.0},))?
-            }
-        }
-        macro_rules! ezdrawxy {
-            ($a:expr, $x:expr, $y:expr) => {
-                graphics::draw(ctx, & $a,  (Point2{x:$x, y:$y},))?
-            }
-        }
-
-	// draw a chest
-	/*
-	graphics::set_default_filter(ctx, graphics::FilterMode::Nearest);
-
-	let g = graphics::Image::new(ctx, "/chest_sprites.png").unwrap();
-
-	let mut parm = graphics::DrawParam::new()
-	    .scale(Point2{x:2.0, y:2.0});
-	
-	graphics::draw(ctx, &g, graphics::DrawParam::new()
-		       .scale(Point2{x:2.0, y:2.0})
-	).unwrap();
-	
-	graphics::draw(ctx, &g, graphics::DrawParam::new()
-		       .dest(Point2{x:0.0, y:256.0})
-		       .scale(Point2{x:2.0, y:2.0})
-	).unwrap();
-
-	graphics::draw(ctx, &g, parm
-		       .src(graphics::Rect{x:2.0/10.0, y:0.0, w:0.1, h:1.0})
-		       .dest(Point2{x:0.0, y:512.0})
-	).unwrap();
-         */
-	
-        // draw rects
-        let r1 = graphics::Mesh::new_rounded_rectangle(
-            ctx,
-            graphics::DrawMode::fill(),
-            graphics::Rect::new(x, y, w, h),
-            h/10.0,
-            c1,
-        )?;
-        let r2 = graphics::Mesh::new_rounded_rectangle(
-            ctx,
-            graphics::DrawMode::fill(),
-            graphics::Rect::new(x+5.0, y+5.0, w-10.0, h-10.0),
-            h/10.0,
-            c2,
-        )?;
-        let r3 = graphics::Mesh::new_rounded_rectangle(
-            ctx,
-            graphics::DrawMode::fill(),
-            graphics::Rect::new(x+7.0, y+7.0, w-14.0, h-14.0),
-            h/10.0,
-            c1,
-        )?;        
-        ezdraw!(r1); ezdraw!(r2); ezdraw!(r3);
-
-        // draw text
-        let (text_scale, mut text_color) = match self.flipped {
-            true => (w/9.0, Color::new(0.05, 0.05, 0.05, 1.0)),
-            false => (w/6.0, Color::new(0.05, 0.05, 0.05, 1.0)),
-        };
-        if let CardColor::Death = self.color {
-            if self.flipped == true {
-                text_color = Color::new(1.0, 1.0, 1.0, 1.0);
-            }
-        }
-        let text = graphics::Text::new(graphics::TextFragment {
-            text: self.word.clone(),
-            color: Some(text_color),
-            font: Some(graphics::Font::default()),
-            scale: Some(graphics::PxScale::from(text_scale)),
-        });
-        let dims = text.dimensions(ctx);
-        let (text_x, text_y) = match self.flipped {
-            true => (x + w*0.10,
-                     y + h*0.68,
-            ),
-            false => (x + (w - dims.w)/2.0,
-                      y + (h - dims.h)/2.0,
-            ),
-        };
-        ezdrawxy!(text, text_x, text_y);
-        // done
+	self.elems.draw(ctx, Point{x:0.0,y:0.0})?;
         Ok(())
+    }
+
+    fn update(&mut self) {
+	self.elems.update();
     }
 }
 
 struct MyRunner {
     clients: Vec<CPClient>,
-    word_cards: Vec<Vec<WordCard>>,
+    word_cards: Vec<Vec<WordChest>>,
     now_team: Team,
     guesses: u32,
     winner: Option<Team>,
+    //a_hearts: Container,
+    //b_hearts: Container,
     a_health: i32,
     b_health: i32,
-    sprite: SpriteElem,
 }
 
 impl MyRunner {
+
+    fn new_hearts(ctx: &mut Context, n: usize, x: f32, y: f32) -> Container {
+	let mut c = Container::new(x, y, vec![]);
+	for i in 0..n {
+	    let y_i = y - i as f32*68.0;
+	    let sprite = SpriteElem::new(ctx, x, y, 4.0, 4.0, "/heart_sprites.png");
+	    c.push(Box::new(sprite));
+	}
+	c
+    }
+    
     fn new(ctx: &mut Context) -> Result<Self> {
         // errs when cant read file
         let s = fs::read_to_string("/home/requin/rqn/words/game_words.txt")?;
@@ -310,22 +254,6 @@ impl MyRunner {
         let all_words = all_words_[..all_words_.len()-1].iter(); // always a newline at the end so last element is empty
         let mut rng = thread_rng();
         let chosen_words = all_words.choose_multiple(&mut rng, 25);
-	let mut sprite = SpriteElem::new(ctx, 0.0, 0.0, 2.0, "/chest_sprites.png");
-	sprite.set_animation(
-	    vec![graphics::Rect::new(0.0, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.1, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.2, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.4, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.2, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.1, 0.0, 0.1, 1.0),
-		 graphics::Rect::new(0.0, 0.0, 0.1, 1.0)],
-	    12,
-	    true,
-	);
         let mut runner = MyRunner {
             clients: targetlib::get_client_info(),
             word_cards: Vec::new(),
@@ -334,7 +262,6 @@ impl MyRunner {
             winner: None,
 	    a_health: 10,
 	    b_health: 12,
-	    sprite: sprite,
         };
 
         // randomly choose card colors
@@ -358,25 +285,25 @@ impl MyRunner {
             for i in 0..5 {
                 let i_flat = j*5 + i;
                 let color = if heals.contains(&i_flat) {
-                    CardColor::Heal
+                    ChestType::Heal
                 } else if deaths.contains(&i_flat) {
-                    CardColor::Death
+                    ChestType::Death
                 } else if crimsons.contains(&i_flat) {
-                    CardColor::Crimson
+                    ChestType::Crimson
                 } else if reds.contains(&i_flat) {
-                    CardColor::Red
+                    ChestType::Red
                 } else if grays.contains(&i_flat) {
-                    CardColor::Gray
+                    ChestType::Gray
                 } else if yellows.contains(&i_flat) {
-                    CardColor::Yellow
+                    ChestType::Yellow
                 } else {
-                    CardColor::Gold
+                    ChestType::Gold
                 };
-                runner.word_cards[j].push(WordCard {
-                    word: (*chosen_words[i_flat as usize]).into(),
-                    color: color,
-                    flipped: false,
-                });
+                runner.word_cards[j].push(WordChest::new(
+		    ctx,
+		    200.0 + i as f32*300.0, j as f32*200.0, color,
+		    (*chosen_words[i_flat as usize]).into()
+		));
             }
         }
 
@@ -389,11 +316,11 @@ impl MyRunner {
         Ok(runner)
     }
 
-    fn num_flipped(&self, cc: CardColor) -> usize {
+    fn num_flipped(&self, cc: ChestType) -> usize {
         let mut sum = 0;
         for row in &self.word_cards {
             for card in row {
-                if card.flipped && card.color == cc {
+                if card.flipped && card.chest_type == cc {
                     sum += 1;
                 }
             }
@@ -465,7 +392,7 @@ impl MyRunner {
                             plr_pnl_w + x_space + i*(btn_w + x_space) + 20,
                             y_space + j*(btn_h + y_space) + 10,
                             btn_w - 40, btn_h - 20,
-                            cardcolor_to_vec(&card.color)
+                            cardcolor_to_vec(&card.chest_type)
 			));
 		    }
 		// card face down
@@ -476,7 +403,7 @@ impl MyRunner {
                             plr_pnl_w + x_space + i*(btn_w + x_space) - 10,
                             y_space + j*(btn_h + y_space) - 10,
                             btn_w + 20, btn_h + 20,
-                            cardcolor_to_vec(&card.color)
+                            cardcolor_to_vec(&card.chest_type)
 			));
 		    } else if self.guesses != 0{
 			buttons.push(Button::new(
@@ -498,11 +425,18 @@ impl MyRunner {
 impl EventHandler<ggez::GameError> for MyRunner {
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-	self.sprite.update();
+
+	for row in &mut self.word_cards {
+	    for mut chest in row {
+		chest.update();
+	    }
+	}
+		
+	
         let mut controller_change = false;
-	let mut card_value: Option<CardColor> = None;
+	let mut card_value: Option<ChestType> = None;
 	let mut guess_number = 0;
-        //let mut end_game: Option<CardColor> = None;
+        //let mut end_game: Option<ChestType> = None;
         for client in self.clients.iter() {
             for event in targetlib::get_events(&client) {
                 match event.datum {
@@ -517,57 +451,62 @@ impl EventHandler<ggez::GameError> for MyRunner {
 			}
 			let j = event.element_id as usize / 5;
                         let i = event.element_id as usize % 5;
-                        self.word_cards[j][i].flipped = true;
-			card_value = Some(self.word_cards[j][i].color);
+                        self.word_cards[j][i].flip(ctx);
+			card_value = Some(self.word_cards[j][i].chest_type);
                     }
                     _ => (),
                 }
             }
         }
+
 	// FYI if you're reading this then I'm sorry the code in this file is so bad.
 	// I'll separate out functions later.
 	if guess_number != 0 {
 	    self.guesses = guess_number;
 	}
 	if let Some(cc) = card_value {
+	    if self.guesses == 0 {
+		println!("WARNING: myrunner.guesses was 0 when a chest was chosen. Please debug.");
+		return Ok(());
+	    }
 	    match cc {
-		CardColor::Gold => {
+		ChestType::Gold => {
 		    if self.now_team == Team::A {
 			self.b_health -= 2;
 		    } else {
 			self.a_health -= 2;
 		    }
 		},
-		CardColor::Yellow => {
+		ChestType::Yellow => {
 		    if self.now_team == Team::A {
 			self.b_health -= 1;
 		    } else {
 			self.a_health -= 1;
 		    }
 		},
-		CardColor::Gray => (),
-		CardColor::Red => {
+		ChestType::Gray => (),
+		ChestType::Red => {
 		    if self.now_team == Team::A {
 			self.a_health -= 1;
 		    } else {
 			self.b_health -= 1;
 		    }
 		},
-		CardColor::Crimson => {
+		ChestType::Crimson => {
 		    if self.now_team == Team::A {
 			self.a_health -= 2;
 		    } else {
 			self.b_health -= 2;
 		    }
 		},
-		CardColor::Death => {
+		ChestType::Death => {
 		    if self.now_team == Team::A {
 			self.a_health -= 5;
 		    } else {
 			self.b_health -= 5;
 		    }
 		},
-		CardColor::Heal => {
+		ChestType::Heal => {
 		    if self.now_team == Team::A {
 			self.a_health += 3;
 		    } else {
@@ -578,8 +517,6 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	    self.guesses -= 1;
 	    if self.guesses == 0 {
 		self.now_team = not_team(self.now_team);
-	    } else if self.guesses < 0 {
-		panic!("negative guesses");
 	    }
 	}
 
@@ -751,7 +688,6 @@ impl EventHandler<ggez::GameError> for MyRunner {
             }
         }
 
-	self.sprite.draw(ctx, Point2{x:0.0, y:0.0});
 	    
         graphics::present(ctx)
     }

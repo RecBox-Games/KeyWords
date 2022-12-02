@@ -10,8 +10,6 @@ use ggez::mint::Point2;
 
 const SNAP_SPEED: f32 = 0.1;
 const MIN_SPEED: f32 = 2.0;
-const FONT_SIZE: f32 = 60.0;
-const FONT_COLOR: Color = Color::new(0.05, 0.1, 0.05, 1.0);
 
 
 pub type Point = Point2<f32>;
@@ -132,7 +130,8 @@ pub struct SpriteElem {
     loc: Point,
     targ: Point,
     image: Image,
-    scale: f32,
+    x_scale: f32,
+    y_scale: f32,
     animation: Vec<graphics::Rect>,
     looping: bool,
     ticks_per_frame: usize,
@@ -140,13 +139,14 @@ pub struct SpriteElem {
 }
 
 impl SpriteElem {
-    pub fn new(ctx: &mut Context, x: f32, y: f32, scale: f32, path: &str) -> Self {
+    pub fn new(ctx: &mut Context, x: f32, y: f32, x_scale: f32, y_scale: f32, path: &str) -> Self {
 	let p = Point{x:x,y:y};
 	SpriteElem {
 	    loc: p,
 	    targ: p,
 	    image: Image::new(ctx, path).unwrap(),
-	    scale: scale,
+	    x_scale: x_scale,
+	    y_scale: y_scale,
 	    animation: vec![graphics::Rect::new(0.0, 0.0, 1.0, 1.0)],
 	    looping: false,
 	    ticks_per_frame: 1,
@@ -163,18 +163,22 @@ impl SpriteElem {
     pub fn restart_animation(&mut self) {
 	self.tick_number = 0;
     }
+
+    fn frame(&self) -> graphics::Rect {
+	let mut frame_number = self.tick_number/self.ticks_per_frame;
+	if frame_number > self.animation.len() - 1 {
+	    frame_number = self.animation.len() - 1;
+	}
+	self.animation[frame_number]
+    }
 }
 
 impl Element for SpriteElem {
     fn draw(&self, ctx: &mut Context, p: Point) -> GameResult<()> {
 	let newp = p.plus(self.loc);
-	let mut frame_number = self.tick_number/self.ticks_per_frame;
-	if frame_number > self.animation.len() - 1 {
-	    frame_number = self.animation.len() - 1;
-	}
 	let parms = DrawParam::new()
-	    .scale(Point{x:self.scale, y:self.scale})
-	    .src(self.animation[frame_number])
+	    .scale(Point{x:self.x_scale, y:self.y_scale})
+	    .src(self.frame())
 	    .dest(newp);
 	graphics::draw(ctx, &self.image, parms)?;
 	Ok(())
@@ -222,10 +226,10 @@ impl Element for SpriteElem {
     }	
 
     fn width(&self, _ctx: &Context) -> f32{
-	self.image.dimensions().w
+	self.image.dimensions().w * self.frame().w * self.x_scale
     }
     fn height(&self, _ctx: &Context) -> f32{
-	self.image.dimensions().h
+	self.image.dimensions().h * self.frame().h * self.y_scale
     }
 }
 
@@ -318,20 +322,15 @@ impl Container {
 	    elements: elems,
 	}
     }
-    
-    pub fn new_button(ctx: &mut Context, x: f32, y: f32, text: String) -> Self {
-	let im = ImageElem::new(ctx, 0.0, 0.0, "/button_box.png");
-	let mut txt = TextElem::new(0.0, 0.0, text, FONT_SIZE, FONT_COLOR);
-	let tx = (im.width(ctx) - txt.width(ctx))/2.0;
-	txt.set_location(tx, 6.0);
-	let p = Point{x:x,y:y};
-	Container {
-	    loc: p,
-	    targ: p,
-	    elements: vec![Box::new(im), Box::new(txt)],
-	}
+
+    pub fn push(&mut self, e: Box<dyn Element>) {
+	self.elements.push(e);
     }
 
+    pub fn pop(&mut self) -> Option<Box<dyn Element>> {
+	self.elements.pop()
+    }
+    
     pub fn len(&self) -> usize {
 	self.elements.len()
     }
@@ -348,6 +347,11 @@ impl Element for Container {
     }
 
     fn update(&mut self) {
+	// update sub elements
+	for mut elem in &mut self.elements {
+	    elem.update();
+	}
+	// update location
 	let towards = self.targ.minus(self.loc);
 	let mag = towards.magnitude();
 	if mag < MIN_SPEED {
