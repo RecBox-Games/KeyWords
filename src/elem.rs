@@ -154,10 +154,18 @@ impl SpriteElem {
 	}
     }
 
+    pub fn animation_len(&self) -> usize {
+	self.animation.len()
+    }
+    
     pub fn set_animation(&mut self, anim: Vec<graphics::Rect>, tpf: usize, looping: bool) {
 	self.animation = anim;
 	self.ticks_per_frame = tpf;
 	self.looping = looping;
+    }
+
+    pub fn done_animating(&self) -> bool {
+	self.tick_number == self.animation.len()*self.ticks_per_frame
     }
 
     pub fn restart_animation(&mut self) {
