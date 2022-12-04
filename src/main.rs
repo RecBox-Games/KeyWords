@@ -125,15 +125,6 @@ fn chestcolor_to_vec(cc: &ChestType) -> [u8; 4] {
     }
 }
 
-fn chestcolor_to_color(cc: &ChestType) -> Color {
-    let v = chestcolor_to_vec(cc);
-    let r = v[0] as f32 / 255.0;
-    let g = v[1] as f32 / 255.0;
-    let b = v[2] as f32 / 255.0;
-    let a = v[3] as f32 / 255.0;
-    Color::new(r, g, b, a)
-}
-
 fn color_to_vec(c: Color) -> [u8; 4] {
     let r = (c.r * 255.0) as u8;
     let g = (c.g * 255.0) as u8;
@@ -166,7 +157,6 @@ fn health_mod_of_chest_type(ct: ChestType) -> i32 {
     }
 }
 
-
 struct WordChest {
     word: String,
     // TODO: text_graphic so we dont render each frame
@@ -188,7 +178,7 @@ impl WordChest {
 	);
 	let mut word_text = TextElem::new(0.0, 0.0, word.clone(), 36.0, Color::new(0.9, 0.8, 0.7, 1.0));
 	let tx = chest_sprite.width(ctx)*0.03 + (chest_sprite.width(ctx) - word_text.width(ctx))/2.0;
-	let ty = chest_sprite.height(ctx) - 38.0;
+	let ty = chest_sprite.height(ctx) - 40.0;
 	word_text.set_location(x+tx, y+ty);
 
 	WordChest {
@@ -216,9 +206,9 @@ impl WordChest {
 	    12,
 	    false,
 	);
-	self.text = TextElem::new(0.0, 0.0, self.word.clone(), 34.0, Color::new(0.15, 0.12, 0.09, 1.0));
+	self.text = TextElem::new(0.0, 0.0, self.word.clone(), 32.0, Color::new(0.17, 0.16, 0.14, 1.0));
 	let tx = self.sprite.width(ctx)*0.03 + (self.sprite.width(ctx) - self.text.width(ctx))/2.0;
-	let ty = self.sprite.height(ctx) - 40.0;
+	let ty = self.sprite.height(ctx) - 34.0;
 	self.text.set_location(self.sprite.x()+tx, self.sprite.y()+ty);
     }
     
@@ -241,7 +231,6 @@ impl WordChest {
 	None
     }
 }
-
 
 #[derive(PartialEq)]
 enum HeartAnim {
@@ -389,7 +378,7 @@ struct MyRunner {
 }
 
 impl MyRunner {
-
+    
     fn new(ctx: &mut Context) -> Result<Self> {
         // errs when cant read file
 	let bg = SpriteElem::new(ctx, 0.0, 0.0, 4.0, 4.0, "/background.png");
@@ -461,18 +450,17 @@ impl MyRunner {
         Ok(runner)
     }
 
-    fn num_openned(&self, cc: ChestType) -> usize {
+    fn num_closed(&self, cc: ChestType) -> usize {
         let mut sum = 0;
         for row in &self.word_chests {
             for chest in row {
-                if chest.openned.is_some() && chest.chest_type == cc {
+                if chest.openned.is_none() && chest.chest_type == cc {
                     sum += 1;
                 }
             }
         }
         sum
     }
-
 
     fn end_game(&mut self, winner: Team) {
         self.winner = Some(winner);
@@ -506,42 +494,30 @@ impl MyRunner {
                        team_color),
         ];
 	// If game is over, provide button to exit back to launcher
-	if self.winner != None {
+	if self.winner.is_some() {
             buttons.push(
                 Button::new(99,
                             w - plr_pnl_w + 4, (h - plr_pnl_w)/2,
                             plr_pnl_w - 8, plr_pnl_w));
 	}
-
+	
 	// buttons for number of guesses
-	if self.guesses == 0 &&
-	    (ctlr_num == 0 && self.now_team == Team::A ||
-	     ctlr_num == 1 && self.now_team == Team::B) {
-		for i in 0..4_u32 {
-		    buttons.push(Button::new(
-			201 + i, 
-			8, h/6 + i*(plr_pnl_w + 4),
-			plr_pnl_w - 16, plr_pnl_w - 16,
-		    ));
-		}
+	if self.guesses == 0 && (ctlr_num == 0 && self.now_team == Team::A ||
+				 ctlr_num == 1 && self.now_team == Team::B) {
+	    for i in 0..4_u32 {
+		buttons.push(Button::new(
+		    201 + i, 
+		    8, h/6 + i*(plr_pnl_w + 4),
+		    plr_pnl_w - 16, plr_pnl_w - 16,
+		));
+	    }
 	}
 	
-        for j in 0..5_u32 {
+	for j in 0..5_u32 {
             for i in 0..5_u32 {
                 let chest = &self.word_chests[j as usize][i as usize];
-		// chest face up
-		if chest.openned.is_some() {
-		    if ctlr_num < 2 {
-			panels.push(Panel::new(
-			    j*5 + i,
-                            plr_pnl_w + x_space + i*(btn_w + x_space) + 20,
-                            y_space + j*(btn_h + y_space) + 10,
-                            btn_w - 40, btn_h - 20,
-                            chestcolor_to_vec(&chest.chest_type)
-			));
-		    }
-		// chest face down
-		} else {
+		// chest closed
+		if ! chest.openned.is_some() {
 		    if ctlr_num < 2 {
 			panels.push(Panel::new(
 			    j*5 + i,
@@ -550,7 +526,7 @@ impl MyRunner {
                             btn_w + 20, btn_h + 20,
                             chestcolor_to_vec(&chest.chest_type)
 			));
-		    } else if self.guesses != 0{
+		    } else if self.guesses != 0 {
 			buttons.push(Button::new(
 			    j*5 + i,
 			    plr_pnl_w + x_space + i*(btn_w + x_space),
@@ -593,8 +569,20 @@ impl MyRunner {
 
     }
 
+    fn initiate_sudden_death(&mut self) {
+	for row in 0..self.word_chests.len() {
+	    for col in 0..self.word_chests[0].len() {
+		let chest = &mut self.word_chests[row][col];
+		match chest.chest_type {
+		    ChestType::Crimson => {chest.chest_type = ChestType::Gold;}
+		    ChestType::Red => {chest.chest_type = ChestType::Yellow;}
+		    ChestType::Gray => {chest.chest_type = ChestType::Crimson;}
+		    _ => ()
+		};
+	    }
+	}
+    }
 }
-
 
 impl EventHandler<ggez::GameError> for MyRunner {
 
@@ -649,20 +637,25 @@ impl EventHandler<ggez::GameError> for MyRunner {
 		println!("WARNING: myrunner.guesses was 0 when a chest was chosen. Please debug.");
 		return Ok(());
 	    }
-	    //self.update_hearts(ctx);
 	    self.guesses -= 1;
 	    if self.guesses == 0 {
 		self.now_team = not_team(self.now_team);
 	    }
+	    // check if all greens have been flipped
+	    if self.num_closed(ChestType::Gold) == 0 && self.num_closed(ChestType::Yellow) == 0 {
+		self.initiate_sudden_death();
+	    }
 	}
 
+	// check if a team has lost
         if self.a_hearts.empty() {
             self.end_game(Team::B);
         }
         if self.b_hearts.empty() {
             self.end_game(Team::A);
         }
-	
+
+	// update control pad clients
         if targetlib::clients_changed() || controller_change {
             self.clients = targetlib::get_client_info();
             // asign specs
