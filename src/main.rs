@@ -135,13 +135,13 @@ fn color_to_vec(c: Color) -> [u8; 4] {
 
 fn x_offset_of_chest_type(ct: ChestType) -> f32 {
    match ct {
-	ChestType::Gold    => 0.4,
-        ChestType::Yellow  => 0.5,
-        ChestType::Gray    => 0.3,
-        ChestType::Red     => 0.6,
-        ChestType::Crimson => 0.7,
-        ChestType::Death   => 0.8,
-        ChestType::Heal    => 0.9,
+	ChestType::Gold    => 5.0*0.0909,
+        ChestType::Yellow  => 6.0*0.0909,
+        ChestType::Gray    => 4.0*0.0909,
+        ChestType::Red     => 7.0*0.0909,
+        ChestType::Crimson => 8.0*0.0909,
+        ChestType::Death   => 9.0*0.0909,
+        ChestType::Heal    => 10.0*0.0909,
     }
 }
 
@@ -170,9 +170,9 @@ struct WordChest {
 impl WordChest {
     fn new(ctx: &mut Context, x: f32, y: f32, chest_type: ChestType, word: String) -> Self {
 	// TODO: use new().set_animation() pattern?
-	let mut chest_sprite = SpriteElem::new(ctx, x, y, 2.0, 1.4, "/chest_sprites.png");
+	let mut chest_sprite = SpriteElem::new(ctx, x, y, 6.0, 6.0, "/chest_sprites.png");
 	chest_sprite.set_animation(
-	    vec![Rect::new(0.0, 0.0, 0.1, 1.0)],
+	    vec![Rect::new(0.0, 0.0, 0.0909, 1.0)],
 	    1,
 	    false,
 	);
@@ -194,15 +194,16 @@ impl WordChest {
     fn open(&mut self, ctx: &mut Context, team: Team) {
 	self.openned = Some(team);
 	self.sprite.set_animation(
-	    vec![Rect::new(0.1, 0.0, 0.1, 1.0),
-		 Rect::new(0.2, 0.0, 0.1, 1.0),
-		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
-		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
-		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
-		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
-		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
-		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.1, 1.0),
-		 Rect::new(0.3, 0.0, 0.1, 1.0)],
+	    vec![Rect::new(0.0909, 0.0, 0.0909, 1.0),
+		 Rect::new(2.0*0.0909, 0.0, 0.0909, 1.0),
+		 Rect::new(3.0*0.0909, 0.0, 0.0909, 1.0),
+		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.0909, 1.0),
+		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.0909, 1.0),
+		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.0909, 1.0),
+		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.0909, 1.0),
+		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.0909, 1.0),
+		 Rect::new(x_offset_of_chest_type(self.chest_type), 0.0, 0.0909, 1.0),
+		 Rect::new(4.0*0.0909, 0.0, 0.0909, 1.0)],
 	    12,
 	    false,
 	);
