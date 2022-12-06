@@ -24,7 +24,7 @@ fn main() {
 
     // open a window
     let my_window_settings = conf::WindowSetup {
-	title: "CodeWords".to_owned(),
+	title: "KeyWords".to_owned(),
 	samples: conf::NumSamples::One,
 	vsync: true,
 	icon: "".to_owned(),
