@@ -102,14 +102,6 @@ enum ChestType {
     Heal,
 }
 
-fn opposite_color(cc: &ChestType) -> ChestType {
-    match cc {
-        ChestType::Crimson  => ChestType::Gold,
-        ChestType::Red => ChestType::Yellow,
-        _ => panic!("No opposite of {:?}", cc),
-    }
-}
-
 // TODO: chestcolor -> chest_type
 fn chestcolor_to_vec(cc: &ChestType) -> [u8; 4] {
     match cc {
@@ -257,7 +249,8 @@ impl HeartBar {
 	    Team::A => ("/heart_container_o.png", -12.0*HW*HS),
 	    Team::B => ("/heart_container_p.png", -14.0*HW*HS),
 	};
-	let bar = SpriteElem::new(ctx, x - 0.0*HS, y + 2.0*HS + offset, HS, HS, hc_img_name);
+	let bar = SpriteElem::new(ctx, x - 0.0*HS, y +
+				  2.0*HS + offset, HS, HS, hc_img_name);
 	for i in 0..(health-1) {
 	    let y_i = 0.0 - i as f32*12.0*HS;
 	    let mut sprite = SpriteElem::new(ctx, 0.0, y_i, HS, HS, "/heart.png");
@@ -421,14 +414,14 @@ impl InfoHeader {
     }
 
     // change text
-    fn amend_text(&mut self, text: String, subtext1: String, subtext2: String, ctx: &mut Context) {
+    fn amend_text(&mut self, text: String, subtext1: String, subtext2: String) {
 	self.text_elem = TextElem::new(self.text_elem.x(), self.text_elem.y(), text, TS, Color::BLACK);
 	self.subtext1_elem = TextElem::new(self.subtext1_elem.x(), self.subtext1_elem.y(), subtext1, STS, Color::BLACK);
 	self.subtext2_elem = TextElem::new(self.subtext2_elem.x(), self.subtext2_elem.y(), subtext2, STS, Color::BLACK);
     }
     
     // initiate the process of text flying away and coming back
-    fn change_text(&mut self, text: String, subtext1: String, subtext2: String, ctx: &mut Context) {
+    fn change_text(&mut self, text: String, subtext1: String, subtext2: String) {
 	self.sprite_elem.set_target(self.sprite_elem.x(), AY);
 	self.text_elem.set_target(self.text_elem.x(), AY + TY);
 	self.subtext1_elem.set_target(self.subtext1_elem.x(), AY + TY1);
@@ -456,7 +449,7 @@ impl InfoHeader {
 	self.subtext2_elem.update();
 	if self.hidden_target && self.sprite_elem.settled() {
 	    self.sprite_elem.set_target(self.sprite_elem.x(), BY);
-	    self.amend_text(self.new_text.clone(), self.new_subtext1.clone(), self.new_subtext2.clone(), ctx);
+	    self.amend_text(self.new_text.clone(), self.new_subtext1.clone(), self.new_subtext2.clone());
 	    let tx = (1920.0 - self.text_elem.width(ctx))/2.0;
 	    self.text_elem.set_location(tx, AY + TY);
 	    self.text_elem.set_target(tx, BY + TY);
@@ -583,7 +576,7 @@ impl MyRunner {
         sum
     }
 
-    fn end_game(&mut self, winner: Team, ctx: &mut Context) {
+    fn end_game(&mut self, winner: Team) {
         self.winner = Some(winner);
         for row in &mut self.word_chests {
             for chest in row {
@@ -593,7 +586,8 @@ impl MyRunner {
 	self.info_text.change_text(format!("{} Team Wins!",
 					   team_name(winner)),
 				   String::from("Touch the button on the right of your controller to exit the game."),
-				   String::new(), ctx);
+				   String::new()
+	);
     }
     
     fn get_cp_spec(&self, ctlr_num: usize, w: u32, h: u32) -> CPSpec {
@@ -727,7 +721,7 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	// check if a chest has finished openning this tick so we can apply the effect on health
 	let mut health_updates: Vec<(Team, ChestType)> = vec![];
 	for row in &mut self.word_chests {
-	    for mut chest in row {
+	    for chest in row {
 		if let Some(q) = chest.update() {
 		    health_updates.push(q);
 		}
@@ -769,9 +763,10 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	    self.info_text.change_text(format!("{} Team Must Guess ({} guesses remaining)",
 					       team_name(self.now_team), self.guesses),
 				       String::from("Touch the button on your device corresponding to your \
-						     team's guess."), String::new(), ctx);
+						     team's guess."), String::new()
+	    );
 	}
-	if let Some(cc) = chest_value {
+	if chest_value.is_some() {
 	    if self.guesses == 0 {
 		println!("WARNING: myrunner.guesses was 0 when a chest was chosen. Please debug.");
 		return Ok(());
@@ -782,20 +777,22 @@ impl EventHandler<ggez::GameError> for MyRunner {
 		self.info_text.change_text(String::from(team_name(self.now_team)) + " Team's Clue Giver is Thinking",
 					   String::from("Touch the button on your device corresponding to the number of guesses"),
 					   String::from("you want your team to make. (bottom button is 1 and top is 4)"),
-					   ctx);
+		);
 	    } else {
 		self.info_text.amend_text(format!("{} Team Must Guess ({} guesses remaining)",
 						   team_name(self.now_team), self.guesses),
 					   String::from("Touch the button on your device corresponding to your \
 							 team's guess."),
-					   String::new(), ctx);
+					  String::new(),
+		);
 	    }
 	    // check if all greens have been flipped
 	    if self.num_closed(ChestType::Gold) == 0 && self.num_closed(ChestType::Yellow) == 0 {
 		self.initiate_sudden_death();
 		self.info_text.change_text(String::from("SUDDEN DEATH"),
 					   String::from("The chest contents have changed."),
-					   String::new(), ctx);
+					   String::new(),
+		);
 		self.waiting = true;
 	    }
 	}
@@ -804,15 +801,15 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	    self.info_text.change_text(String::from(team_name(self.now_team)) + " Team's Clue Giver is Thinking",
 				       String::from("Touch the button on your device corresponding to the number of guesses"),
 				       String::from("you want your team to make. (bottom button is 1 and top is 4)"),
-				       ctx);
+	    );
 	}
 
 	// check if a team has lost
         if self.a_hearts.dead() {
-            self.end_game(Team::B, ctx);
+            self.end_game(Team::B);
         }
         if self.b_hearts.dead() {
-            self.end_game(Team::A, ctx);
+            self.end_game(Team::A);
         }
 
 

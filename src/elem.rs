@@ -60,72 +60,6 @@ pub trait Element {
     }
 }
 
-pub struct ImageElem {
-    loc: Point,
-    targ: Point,
-    image: Image,
-}
-
-impl ImageElem {
-    pub fn new(ctx: &mut Context, x: f32, y: f32, path: &str) -> Self {
-	let p = Point{x:x,y:y};
-	ImageElem {
-	    loc: p,
-	    targ: p,
-	    image: Image::new(ctx, path).unwrap(),
-	}
-    }
-}
-
-impl Element for ImageElem {
-    fn draw(&self, ctx: &mut Context, p: Point) -> GameResult<()> {
-	let newp = p.plus(self.loc);
-	graphics::draw(ctx, &self.image, (newp,))?;
-	Ok(())
-    }
-
-    fn update(&mut self) {
-	let towards = self.targ.minus(self.loc);
-	let mag = towards.magnitude();
-	if mag < MIN_SPEED {
-	    self.loc = self.targ;
-	    return;
-	}
-	let newmag = mag*SNAP_SPEED + MIN_SPEED;
-	self.loc = self.loc.plus(towards.scale(newmag/mag));
-    }
-
-    fn set_target(&mut self, x: f32, y: f32) {
-	let p = Point{x:x,y:y};
-	self.targ = p;
-    }
-    fn set_location(&mut self, x: f32, y: f32) {
-	let p = Point{x:x,y:y};
-	self.loc = p;
-	self.targ = p;
-    }
-
-    fn x(&self) -> f32 {
-	self.loc.x
-    }
-    fn y(&self) -> f32 {
-	self.loc.y
-    }	
-    fn tx(&self) -> f32 {
-	self.targ.x
-    }
-    fn ty(&self) -> f32 {
-	self.targ.y
-    }	
-
-    fn width(&self, _ctx: &Context) -> f32{
-	self.image.dimensions().w
-    }
-    fn height(&self, _ctx: &Context) -> f32{
-	self.image.dimensions().h
-    }
-}
-
 pub struct SpriteElem {
     loc: Point,
     targ: Point,
@@ -154,10 +88,6 @@ impl SpriteElem {
 	}
     }
 
-    pub fn animation_len(&self) -> usize {
-	self.animation.len()
-    }
-    
     pub fn set_animation(&mut self, anim: Vec<graphics::Rect>, tpf: usize, looping: bool) {
 	self.animation = anim;
 	self.ticks_per_frame = tpf;
@@ -353,7 +283,7 @@ impl Element for Container {
 
     fn update(&mut self) {
 	// update sub elements
-	for mut elem in &mut self.elements {
+	for elem in &mut self.elements {
 	    elem.update();
 	}
 	// update location
