@@ -2,8 +2,6 @@ use ggez::{Context, ContextBuilder, GameResult, conf};
 use ggez::event::{self, EventHandler};
 use ggez::graphics;
 use ggez::graphics::{Color, Rect};
-use ggez::mint::Point2;
-//use ggez::input::mouse::MouseButton;
 
 use targetlib::{CPClient, CPSpec, Panel, Button, ControlDatum};//, Joystick};
 
@@ -177,7 +175,7 @@ impl WordChest {
 	    false,
 	);
 	let mut word_text = TextElem::new(0.0, 0.0, word.clone(), 36.0, Color::new(0.9, 0.8, 0.7, 1.0));
-	let tx = chest_sprite.width(ctx)*0.03 + (chest_sprite.width(ctx) - word_text.width(ctx))/2.0;
+	let tx = chest_sprite.width(ctx)*0.05 + (chest_sprite.width(ctx) - word_text.width(ctx))/2.0;
 	let ty = chest_sprite.height(ctx) - 40.0;
 	word_text.set_location(x+tx, y+ty);
 
@@ -248,22 +246,26 @@ struct HeartBar {
     anim: HeartAnim,
 }
 
+const HS: f32 = 5.0;
+const HFRAMES: usize = 5;
+const HW: f32 = 12.0;
+
 impl HeartBar {
     fn new(ctx: &mut Context, health: i32, x: f32, y: f32, team: Team) -> Self {
 	let mut lows = Container::new(x, y, vec![]);
 	let (hc_img_name, offset) = match team {
-	    Team::A => ("/heart_container_o.png", -240.0*3.0),
-	    Team::B => ("/heart_container_p.png", -280.0*3.0),
+	    Team::A => ("/heart_container_o.png", -12.0*HW*HS),
+	    Team::B => ("/heart_container_p.png", -14.0*HW*HS),
 	};
-	let bar = SpriteElem::new(ctx, x - 6.0, y - 6.0 + offset, 3.0, 3.0, hc_img_name);
+	let bar = SpriteElem::new(ctx, x - 0.0*HS, y + 2.0*HS + offset, HS, HS, hc_img_name);
 	for i in 0..(health-1) {
-	    let y_i = 0.0 - i as f32*20.0*3.0;
-	    let mut sprite = SpriteElem::new(ctx, 0.0, y_i, 3.0, 3.0, "/heart_sprites.png");
-	    sprite.set_animation(vec![Rect::new(0.0, 0.0, 0.25, 1.0)], 8, false);
+	    let y_i = 0.0 - i as f32*12.0*HS;
+	    let mut sprite = SpriteElem::new(ctx, 0.0, y_i, HS, HS, "/heart.png");
+	    sprite.set_animation(vec![Rect::new(0.0, 0.0, 0.25, 1.0)], HFRAMES, false);
 	    lows.push(Box::new(sprite));
 	}
-	let mut top = SpriteElem::new(ctx, 0.0, 0.0, 3.0, 3.0, "/heart_sprites.png"); // position at end
-	top.set_animation(vec![Rect::new(0.00, 0.0, 0.25, 1.0)], 8, false);
+	let mut top = SpriteElem::new(ctx, 0.0, 0.0, HS, HS, "/heart.png"); // position at end
+	top.set_animation(vec![Rect::new(0.00, 0.0, 0.25, 1.0)], HFRAMES, false);
 	let mut hb = HeartBar {
 	    target_health: health,
 	    bar: bar,
@@ -290,8 +292,8 @@ impl HeartBar {
 	}
     }
 
-    fn empty(&self) -> bool {
-	self.target_health == 0 && self.lower_hearts.len() == 0 && self.top_heart.done_animating()
+    fn dead(&self) -> bool {
+	self.target_health == 0
     }
 
     fn add_heart(&mut self, ctx: &mut Context) {
@@ -300,7 +302,7 @@ impl HeartBar {
 	    0.0 - self.lower_hearts.len() as f32*20.0*3.0,
 	    3.0, 3.0, "/heart_sprites.png"
 	);
-	sprite.set_animation(vec![Rect::new(0.0, 0.0, 0.25, 1.0)], 8, false);
+	sprite.set_animation(vec![Rect::new(0.0, 0.0, 0.25, 1.0)], HFRAMES, false);
 	self.lower_hearts.push(Box::new(sprite));
 	self.position_top_heart();
     }
@@ -313,7 +315,7 @@ impl HeartBar {
     fn update_animation(&mut self, anim: HeartAnim) {
 	match anim {
 	    HeartAnim::Steady => {
-		self.top_heart.set_animation(vec![Rect::new(0.00, 0.0, 0.25, 1.0)], 8, false);
+		self.top_heart.set_animation(vec![Rect::new(0.00, 0.0, 0.25, 1.0)], HFRAMES, false);
 	    }
 	    HeartAnim::Shrinking => {
 		self.top_heart.set_animation(vec![Rect::new(0.00, 0.0, 0.25, 1.0),
@@ -367,6 +369,117 @@ impl HeartBar {
     }
 }
 
+struct InfoHeader {
+    new_text: String,
+    new_subtext1: String,
+    new_subtext2: String,
+    text_elem: TextElem,
+    subtext1_elem: TextElem,
+    subtext2_elem: TextElem,
+    sprite_elem: SpriteElem,
+    hidden_target: bool,
+    settled_time: u32,
+}
+
+const AY: f32 = -200.0;
+const BY: f32 = 4.0;
+const TY: f32 = 8.0;
+const TY1: f32 = 50.0;
+const TY2: f32 = 76.0;
+const TS: f32 = 44.0;
+const STS: f32 = 24.0;
+
+impl InfoHeader {
+    fn new(text: String, subtext1: String, subtext2: String, ctx: &mut Context) -> Self {
+	let mut se = SpriteElem::new(ctx, 0.0, 0.0, 6.0, 6.0, "/text_container.png");
+	let sx = (1920.0 - se.width(ctx))/2.0;
+	se.set_location(sx, AY);
+	se.set_target(sx, BY);
+	let mut te = TextElem::new(0.0, 0.0, text, TS, Color::BLACK);
+	let tx = (1920.0 - te.width(ctx))/2.0;
+	te.set_location(tx, AY + TY);
+	te.set_target(tx, BY + TY);
+	let mut ste1 = TextElem::new(0.0, 0.0, subtext1, STS, Color::BLACK);
+	let stx1 = (1920.0 - ste1.width(ctx))/2.0;
+	ste1.set_location(stx1, AY + TY1);
+	ste1.set_target(stx1, BY + TY1);
+	let mut ste2 = TextElem::new(0.0, 0.0, subtext2, STS, Color::BLACK);
+	let stx2 = (1920.0 - ste2.width(ctx))/2.0;
+	ste2.set_location(stx2, AY + TY2);
+	ste2.set_target(stx2, BY + TY2);
+	InfoHeader {
+	    new_text: String::new(),
+	    new_subtext1: String::new(),
+	    new_subtext2: String::new(),
+	    text_elem: te,
+	    subtext1_elem: ste1,
+	    subtext2_elem: ste2,
+	    sprite_elem: se,
+	    hidden_target: false,
+	    settled_time: 0,
+	}
+    }
+
+    // change text
+    fn amend_text(&mut self, text: String, subtext1: String, subtext2: String, ctx: &mut Context) {
+	self.text_elem = TextElem::new(self.text_elem.x(), self.text_elem.y(), text, TS, Color::BLACK);
+	self.subtext1_elem = TextElem::new(self.subtext1_elem.x(), self.subtext1_elem.y(), subtext1, STS, Color::BLACK);
+	self.subtext2_elem = TextElem::new(self.subtext2_elem.x(), self.subtext2_elem.y(), subtext2, STS, Color::BLACK);
+    }
+    
+    // initiate the process of text flying away and coming back
+    fn change_text(&mut self, text: String, subtext1: String, subtext2: String, ctx: &mut Context) {
+	self.sprite_elem.set_target(self.sprite_elem.x(), AY);
+	self.text_elem.set_target(self.text_elem.x(), AY + TY);
+	self.subtext1_elem.set_target(self.subtext1_elem.x(), AY + TY1);
+	self.subtext2_elem.set_target(self.subtext2_elem.x(), AY + TY2);
+	self.hidden_target = true;
+	self.new_text = text;
+	self.new_subtext1 = subtext1;
+	self.new_subtext2 = subtext2;
+	self.settled_time = 0;
+    }
+    
+    fn draw(&self, ctx: &mut Context) -> GameResult<()> {
+	let p = Point{x: 0.0, y: 0.0};
+	self.sprite_elem.draw(ctx, p)?;
+	self.text_elem.draw(ctx, p)?;
+	self.subtext1_elem.draw(ctx, p)?;
+	self.subtext2_elem.draw(ctx, p)?;
+	Ok(())
+    }
+
+    fn update(&mut self, ctx: &mut Context) {
+	self.sprite_elem.update();
+	self.text_elem.update();
+	self.subtext1_elem.update();
+	self.subtext2_elem.update();
+	if self.hidden_target && self.sprite_elem.settled() {
+	    self.sprite_elem.set_target(self.sprite_elem.x(), BY);
+	    self.amend_text(self.new_text.clone(), self.new_subtext1.clone(), self.new_subtext2.clone(), ctx);
+	    let tx = (1920.0 - self.text_elem.width(ctx))/2.0;
+	    self.text_elem.set_location(tx, AY + TY);
+	    self.text_elem.set_target(tx, BY + TY);
+	    let stx1 = (1920.0 - self.subtext1_elem.width(ctx))/2.0;
+	    self.subtext1_elem.set_location(stx1, AY + TY1);
+	    self.subtext1_elem.set_target(stx1, BY + TY1);
+	    let stx2 = (1920.0 - self.subtext2_elem.width(ctx))/2.0;
+	    self.subtext2_elem.set_location(stx2, AY + TY2);
+	    self.subtext2_elem.set_target(stx2, BY + TY2);
+	    self.hidden_target = false;
+	}
+	if self.hidden_target == false && self.sprite_elem.settled() {
+	    self.settled_time += 1;
+	}
+	
+    }
+
+    fn settled_time(&self) -> u32 {
+	self.settled_time
+    }
+    
+}
+
 struct MyRunner {
     background: SpriteElem,
     clients: Vec<CPClient>,
@@ -376,6 +489,8 @@ struct MyRunner {
     winner: Option<Team>,
     a_hearts: HeartBar,
     b_hearts: HeartBar,
+    info_text: InfoHeader,
+    waiting: bool,
 }
 
 impl MyRunner {
@@ -397,6 +512,11 @@ impl MyRunner {
             winner: None,
 	    a_hearts: HeartBar::new(ctx, 10, 100.0, 920.0, Team::A),
 	    b_hearts: HeartBar::new(ctx, 12, 1820.0 - 20.0*3.0, 920.0, Team::B),
+	    info_text: InfoHeader::new(String::from("Orange Team's Clue Giver is Thinking"),
+				       String::from("Touch the button on your device corresponding to the number of guesses"),
+				       String::from("you want your team to make. (bottom button is 1 and top is 4)"),
+				       ctx),
+	    waiting: false,
         };
 
         // randomly choose chest colors
@@ -463,13 +583,17 @@ impl MyRunner {
         sum
     }
 
-    fn end_game(&mut self, winner: Team) {
+    fn end_game(&mut self, winner: Team, ctx: &mut Context) {
         self.winner = Some(winner);
         for row in &mut self.word_chests {
             for chest in row {
-                chest.openned = Some(Team::A);
+                chest.openned = Some(winner);
             }
         }
+	self.info_text.change_text(format!("{} Team Wins!",
+					   team_name(winner)),
+				   String::from("Touch the button on the right of your controller to exit the game."),
+				   String::new(), ctx);
     }
     
     fn get_cp_spec(&self, ctlr_num: usize, w: u32, h: u32) -> CPSpec {
@@ -589,9 +713,18 @@ impl EventHandler<ggez::GameError> for MyRunner {
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
 
+	// update text
+	self.info_text.update(ctx);
+	
+	// update hearts
 	self.a_hearts.update(ctx);
 	self.b_hearts.update(ctx);
+
+	if self.winner.is_some() {
+	    return Ok(());
+	}
 	
+	// check if a chest has finished openning this tick so we can apply the effect on health
 	let mut health_updates: Vec<(Team, ChestType)> = vec![];
 	for row in &mut self.word_chests {
 	    for mut chest in row {
@@ -604,10 +737,10 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	    self.modify_health(t, ct);
 	}
 	
+	// handle button presses from the controllers
         let mut controller_change = false;
 	let mut chest_value: Option<ChestType> = None;
 	let mut guess_number = 0;
-
         for client in self.clients.iter() {
             for event in targetlib::get_events(&client) {
                 match event.datum {
@@ -630,8 +763,13 @@ impl EventHandler<ggez::GameError> for MyRunner {
             }
         }
 
+	// update game state based on input
 	if guess_number != 0 {
 	    self.guesses = guess_number;
+	    self.info_text.change_text(format!("{} Team Must Guess ({} guesses remaining)",
+					       team_name(self.now_team), self.guesses),
+				       String::from("Touch the button on your device corresponding to your \
+						     team's guess."), String::new(), ctx);
 	}
 	if let Some(cc) = chest_value {
 	    if self.guesses == 0 {
@@ -641,20 +779,42 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	    self.guesses -= 1;
 	    if self.guesses == 0 {
 		self.now_team = not_team(self.now_team);
+		self.info_text.change_text(String::from(team_name(self.now_team)) + " Team's Clue Giver is Thinking",
+					   String::from("Touch the button on your device corresponding to the number of guesses"),
+					   String::from("you want your team to make. (bottom button is 1 and top is 4)"),
+					   ctx);
+	    } else {
+		self.info_text.amend_text(format!("{} Team Must Guess ({} guesses remaining)",
+						   team_name(self.now_team), self.guesses),
+					   String::from("Touch the button on your device corresponding to your \
+							 team's guess."),
+					   String::new(), ctx);
 	    }
 	    // check if all greens have been flipped
 	    if self.num_closed(ChestType::Gold) == 0 && self.num_closed(ChestType::Yellow) == 0 {
 		self.initiate_sudden_death();
+		self.info_text.change_text(String::from("SUDDEN DEATH"),
+					   String::from("The chest contents have changed."),
+					   String::new(), ctx);
+		self.waiting = true;
 	    }
+	}
+	if self.waiting && self.info_text.settled_time() > 200 {
+	    self.waiting = false;
+	    self.info_text.change_text(String::from(team_name(self.now_team)) + " Team's Clue Giver is Thinking",
+				       String::from("Touch the button on your device corresponding to the number of guesses"),
+				       String::from("you want your team to make. (bottom button is 1 and top is 4)"),
+				       ctx);
 	}
 
 	// check if a team has lost
-        if self.a_hearts.empty() {
-            self.end_game(Team::B);
+        if self.a_hearts.dead() {
+            self.end_game(Team::B, ctx);
         }
-        if self.b_hearts.empty() {
-            self.end_game(Team::A);
+        if self.b_hearts.dead() {
+            self.end_game(Team::A, ctx);
         }
+
 
 	// update control pad clients
         if targetlib::clients_changed() || controller_change {
@@ -682,6 +842,9 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	// draw hearts
 	self.a_hearts.draw(ctx)?;
 	self.b_hearts.draw(ctx)?;
+
+	// draw text
+	self.info_text.draw(ctx)?;
 	    
         graphics::present(ctx)
     }

@@ -8,8 +8,8 @@ use ggez::mint::Point2;
 //pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 
-const SNAP_SPEED: f32 = 0.1;
-const MIN_SPEED: f32 = 2.0;
+const SNAP_SPEED: f32 = 0.05;
+const MIN_SPEED: f32 = 0.5;
 
 
 pub type Point = Point2<f32>;
@@ -44,7 +44,6 @@ impl PointMath for Point {
     }
 }
 
-
 pub trait Element {
     fn draw(&self, ctx: &mut Context, p: Point) -> GameResult<()>;
     fn update(&mut self);
@@ -56,8 +55,10 @@ pub trait Element {
     fn ty(&self) -> f32;
     fn width(&self, ctx: &Context) -> f32;
     fn height(&self, ctx: &Context) -> f32;
+    fn settled(&self) -> bool {
+	self.x() == self.tx() && self.y() == self.ty()
+    }
 }
-
 
 pub struct ImageElem {
     loc: Point,
@@ -124,7 +125,6 @@ impl Element for ImageElem {
 	self.image.dimensions().h
     }
 }
-
 
 pub struct SpriteElem {
     loc: Point,
@@ -241,7 +241,6 @@ impl Element for SpriteElem {
     }
 }
 
-
 pub struct TextElem {
     loc: Point,
     targ: Point,
@@ -314,7 +313,6 @@ impl Element for TextElem {
     }
 }
 
-
 pub struct Container {
     loc: Point,
     targ: Point,
@@ -343,7 +341,6 @@ impl Container {
 	self.elements.len()
     }
 }
-
 
 impl Element for Container {
     fn draw(&self, ctx: &mut Context, p: Point) -> GameResult<()> {
