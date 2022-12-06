@@ -490,7 +490,7 @@ impl MyRunner {
     
     fn new(ctx: &mut Context) -> Result<Self> {
         // errs when cant read file
-	let bg = SpriteElem::new(ctx, 0.0, 0.0, 4.0, 4.0, "/background.png");
+	let bg = SpriteElem::new(ctx, 0.0, 0.0, 4.0, 4.0, "/keywords_background.png");
         let s = fs::read_to_string("/home/requin/rqn/words/game_words.txt")?;
         let all_words_ = s.split("\n").collect::<Vec<&str>>(); 
         let all_words = all_words_[..all_words_.len()-1].iter(); // always a newline at the end so last element is empty
