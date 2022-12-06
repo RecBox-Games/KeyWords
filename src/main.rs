@@ -714,23 +714,6 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	self.a_hearts.update(ctx);
 	self.b_hearts.update(ctx);
 
-	if self.winner.is_some() {
-	    return Ok(());
-	}
-	
-	// check if a chest has finished openning this tick so we can apply the effect on health
-	let mut health_updates: Vec<(Team, ChestType)> = vec![];
-	for row in &mut self.word_chests {
-	    for chest in row {
-		if let Some(q) = chest.update() {
-		    health_updates.push(q);
-		}
-	    }
-	}
-	for (t, ct) in health_updates {
-	    self.modify_health(t, ct);
-	}
-	
 	// handle button presses from the controllers
         let mut controller_change = false;
 	let mut chest_value: Option<ChestType> = None;
@@ -757,6 +740,34 @@ impl EventHandler<ggez::GameError> for MyRunner {
             }
         }
 
+	// update control pad clients
+        if targetlib::clients_changed() || controller_change {
+            self.clients = targetlib::get_client_info();
+            // asign specs
+            for (n, client) in self.clients.iter().enumerate() {
+                targetlib::assign_spec(client,
+                                       self.get_cp_spec(n, client.w, client.h));
+            }
+        }
+
+	// don't do the game state stuff below if the game is over
+	if self.winner.is_some() {
+	    return Ok(());
+	}
+
+	// check if a chest has finished openning this tick so we can apply the effect on health
+	let mut health_updates: Vec<(Team, ChestType)> = vec![];
+	for row in &mut self.word_chests {
+	    for chest in row {
+		if let Some(q) = chest.update() {
+		    health_updates.push(q);
+		}
+	    }
+	}
+	for (t, ct) in health_updates {
+	    self.modify_health(t, ct);
+	}
+	
 	// update game state based on input
 	if guess_number != 0 {
 	    self.guesses = guess_number;
@@ -812,16 +823,6 @@ impl EventHandler<ggez::GameError> for MyRunner {
             self.end_game(Team::A);
         }
 
-
-	// update control pad clients
-        if targetlib::clients_changed() || controller_change {
-            self.clients = targetlib::get_client_info();
-            // asign specs
-            for (n, client) in self.clients.iter().enumerate() {
-                targetlib::assign_spec(client,
-                                       self.get_cp_spec(n, client.w, client.h));
-            }
-        }
         Ok(())
     }
 
