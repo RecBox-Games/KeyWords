@@ -230,6 +230,7 @@ enum HeartAnim {
     Growing,
 }
 
+// TODO: have an x and y as member variables
 struct HeartBar {
     target_health: i32,
     bar: SpriteElem,
@@ -238,26 +239,27 @@ struct HeartBar {
     anim: HeartAnim,
 }
 
-const HS: f32 = 5.0;
+const HEART_SCALE: f32 = 5.0;
 const HFRAMES: usize = 5;
-const HW: f32 = 12.0;
+const HEART_WIDTH: f32 = 12.0;
 
 impl HeartBar {
     fn new(ctx: &mut Context, health: i32, x: f32, y: f32, team: Team) -> Self {
 	let mut lows = Container::new(x, y, vec![]);
 	let (hc_img_name, offset) = match team {
-	    Team::A => ("/heart_container_o.png", -12.0*HW*HS),
-	    Team::B => ("/heart_container_p.png", -14.0*HW*HS),
+	    Team::A => ("/heart_container_o.png", -12.0*HEART_WIDTH*HEART_SCALE),
+	    Team::B => ("/heart_container_p.png", -14.0*HEART_WIDTH*HEART_SCALE),
 	};
-	let bar = SpriteElem::new(ctx, x - 0.0*HS, y +
-				  2.0*HS + offset, HS, HS, hc_img_name);
+	let bar = SpriteElem::new(ctx, x - 0.0*HEART_SCALE, y +
+				  2.0*HEART_SCALE + offset, HEART_SCALE, HEART_SCALE, hc_img_name);
 	for i in 0..(health-1) {
-	    let y_i = 0.0 - i as f32*12.0*HS;
-	    let mut sprite = SpriteElem::new(ctx, 0.0, y_i, HS, HS, "/heart.png");
+	    let y_i = 0.0 - i as f32*12.0*HEART_SCALE;
+	    let mut sprite = SpriteElem::new(ctx, 0.0, y_i, HEART_SCALE, HEART_SCALE, "/heart.png");
 	    sprite.set_animation(vec![Rect::new(0.0, 0.0, 0.25, 1.0)], HFRAMES, false);
 	    lows.push(Box::new(sprite));
 	}
-	let mut top = SpriteElem::new(ctx, 0.0, 0.0, HS, HS, "/heart.png"); // position at end
+	let mut top = SpriteElem::new(ctx, 0.0, 0.0, HEART_SCALE, HEART_SCALE,
+				      "/heart.png"); // position at end
 	top.set_animation(vec![Rect::new(0.00, 0.0, 0.25, 1.0)], HFRAMES, false);
 	let mut hb = HeartBar {
 	    target_health: health,
@@ -290,11 +292,9 @@ impl HeartBar {
     }
 
     fn add_heart(&mut self, ctx: &mut Context) {
-	let mut sprite = SpriteElem::new(
-	    ctx, 0.0,
-	    0.0 - self.lower_hearts.len() as f32*20.0*3.0,
-	    3.0, 3.0, "/heart_sprites.png"
-	);
+	let y = 0.0 - self.lower_hearts.len() as f32*12.0*HEART_SCALE;
+	let mut sprite = SpriteElem::new(ctx, 0.0, y, HEART_SCALE, HEART_SCALE,
+					 "/heart.png");
 	sprite.set_animation(vec![Rect::new(0.0, 0.0, 0.25, 1.0)], HFRAMES, false);
 	self.lower_hearts.push(Box::new(sprite));
 	self.position_top_heart();
@@ -372,6 +372,7 @@ struct InfoHeader {
     sprite_elem: SpriteElem,
     hidden_target: bool,
     settled_time: u32,
+    delay_timer: u32,
 }
 
 const AY: f32 = -200.0;
@@ -381,6 +382,7 @@ const TY1: f32 = 50.0;
 const TY2: f32 = 76.0;
 const TS: f32 = 44.0;
 const STS: f32 = 24.0;
+const DELAY_TIME: u32 = 25;
 
 impl InfoHeader {
     fn new(text: String, subtext1: String, subtext2: String, ctx: &mut Context) -> Self {
@@ -410,6 +412,7 @@ impl InfoHeader {
 	    sprite_elem: se,
 	    hidden_target: false,
 	    settled_time: 0,
+	    delay_timer: 0,
 	}
     }
 
@@ -431,6 +434,7 @@ impl InfoHeader {
 	self.new_subtext1 = subtext1;
 	self.new_subtext2 = subtext2;
 	self.settled_time = 0;
+	self.delay_timer = DELAY_TIME;
     }
     
     fn draw(&self, ctx: &mut Context) -> GameResult<()> {
@@ -443,6 +447,10 @@ impl InfoHeader {
     }
 
     fn update(&mut self, ctx: &mut Context) {
+	if self.delay_timer > 0 {
+	    self.delay_timer -= 1;
+	    return;
+	}
 	self.sprite_elem.update();
 	self.text_elem.update();
 	self.subtext1_elem.update();
@@ -578,11 +586,6 @@ impl MyRunner {
 
     fn end_game(&mut self, winner: Team) {
         self.winner = Some(winner);
-        for row in &mut self.word_chests {
-            for chest in row {
-                chest.openned = Some(winner);
-            }
-        }
 	self.info_text.change_text(format!("{} Team Wins!",
 					   team_name(winner)),
 				   String::from("Touch the button on the right of your controller to exit the game."),
@@ -612,13 +615,6 @@ impl MyRunner {
                        w - plr_pnl_w, 0, plr_pnl_w, h,
                        team_color),
         ];
-	// If game is over, provide button to exit back to launcher
-	if self.winner.is_some() {
-            buttons.push(
-                Button::new(99,
-                            w - plr_pnl_w + 4, (h - plr_pnl_w)/2,
-                            plr_pnl_w - 8, plr_pnl_w));
-	}
 	
 	// buttons for number of guesses
 	if self.guesses == 0 && (ctlr_num == 0 && self.now_team == Team::A ||
@@ -656,7 +652,15 @@ impl MyRunner {
 		}
             }
         }
-        CPSpec::new(panels, buttons, vec![], vec![])
+	// If game is over, just provide a button to exit back to launcher
+	if self.winner.is_some() {
+	    let exit_button = Button::new(99,
+					  w - plr_pnl_w + 4,  (h - plr_pnl_w)/2,
+					  plr_pnl_w - 8,      plr_pnl_w); 
+	    CPSpec::new(panels, vec![exit_button], vec![], vec![])
+	} else {
+            CPSpec::new(panels, buttons, vec![], vec![])
+	}
     }
 
     fn modify_health(&mut self, openning_team: Team, chest_type: ChestType) {
@@ -716,7 +720,7 @@ impl EventHandler<ggez::GameError> for MyRunner {
 
 	// handle button presses from the controllers
         let mut controller_change = false;
-	let mut chest_value: Option<ChestType> = None;
+	let mut chosen_chest_value: Option<ChestType> = None;
 	let mut guess_number = 0;
         for client in self.clients.iter() {
             for event in targetlib::get_events(&client) {
@@ -733,27 +737,12 @@ impl EventHandler<ggez::GameError> for MyRunner {
 			let j = event.element_id as usize / 5;
                         let i = event.element_id as usize % 5;
                         self.word_chests[j][i].open(ctx, self.now_team);
-			chest_value = Some(self.word_chests[j][i].chest_type);
+			chosen_chest_value = Some(self.word_chests[j][i].chest_type);
                     }
                     _ => (),
                 }
             }
         }
-
-	// update control pad clients
-        if targetlib::clients_changed() || controller_change {
-            self.clients = targetlib::get_client_info();
-            // asign specs
-            for (n, client) in self.clients.iter().enumerate() {
-                targetlib::assign_spec(client,
-                                       self.get_cp_spec(n, client.w, client.h));
-            }
-        }
-
-	// don't do the game state stuff below if the game is over
-	if self.winner.is_some() {
-	    return Ok(());
-	}
 
 	// check if a chest has finished openning this tick so we can apply the effect on health
 	let mut health_updates: Vec<(Team, ChestType)> = vec![];
@@ -768,7 +757,7 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	    self.modify_health(t, ct);
 	}
 	
-	// update game state based on input
+	// update text to reflect number of guesses remaining
 	if guess_number != 0 {
 	    self.guesses = guess_number;
 	    self.info_text.change_text(format!("{} Team Must Guess ({} guesses remaining)",
@@ -777,12 +766,15 @@ impl EventHandler<ggez::GameError> for MyRunner {
 						     team's guess."), String::new()
 	    );
 	}
-	if chest_value.is_some() {
+
+	// handle a "guess"
+	if chosen_chest_value.is_some() {
 	    if self.guesses == 0 {
 		println!("WARNING: myrunner.guesses was 0 when a chest was chosen. Please debug.");
 		return Ok(());
 	    }
 	    self.guesses -= 1;
+	    // if the current team has made all their guesses then switch turns
 	    if self.guesses == 0 {
 		self.now_team = not_team(self.now_team);
 		self.info_text.change_text(String::from(team_name(self.now_team)) + " Team's Clue Giver is Thinking",
@@ -815,12 +807,26 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	    );
 	}
 
-	// check if a team has lost
-        if self.a_hearts.dead() {
-            self.end_game(Team::B);
-        }
-        if self.b_hearts.dead() {
-            self.end_game(Team::A);
+	// if the game isn't yet over then check if a team has lost
+	if let None = self.winner {
+            if self.a_hearts.dead() {
+		self.end_game(Team::B);
+		controller_change = true;
+            }
+            if self.b_hearts.dead() {
+		self.end_game(Team::A);
+		controller_change = true;
+            }
+	}
+	
+	// update control pad clients
+        if targetlib::clients_changed() || controller_change {
+            self.clients = targetlib::get_client_info();
+            // asign specs
+            for (n, client) in self.clients.iter().enumerate() {
+                targetlib::assign_spec(client,
+                                       self.get_cp_spec(n, client.w, client.h));
+            }
         }
 
         Ok(())
