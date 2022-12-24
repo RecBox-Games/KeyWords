@@ -4,14 +4,17 @@ use ggez::graphics;
 use ggez::graphics::{Color, Rect};
 
 use targetlib::{CPClient, CPSpec, Panel, Button, ControlDatum};//, Joystick};
+use controlpads::*;
 
+use std::collections::HashMap;
 use std::fs;
 use rand::{seq::IteratorRandom, thread_rng};
 
 use std::error::Error;
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-
+mod json_client;
+use crate::json_client::*;
 mod elem;
 use crate::elem::*;
 
@@ -481,9 +484,18 @@ impl InfoHeader {
     
 }
 
+enum Role {
+    // Choosing
+    OrangeClueGiver,
+    PurpleClueGiver,
+    OrangeGuesser,
+    PurpleGuesser,
+}
+
 struct MyRunner {
     background: SpriteElem,
-    clients: Vec<CPClient>,
+    client_map: HashMap<ClientHandle, Role>,
+    clients: Vec<Client>,
     word_chests: Vec<Vec<WordChest>>,
     now_team: Team,
     guesses: u32,
@@ -506,7 +518,7 @@ impl MyRunner {
         let chosen_words = all_words.choose_multiple(&mut rng, 25);
         let mut runner = MyRunner {
 	    background: bg,
-            clients: targetlib::get_client_info(),
+            clients: targetlib::get_client_info(), //LEFTOFF
             word_chests: Vec::new(),
             now_team: Team::A,
 	    guesses: 0,
