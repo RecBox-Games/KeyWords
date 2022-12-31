@@ -1,3 +1,5 @@
+#![allow(unused_parens)]
+
 use ggez::{Context, ContextBuilder, GameResult, conf};
 use ggez::event::{self, EventHandler};
 use ggez::graphics;
@@ -17,7 +19,6 @@ mod json_client;
 use crate::json_client::*;
 mod elem;
 use crate::elem::*;
-
 
 const START_WIDTH:  f32 = 1920.0;
 const START_HEIGHT: f32 = 1080.0;
@@ -484,6 +485,7 @@ impl InfoHeader {
     
 }
 
+#[derive(PartialEq)]
 enum Role {
     // Choosing
     OrangeClueGiver,
@@ -495,7 +497,8 @@ enum Role {
 struct MyRunner {
     background: SpriteElem,
     client_map: HashMap<ClientHandle, Role>,
-    clients: Vec<Client>,
+    new_clients: Vec<Client>,
+    clients: Vec<CPClient>,
     word_chests: Vec<Vec<WordChest>>,
     now_team: Team,
     guesses: u32,
@@ -518,6 +521,8 @@ impl MyRunner {
         let chosen_words = all_words.choose_multiple(&mut rng, 25);
         let mut runner = MyRunner {
 	    background: bg,
+	    client_map: HashMap::new(),
+            new_clients: vec![], //LEFTOFF
             clients: targetlib::get_client_info(), //LEFTOFF
             word_chests: Vec::new(),
             now_team: Team::A,
@@ -575,13 +580,35 @@ impl MyRunner {
             }
         }
 
-        // assign specs for existing control pads
-        for (n, client) in runner.clients.iter().enumerate() {
-            targetlib::assign_spec(client,
-                                   runner.get_cp_spec(n, client.w, client.h));
-        }
+	runner.update_clients();
 	
         Ok(runner)
+    }
+
+    // note this allows clients to receive control messages and therefore
+    // update themselves
+    //fn get_all_messages(&mut self) -> Vec<ClientHandle
+
+    fn update_clients(&mut self) {
+	if let Ok(true) = controlpads::clients_changed() {
+	    if let Ok(handles) = controlpads::get_client_handles() {
+		self.new_clients = clients_from_client_handles(handles);
+	    } else {
+		println!("Warning: failed to get client handles");
+	    }
+	    /*for client in &mut self.new_clients {
+		client.receive_events();
+	    }*/
+	}
+	
+	for client in &mut self.new_clients {
+	    if client.needs_spec {
+		if let ClientState::Sized(w,h) = client.state {
+		    let spec = self.get_cp_spec(&client.handle, w, h);
+		    client.assign_spec(spec);
+		}
+	    }
+	}
     }
 
     fn num_closed(&self, cc: ChestType) -> usize {
@@ -604,21 +631,88 @@ impl MyRunner {
 				   String::new()
 	);
     }
+
+    // ===== Spec Functions =====
+    fn get_cluegiver_panels(&self, x_offset: u32, pnl_w: u32, pnl_h: u32, x_space: u32, y_space: u32) -> Vec<Panel> {
+	let mut panels: Vec<Panel> = vec![];
+	for j in 0..5_u32 {
+            for i in 0..5_u32 {
+                let chest = &self.word_chests[j as usize][i as usize];
+		// vvv if the chest is closed vvv
+		if ! chest.openned.is_some() {
+		    panels.push(Panel::new(
+			j*5 + i,
+                        x_offset + x_space + i*(pnl_w + x_space),
+                        y_space + j*(pnl_h + y_space),
+                        pnl_w, pnl_h,
+                        chestcolor_to_vec(&chest.chest_type)
+		    ));
+		}
+            }
+        }
+	panels
+    }
+
+    fn get_guesser_buttons(&self, x_offset: u32, btn_w: u32, btn_h: u32, x_space: u32, y_space: u32) -> Vec<Button> {
+	let mut buttons: Vec<Button> = vec![];
+	for j in 0..5_u32 {
+            for i in 0..5_u32 {
+                let chest = &self.word_chests[j as usize][i as usize];
+		// vvv if the chest is closed vvv
+		if ! chest.openned.is_some() {
+		    buttons.push(Button::new(
+			j*5 + i,
+			x_offset + x_space + i*(btn_w + x_space),
+			y_space + j*(btn_h + y_space),
+			btn_w, btn_h
+		    ));
+                }
+	    }
+        }
+	buttons
+    }
+
     
-    fn get_cp_spec(&self, ctlr_num: usize, w: u32, h: u32) -> CPSpec {
+    fn get_cluegiver_number_buttons(&self, y_offset: u32, btn_w: u32, btn_h: u32, y_space: u32) -> Vec<Button> {
+	let mut buttons: Vec<Button> = vec![];
+	for i in 0..4_u32 {
+	    buttons.push(Button::new(
+		201 + i, 
+		8, y_offset + i*(btn_w + 4),
+		btn_w, btn_h,
+	    ));
+	}
+	buttons
+    }
+    
+    
+    // TODO: use this for players to choose roles
+    fn get_roleless_spec(&self, w: u32, h: u32) -> CPSpec {
+        CPSpec::new(vec![], vec![], vec![], vec![])	
+    }
+    
+    fn get_cp_spec(&self, handle: &ClientHandle, w: u32, h: u32) -> CPSpec {
+
+	let role = match self.client_map.get(handle) {
+	    Some(r) => r,
+	    None => { return self.get_roleless_spec(w,h); }
+	};
+	
         let main_w = (w*8)/10;
         let plr_pnl_w = (w - main_w)/2;
         let btn_w = main_w/7;
         let btn_h = h/9;
-        let x_space = (btn_w as f32 * (7.0 - 5.0)/6.0) as u32;
-        let y_space = (btn_h as f32 * (9.0 - 5.0)/6.0) as u32;
+        let btn_x_space = (btn_w as f32 * (7.0 - 5.0)/6.0) as u32;
+        let btn_y_space = (btn_h as f32 * (9.0 - 5.0)/6.0) as u32;
         let mut buttons: Vec<Button> = vec![
         ];
-        let team_color = match ctlr_num {
-            0 => color_to_vec(team_color(Team::A)),
-            1 => color_to_vec(team_color(Team::B)),
+        let team_color = match role {
+            Role::OrangeClueGiver | Role::OrangeGuesser => color_to_vec(team_color(Team::A)),
+            Role::PurpleClueGiver | Role::PurpleGuesser => color_to_vec(team_color(Team::B)),
 	    _ => [100, 100, 100, 255],
         };
+
+	// side panels
         let mut panels: Vec<Panel> = vec![
             Panel::new(101,
                        0, 0, plr_pnl_w, h,
@@ -627,9 +721,37 @@ impl MyRunner {
                        w - plr_pnl_w, 0, plr_pnl_w, h,
                        team_color),
         ];
+
+	if let Role::OrangeClueGiver | Role::PurpleClueGiver = *role {
+	    // panels to indicate to clue givers which chest holds what
+	    panels.append(
+		&mut self.get_cluegiver_panels(plr_pnl_w - 10, btn_w + 20, btn_h + 20,
+					       btn_x_space - 20, btn_y_space - 20)
+	    );
+	}
 	
-	// buttons for number of guesses
-	if self.guesses == 0 && (ctlr_num == 0 && self.now_team == Team::A ||
+	if self.guesses == 0 {
+	    // buttons for number of guesses
+	    if (*role == Role::OrangeClueGiver && self.now_team == Team::A ||
+		*role == Role::PurpleClueGiver && self.now_team == Team::B) {
+		buttons.append(
+		    &mut self.get_cluegiver_number_buttons(h/6, plr_pnl_w - 16,
+							   plr_pnl_w - 16, plr_pnl_w + 4)
+		);
+	    }
+	} else {
+	    // buttons to make guesses
+	    if (*role == Role::OrangeGuesser && self.now_team == Team::A ||
+		*role == Role::PurpleGuesser && self.now_team == Team::B) {
+		buttons.append(
+		    &mut self.get_guesser_buttons(plr_pnl_w, btn_w, btn_h,
+						  btn_x_space, btn_y_space)
+		);
+	    }
+	}
+	
+      	/*
+        if self.guesses == 0 && (role == && self.now_team == Team::A ||
 				 ctlr_num == 1 && self.now_team == Team::B) {
 	    for i in 0..4_u32 {
 		buttons.push(Button::new(
@@ -639,7 +761,6 @@ impl MyRunner {
 		));
 	    }
 	}
-	
 	for j in 0..5_u32 {
             for i in 0..5_u32 {
                 let chest = &self.word_chests[j as usize][i as usize];
@@ -664,6 +785,8 @@ impl MyRunner {
 		}
             }
         }
+	 */
+
 	// If game is over, just provide a button to exit back to launcher
 	if self.winner.is_some() {
 	    let exit_button = Button::new(99,
