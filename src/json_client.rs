@@ -8,10 +8,22 @@ pub enum ClientState {
     Sized(u32, u32),
 }
 
+#[derive(PartialEq, Clone, Copy)]
+pub enum Role {
+    Choosing,
+    OrangeClueGiver,
+    PurpleClueGiver,
+    OrangeGuesser,
+    PurpleGuesser,
+}
+
 pub struct Client {
     pub handle: ClientHandle,
     pub state: ClientState,
     pub needs_spec: bool,
+    pub role: Role,
+    pub w: u32,
+    pub h: u32,
 }
 
 impl Client {
@@ -20,15 +32,20 @@ impl Client {
 	    handle: handle,
 	    state: ClientState::NoSize,
 	    needs_spec: false,
+	    role: Role::Choosing,
+	    w: 0,
+	    h: 0,
 	};
 	// send request for dimensions
+	println!("sending a dim req");
 	controlpads::send_message(&client.handle, "DimensionsRequest")
 	    .unwrap_or_else(|_| println!("Warning: unable to send dimensions request"));
 	client
     }
 
-    pub fn handle_message(&mut self, msg: String) -> Option<CPEvent> {
+    fn handle_message(&mut self, msg: String) -> Option<CPEvent> {
 	if msg.starts_with("{\"Dimensions\":") {
+	    println!("handling some dims");
 	    // sorry about these variables
 	    println!("got dimensions");
 	    let a: Vec<&str> = msg.split("[").collect();
@@ -51,6 +68,7 @@ impl Client {
 	    match (w_, h_) {
 		(Ok(w), Ok(h)) => {
 		    self.state = ClientState::Sized(w,h);
+		    println!("sized");
 		    self.needs_spec = true;
 		}
 		(_,_) => {
@@ -90,6 +108,7 @@ impl Client {
 	if let Ok(msg) = serde_json::to_string(&spec) {
 	    controlpads::send_message(&self.handle, &msg)
 		.unwrap_or_else(|_| println!("Warning: unable to send spec msg: {}", &msg));
+	    println!("spec assigned for {}", self.handle);
 	    self.needs_spec = false;
 	} else {
 	    println!("Warning: unable to stringify spec: {:?}", spec);
