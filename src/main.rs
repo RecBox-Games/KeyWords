@@ -104,6 +104,14 @@ fn get_choosing_spec(w: u32, h: u32, orange_cluegiver_available: bool, purple_cl
     let cluegiver_panel1_y = cluegiver_button1_y-10;
     let cluegiver_panel2_x = cluegiver_button2_x-10;
     let cluegiver_panel2_y = cluegiver_button2_y-10;
+    // exit button
+    let exit_button_size = h*1/16;
+    let exit_button_x = w - w*1/16 - exit_button_size;
+    let exit_button_y = h*1/16;
+    let exit_panel_size = exit_button_size + 20;
+    let exit_panel_x = exit_button_x - 10;
+    let exit_panel_y = exit_button_y - 10;
+    
 
     let mut buttons = vec![
 	Button::new(
@@ -115,6 +123,12 @@ fn get_choosing_spec(w: u32, h: u32, orange_cluegiver_available: bool, purple_cl
 	    1102,
 	    guesser_button2_x, guesser_button2_y,
 	    guesser_button_size, guesser_button_size,
+	),
+	// exit button
+	Button::new(
+	    99,
+	    exit_button_x, exit_button_y,
+	    exit_button_size, exit_button_size,
 	),
     ];
 
@@ -160,6 +174,13 @@ fn get_choosing_spec(w: u32, h: u32, orange_cluegiver_available: bool, purple_cl
 	    cluegiver_panel2_x, cluegiver_panel2_y,
 	    cluegiver_panel_size, cluegiver_panel_size,
 	    color_to_vec(team_color(Team::B)),		
+	),
+	// exit button
+	Panel::new(
+	    0,
+	    exit_panel_x, exit_panel_y,
+	    exit_panel_size, exit_panel_size,
+	    chestcolor_to_vec(&ChestType::Crimson),		
 	),
     ];
     
@@ -897,12 +918,16 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	let mut chosen_chest_value: Option<ChestType> = None;
 	let mut guess_number = 0;
 
-	let mut client_assignments: Vec<(String, Role)> = vec![];
-
 	for client in &mut self.new_clients {
 	    for event in client.get_events() {
                 match event.datum {
                     ControlDatum::Press => {
+			// exit button
+			if event.element_id == 99 {
+			    ggez::event::quit(ctx);
+			    std::process::exit(0);
+                        }
+			// choosing screen
 			if client.role == Role::Choosing {
 			    match event.element_id {
 				1101 => {
@@ -938,15 +963,13 @@ impl EventHandler<ggez::GameError> for MyRunner {
 			    self.client_map.insert(client.handle.clone(), client.role);
 			    continue;
 			}
-			if event.element_id > 1100 {
-			    println!("Warning: a choose-role button press came in from a client that already has a role");
+			if event.element_id > 225 {
+			    println!("Warning: a choose-role button or other high-id press came in \
+				      from a client that already has a role");
 			    continue;
 			}
                         controller_change = true;
-                        if event.element_id == 99 {
-			    ggez::event::quit(ctx);
-			    std::process::exit(0);
-                        } else if event.element_id > 200 {
+			if event.element_id > 200 {
 			    guess_number = 5 - (event.element_id - 200); // im so sorry
 			    break;
 			}
@@ -958,11 +981,6 @@ impl EventHandler<ggez::GameError> for MyRunner {
                     _ => (),
                 }
 	    }
-	}
-
-	for (handle, role) in client_assignments {
-	    self.client_map.insert(handle, role);
-	    controller_change = true; // potentially need to remove cluegiver as an option
 	}
 
 	// check if a chest has finished openning this tick so we can apply the effect on health
