@@ -19,6 +19,8 @@ mod json_client;
 use crate::json_client::*;
 mod elem;
 use crate::elem::*;
+mod utility;
+mod state;
 
 const START_WIDTH:  f32 = 1920.0;
 const START_HEIGHT: f32 = 1080.0;
@@ -305,7 +307,6 @@ fn main() {
         .unwrap();
 
     graphics::set_default_filter(&mut ctx, graphics::FilterMode::Nearest);
-
     
     // Create an instance of your event handler.
     // Usually, you should provide it with the Context object
@@ -317,8 +318,6 @@ fn main() {
 
     // Run!
     event::run(ctx, event_loop, my_runner);
-
-    
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
