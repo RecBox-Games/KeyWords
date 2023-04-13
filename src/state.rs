@@ -55,7 +55,7 @@ impl PlayingState {
 }
 
 
-pub const TICKS_CHEST_OPEN: usize = 40;
+pub const TICKS_CHEST_OPEN: usize = 120;
 
 #[derive(PartialEq)]
 enum ChestState {

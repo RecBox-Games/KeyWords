@@ -899,24 +899,10 @@ impl MyRunner {
 	    }
 	}
     }
-}
 
-impl EventHandler<ggez::GameError> for MyRunner {
-
-    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-
-	// update text
-	self.info_text.update(ctx);
-	
-	// update hearts
-	self.a_hearts.update(ctx);
-	self.b_hearts.update(ctx);
-
-	// handle button presses from the controllers
-        let mut controller_change = false;
-	let mut chosen_chest_value: Option<ChestType> = None;
-	let mut guess_number = 0;
-
+    fn handle_controlpad_presses(&mut self, controller_change: &mut bool,
+                                 chosen_chest_value: &mut Option <ChestType>,
+                                 guess_number: &mut u32, ctx: &mut Context) {
 	for client in &mut self.new_clients {
 	    for event in client.get_events() {
                 match event.datum {
@@ -941,7 +927,7 @@ impl EventHandler<ggez::GameError> for MyRunner {
 					continue;
 				    }
 				    client.role = Role::OrangeClueGiver;
-				    controller_change = true; // need to remove orange cluegiver as an option
+				    *controller_change = true; // need to remove orange cluegiver as an option
 				}
 				1202 => {
 				    if self.client_map.values().any(|&val| val == Role::PurpleClueGiver) {
@@ -949,7 +935,7 @@ impl EventHandler<ggez::GameError> for MyRunner {
 					continue;
 				    }
 				    client.role = Role::PurpleClueGiver;
-				    controller_change = true; // need to remove orange cluegiver as an option
+				    *controller_change = true; // need to remove orange cluegiver as an option
 				}
 				_ => {
 				    println!("Warning: bad element_id on press for 'Choosing' role: {}", event.element_id);
@@ -967,21 +953,24 @@ impl EventHandler<ggez::GameError> for MyRunner {
 				      from a client that already has a role");
 			    continue;
 			}
-                        controller_change = true;
+                        *controller_change = true;
 			if event.element_id > 200 {
-			    guess_number = 5 - (event.element_id - 200); // im so sorry
+			    *guess_number = 5 - (event.element_id - 200); // im so sorry
 			    break;
 			}
 			let j = event.element_id as usize / 5;
                         let i = event.element_id as usize % 5;
                         self.word_chests[j][i].open(ctx, self.now_team);
-			chosen_chest_value = Some(self.word_chests[j][i].chest_type);
+			*chosen_chest_value = Some(self.word_chests[j][i].chest_type);
                     }
                     _ => (),
                 }
 	    }
 	}
 
+    }
+
+    fn apply_health_updates(&mut self) {
 	// check if a chest has finished openning this tick so we can apply the effect on health
 	let mut health_updates: Vec<(Team, ChestType)> = vec![];
 	for row in &mut self.word_chests {
@@ -994,7 +983,24 @@ impl EventHandler<ggez::GameError> for MyRunner {
 	for (t, ct) in health_updates {
 	    self.modify_health(t, ct);
 	}
-	
+    }
+    
+}
+
+impl EventHandler<ggez::GameError> for MyRunner {
+
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+	// update text
+	self.info_text.update(ctx);
+	// update hearts
+	self.a_hearts.update(ctx);
+	self.b_hearts.update(ctx);
+        //
+        let mut controller_change = false;
+	let mut chosen_chest_value: Option<ChestType> = None;
+	let mut guess_number: u32 = 0;
+        self.handle_controlpad_presses(&mut controller_change, &mut chosen_chest_value, &mut guess_number, ctx);
+        self.apply_health_updates();
 	// update text to reflect number of guesses remaining
 	if guess_number != 0 {
 	    self.guesses = guess_number;
