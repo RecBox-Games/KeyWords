@@ -3,15 +3,54 @@ use crate::utility::*;
 
 pub const TICKS_CHEST_OPENNING: usize = 666;
 
+
 // deals only with dynamic state. static state (like words on chests) is not part of game state.
-enum GameState {
-    Splash(usize/*tick number*/),
+pub enum GameState {
+    Intro(IntroState),
     //Joining(JoinState),
     Playing(PlayingState),
     //Over(OverState),
 }
 
-struct PlayingState {
+impl GameState {
+    pub fn new() -> Self {
+        GameState::Intro(IntroState::Title(Progress::new(TICKS_TITLE)))
+    }
+
+    pub fn tick(&mut self) {
+        use GameState::*;
+        match self {
+            Intro(intro_state) => intro_state.tick(),
+            _ => false,
+        };
+    }
+}
+
+pub enum IntroState {
+    Title(Progress),
+    ChestFall(usize/*tick number*/),
+}
+
+pub const TICKS_TITLE: usize = 200;
+pub const TICKS_CHESTFALL: usize = 120;
+
+impl IntroState {
+    fn tick(&mut self) -> bool {
+        use IntroState::*;
+        if let Title(p) = self {
+            if ! p.tick() {
+                *self = ChestFall(0);
+            }
+        } else if let ChestFall(TICKS_CHESTFALL) = self {
+            return true;
+        } else if let ChestFall(n) = self {
+            *self = ChestFall(*n+1);
+        }
+        false
+    }
+}
+
+pub struct PlayingState {
     chest_states: Vec<Vec<ChestState>>,
     red_health_state: HealthState,
     blue_health_state: HealthState,
@@ -58,7 +97,7 @@ impl PlayingState {
 pub const TICKS_CHEST_OPEN: usize = 120;
 
 #[derive(PartialEq)]
-enum ChestState {
+pub enum ChestState {
     Closed,
     Opening(usize/*tick number*/),
     Open,
@@ -79,7 +118,7 @@ impl ChestState {
 pub const TICKS_TURN_TRANSITION: usize = 40;
 
 #[derive(PartialEq, Clone)]
-enum TurnState {
+pub enum TurnState {
     RedCluing,
     RedCluingEnd(usize/*tick number*/, usize/*guesses*/),
     //
