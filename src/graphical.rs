@@ -41,24 +41,24 @@ impl Graphical {
 	let p2 = Point{x:400.0, y:340.0};
 	let p3 = Point{x:400.0, y:1100.0};
         //
-        let A = 0.35;
-        let B = 0.40;
-        let C = 0.25;
-        let BUF = 0.15;
+        let t1 = 0.35;
+        let t2 = 0.40;
+        let t3 = 0.25;
+        let tbuf = 0.15;
         //
-        let p = if prg < A {
-            let sub_prg = prg/A;
-            interpolate(p1, p2, Interpolation::Damp, sub_prg)
-        } else if prg < A+B {
+        let p = if prg < t1 {
+            let sub_prg = prg/t1;
+            interpolate(p1, p2, Interpolation::RoundEnd, sub_prg)
+        } else if prg < t1+t2 {
             p2
         } else {
-            let sub_prg = (prg-A-B)/C;
-            interpolate(p2, p3, Interpolation::Accelerate, sub_prg)
+            let sub_prg = (prg-t1-t2)/t3;
+            interpolate(p2, p3, Interpolation::RoundStart, sub_prg)
         };
 	self.title.draw(ctx,p)?;
-        if prg > A+BUF && prg < A+B-BUF {
-            let sub_prg = (prg-A-BUF)/(B-BUF*2.0);
-            let sparkle_p = p2.plus(Point{x:400.0, y:30.0});
+        if prg > t1+tbuf && prg < t1+t2-tbuf {
+            let sub_prg = (prg-t1-tbuf)/(t2-tbuf*2.0);
+            let sparkle_p = p2.plus(Point{x:395.0, y:35.0});
             self.sparkle.animate(ctx, sparkle_p, sub_prg)?;
         }
         //

@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 use ggez::{Context, GameResult};
 use ggez::graphics;
-use ggez::graphics::{Image, Color, DrawParam};
-use ggez::mint::Point2;
+use ggez::graphics::{Image, DrawParam};
 
 use crate::utility::*;
 

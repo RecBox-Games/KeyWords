@@ -1,7 +1,12 @@
 #![allow(dead_code)] // TODO dont allow
 use crate::utility::*;
 
-pub const TICKS_CHEST_OPENNING: usize = 666;
+pub const TICKS_TITLE: usize = 200;
+pub const TICKS_CHESTFALL: usize = 120;
+pub const TICKS_TURN_TRANSITION: usize = 40;
+pub const TICKS_CHEST_OPEN: usize = 220;
+pub const TICKS_PER_HEALTH: usize = 40;
+
 
 
 // deals only with dynamic state. static state (like words on chests) is not part of game state.
@@ -28,23 +33,18 @@ impl GameState {
 
 pub enum IntroState {
     Title(Progress),
-    ChestFall(usize/*tick number*/),
+    ChestFall(Progress),
 }
-
-pub const TICKS_TITLE: usize = 200;
-pub const TICKS_CHESTFALL: usize = 120;
 
 impl IntroState {
     fn tick(&mut self) -> bool {
         use IntroState::*;
         if let Title(p) = self {
             if ! p.tick() {
-                *self = ChestFall(0);
+                *self = ChestFall(Progress::new(TICKS_CHESTFALL));
             }
-        } else if let ChestFall(TICKS_CHESTFALL) = self {
-            return true;
-        } else if let ChestFall(n) = self {
-            *self = ChestFall(*n+1);
+        } else if let ChestFall(p) = self {
+            return p.tick();
         }
         false
     }
@@ -94,8 +94,6 @@ impl PlayingState {
 }
 
 
-pub const TICKS_CHEST_OPEN: usize = 120;
-
 #[derive(PartialEq)]
 pub enum ChestState {
     Closed,
@@ -114,8 +112,6 @@ impl ChestState {
     }
 }
 
-
-pub const TICKS_TURN_TRANSITION: usize = 40;
 
 #[derive(PartialEq, Clone)]
 pub enum TurnState {
@@ -181,8 +177,6 @@ impl TurnState {
     }
 }
 
-
-const TICKS_PER_HEALTH: usize = 40;
 
 struct HealthState {
     src_amount: usize,

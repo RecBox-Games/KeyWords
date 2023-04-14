@@ -74,6 +74,9 @@ impl PointMath for Point {
 
 pub enum Interpolation {
     Linear,
+    Round,
+    RoundStart,
+    RoundEnd,
     Damp,
     Accelerate,
 }
@@ -86,12 +89,17 @@ pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32) -> Point
         Linear => {
             prg
         }
-        Damp => {
+        RoundStart => {
+            1.0 - (prg * PI/2.0).cos()
+        }
+        RoundEnd => {
             (prg * PI/2.0).sin()
         }
         Accelerate => {
-            1.0 - (prg * PI/2.0).cos()
+            prg.powf(2.0)
         }
+        _ => {panic!("not yet implemented");}
+
     };
     p1.plus(towards.scale(s))
 }

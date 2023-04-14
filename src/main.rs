@@ -23,7 +23,6 @@ use crate::json_client::*;
 use crate::utility::*;
 use crate::graphical::*;
 use crate::state::*;
-use crate::sprite::*;
 
 const START_WIDTH:  f32 = 1920.0;
 const START_HEIGHT: f32 = 1080.0;
