@@ -34,6 +34,15 @@ const init_app = () => {
     // board.background.dst = <Rectangle>{x:0, y:0 ,w:context.dimensions.x, h:context.dimensions.y};
 }
 
+const tutorial = () => {
+
+}
+
+const menu = () => {
+
+}
+
+
 const app = () => {
 
     const context = get_context();
