@@ -1,0 +1,13 @@
+To compile the controller:
+
+- Make sure these packages are installed wherever the server is :
+    - typescript
+    - esm
+    - express
+
+```
+cd ts_controller
+tsc
+```
+
+the controller/ directory should have the upadated js files

@@ -5,15 +5,18 @@
     <style>
       body {
 	  margin: 0;
+      width:100vw;
+      height:100vh;
       }
     </style>
   </head>
   <body>
     <div id="d1">
-      <canvas id="thecanvas"</canvas> 
+      <canvas id="thecanvas"></canvas>
     </div>
-<script>
-  // style="touch-action: none;"></canvas>  
+    <script type="module" src="main.js"></script>
+<!-- <script>
+  // style="touch-action: none;"></canvas>
   var div1 = document.getElementById('d1');
   const canvas = document.getElementById('thecanvas');
   const ctx = canvas.getContext('2d');
@@ -23,7 +26,7 @@
   const box_ip = window.location.href.split('/')[2].split(':')[0];
   console.log(subid);
   var global_spec;
-  
+
   // don't expand all the way if the webpage is a weird shape
   if (innerWidth > innerHeight*3) {
       canvas.width = innerHeight*3;
@@ -60,7 +63,7 @@
       byte_array[0] = subid;
       ws.send(byte_array.buffer);
       //socket.emit('msg', JSON.stringify({Dimensions: [canvas.width, canvas.height]}));
-      
+
 
       function num_to_color(num) {
 	  const r = num % 256;
@@ -95,7 +98,7 @@
 	      }
 	  }
       }
-      
+
       function update_spec(spec) {
 	  global_spec = spec
 	  console.log(global_spec);
@@ -107,14 +110,14 @@
 
 	  // remove old html elements
 	  clear_html_elements();
-	  
+
 	  // Draw panels
 	  global_spec.panels.forEach(function (p, i) {
 	      ctx.beginPath();
 	      ctx.fillStyle = num_to_color(p.color);
 	      ctx.fillRect(p.x, p.y, p.w, p.h);
 	  });
-	  
+
 	  // Draw buttons
 	  global_spec.buttons.forEach(function (b, i) {
 	      ctx.beginPath();
@@ -150,7 +153,7 @@
 	      }
 	  });
       }
-      
+
       canvas.addEventListener('mousedown', function (e) {
 	  touched(e);
       });
@@ -170,6 +173,6 @@
 	  }
       });
   }
-  </script>
+  </script> -->
 </body>
 </html>
