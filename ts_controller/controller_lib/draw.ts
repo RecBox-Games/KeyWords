@@ -75,7 +75,9 @@ export const drawableRenderSingle = (ctx:Context, drawable:DrawableImage | Drawa
 	else if (checkAllFieldsExist(DEFAULT_DRAWABLE_TEXT,drawable))
 	{
 		const text = drawable as DrawableText;
+        // let oldFont = ctx.ctx.font;
 		ctx.ctx.fillStyle = text.color;
+        ctx.ctx.font = text.font;
 		ctx.ctx.fillText(text.text as string, text.x, text.y);
 	}
 	else throw "Drawable types matches none"

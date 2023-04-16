@@ -14,7 +14,7 @@ export const buttons_add = (button:Button) => {
 }
 
 export const buttons_update = (touch:Point, touchType:number) =>{
-    console.log("updating buttons", _buttons);
+    // console.log("updating buttons", _buttons);
 	for (let item of _buttons){
 		item.tryTrigger(touch, touchType);
 	}

@@ -52,7 +52,7 @@ class  Button extends Triggerable{
 	_touchEndCallback?: Function;
 
 	constructor(boundingBox: Rectangle | Circle, hoverCallback:Function |undefined, touchStartCallback:Function | undefined, touchEndCallback:Function | undefined) {
-		if (isRect(boundingBox))
+        if (isRect(boundingBox))
 			super(checkRectTriggered, handleButtonTriggered)
 		else if (isCircle(boundingBox))
 			super(checkCircleTriggered, handleButtonTriggered)
