@@ -7,8 +7,9 @@ export const buttons_add = (button) => {
     _buttons.push(button);
 };
 export const buttons_update = (touch, touchType) => {
-    console.log("updating buttons", _buttons);
+    // console.log("updating buttons", _buttons);
     for (let item of _buttons) {
-        item.tryTrigger(touch, touchType);
+        if (item._active)
+            item.tryTrigger(touch, touchType);
     }
 };

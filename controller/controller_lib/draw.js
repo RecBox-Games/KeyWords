@@ -55,7 +55,9 @@ export const drawableRenderSingle = (ctx, drawable) => {
     }
     else if (checkAllFieldsExist(DEFAULT_DRAWABLE_TEXT, drawable)) {
         const text = drawable;
+        // let oldFont = ctx.ctx.font;
         ctx.ctx.fillStyle = text.color;
+        ctx.ctx.font = text.font;
         ctx.ctx.fillText(text.text, text.x, text.y);
     }
     else

@@ -62,27 +62,22 @@ window.addEventListener("touchstart", (event) => {
     for (let touch of event.changedTouches) {
         handleTouchStart(touch.identifier, touch.pageX, touch.pageY);
     }
-    console.log("touch start");
 });
 window.addEventListener("touchmove", (event) => {
     for (let touch of event.changedTouches) {
         handleTouchMove(touch.identifier, touch.pageX, touch.pageY);
     }
-    console.log("touch move");
 });
 window.addEventListener("touchend", (event) => {
     for (let touch of event.changedTouches) {
         handleTouchEnd(touch.identifier, touch.pageX, touch.pageY);
     }
-    console.log("touch end");
 });
 window.addEventListener("touchcancel", (event) => {
     for (let touch of event.changedTouches) {
         handleTouchCancel(touch.identifier, touch.pageX, touch.pageY);
     }
-    console.log("touch cancel");
 });
 window.addEventListener('click', (event) => {
     handleClick(event.clientX, event.clientY);
-    console.log("click ONE");
 });
