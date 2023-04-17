@@ -21,8 +21,7 @@ impl Progress {
     }
 
     // returns true if still in progress
-    pub
-    fn tick(&mut self) -> bool {
+    pub fn tick(&mut self) -> bool {
         self.now += 1;
         return self.now < self.end;
     }

@@ -1,8 +1,8 @@
 #![allow(dead_code)] // TODO dont allow
 use crate::utility::*;
 
-pub const TICKS_TITLE: usize = 200;
-pub const TICKS_CHESTFALL: usize = 120;
+pub const TICKS_TITLE: usize = 50; // TODO
+pub const TICKS_CHESTFALL: usize = 50;
 pub const TICKS_TURN_TRANSITION: usize = 40;
 pub const TICKS_CHEST_OPEN: usize = 220;
 pub const TICKS_PER_HEALTH: usize = 40;
@@ -25,9 +25,13 @@ impl GameState {
     pub fn tick(&mut self) {
         use GameState::*;
         match self {
-            Intro(intro_state) => intro_state.tick(),
-            _ => false,
-        };
+            Intro(intro_state) => {
+                if ! intro_state.tick() {
+                    *self = Playing(PlayingState::new());
+                }
+            }
+            _ => (),
+        }
     }
 }
 
@@ -46,7 +50,7 @@ impl IntroState {
         } else if let ChestFall(p) = self {
             return p.tick();
         }
-        false
+        true
     }
 }
 
@@ -58,6 +62,17 @@ pub struct PlayingState {
 }
 
 impl PlayingState {
+
+    fn new() -> Self { // TODO
+        PlayingState {
+            chest_states: vec![],
+            red_health_state: HealthState::new(),
+            blue_health_state: HealthState::new(),
+            turn_state: TurnState::new(),
+        }
+            
+    }
+    
     fn tick(&mut self) {
         // chests
         for j in 0..ROWS {
@@ -95,7 +110,7 @@ impl PlayingState {
 
 
 #[derive(PartialEq)]
-pub enum ChestState {
+pub enum ChestState { // TODO: add content and word as part of state
     Closed,
     Opening(usize/*tick number*/),
     Open,
@@ -129,6 +144,9 @@ pub enum TurnState {
 }
 
 impl TurnState {
+    fn new() -> Self { // TODO
+        TurnState::RedCluing
+    }
 
     fn tick(&mut self) {
         use TurnState::*;
@@ -185,6 +203,13 @@ struct HealthState {
 }
 
 impl HealthState {
+    fn new() -> Self { // TODO
+        HealthState {
+            src_amount: 0,
+            src_fraction: 0,
+            dst_amount: 0,
+        }
+    }
 
     fn tick(&mut self) {
         // decreasing if src_amount > dst_amount or src_amount == dst_amount and src_fraction > 0
