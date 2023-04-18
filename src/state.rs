@@ -259,6 +259,12 @@ impl TurnState {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Team {
+    Red,
+    Blue,
+}
+
 //        ======================== HealthState =======================        //
 struct HealthState {
     src_amount: usize,

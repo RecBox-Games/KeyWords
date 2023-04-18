@@ -1,14 +1,17 @@
+//==================================<===|===>===================================
 #![allow(dead_code)]
 use std::f32::consts::PI;
 use ggez::mint::Point2;
 use std::error::Error;
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
+//================================= Constants ==================================
 pub const SCREEN_WIDTH: f32 = 1920.0;
 pub const SCREEN_HEIGHT: f32 = 1080.0;
 pub const ROWS: usize = 5;
 pub const COLLUMNS: usize = 5;
 
+//================================= Progress ===================================
 pub struct Progress {
     pub now: usize,
     pub end: usize,
@@ -33,14 +36,9 @@ impl Progress {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Team {
-    Red,
-    Blue,
-}
-
-
+//=================================== Point ====================================
 pub type Point = Point2<f32>;
+
 pub trait PointMath {
     fn magnitude(&self) -> f32;
     fn minus(&self, p: Point) -> Point;
@@ -72,7 +70,7 @@ impl PointMath for Point {
     }
 }
 
-
+//=============================== Interpolation ================================
 pub enum Interpolation {
     Linear,
     Round,
@@ -82,8 +80,8 @@ pub enum Interpolation {
     Accelerate,
 }
 
-
-pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32) -> Point {
+pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32)
+                   -> Point {
     use Interpolation::*;
     let towards = p2.minus(p1);
     let s = match func {
@@ -104,3 +102,4 @@ pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32) -> Point
     };
     p1.plus(towards.scale(s))
 }
+//==================================<===|===>===================================
