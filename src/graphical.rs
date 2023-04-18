@@ -14,8 +14,13 @@ const CHEST_WORD_OFFSET_Y: f32 = 40.0;
 // Chest Placement
 const CHEST_START_X: f32 = 220.0;
 const CHEST_SPACING_X: f32 = 300.0;
-const CHEST_START_Y: f32 = 100.0;
-const CHEST_SPACING_Y: f32 = 180.0;
+const CHEST_START_Y: f32 = 30.0;
+const CHEST_SPACING_Y: f32 = 195.0;
+const CHEST_VERTICAL_OFFSET_FACTOR: f32 = 2.0;
+// Chest Fall
+const CHEST_DROP_HEIGHT_BASE: f32 = -500.0;
+const CHEST_DROP_ROW_DIFFERENCE: f32 = 50.0;
+const SIMULTANEOUS_FALLS: usize = 5;
 
 //================================= Graphical ==================================
 // the members of Graphical are assets used when drawing a representation of
@@ -27,7 +32,6 @@ pub struct Graphical {
     chest: SpriteElem,
     word_meshes: HashMap<String, graphics::Text>,
 }
-
 
 impl Graphical {
     pub fn new(ctx: &mut Context) -> Self {
@@ -95,19 +99,41 @@ impl Graphical {
                             chest_states: &Vec<Vec<ChestState>>)
                             -> GameResult<()> {
         let prg = progress.as_decimal();
-        let nth_chest = (prg/6.0) as usize;
-        
-	let p1 = Point{x:400.0, y:-400.0};
-	let p2 = Point{x:400.0, y:340.0};
-        //
-        let t1 = 0.6;
-        let p = if prg < t1 {
-            let sub_prg = prg/t1;
-            interpolate(p1, p2, Interpolation::Accelerate, sub_prg)
-        } else {
-            p2
-        };
-        self.draw_chest(ctx, p, &chest_states[0][0])?;
+        let num_chests = ROWS*COLUMNS;
+        let time_slices = num_chests + SIMULTANEOUS_FALLS + 1;
+        let slice_len = 1.0 / time_slices as f32;
+        let nth_chest = (prg * time_slices as f32) as usize; // the index of the last chest that has started to fall
+        // draw chests that have already landed
+        let next_to_land = if SIMULTANEOUS_FALLS > nth_chest {
+            0} else {nth_chest - SIMULTANEOUS_FALLS};
+        for k in 0..next_to_land.min(num_chests) {
+            let j = k/COLUMNS;  let i = k%COLUMNS;
+            //
+            let destination = Point {
+                x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
+                y: CHEST_START_Y + CHEST_SPACING_Y*(j as f32) + CHEST_VERTICAL_OFFSET_FACTOR*(i as f32),
+            };
+            self.draw_chest(ctx, destination, &chest_states[j][i])?;
+        }
+        // draw chests that are still falling
+        for k in next_to_land..nth_chest.min(num_chests) {
+            let j = k/COLUMNS;  let i = k%COLUMNS;
+            //
+            let prg_fall_start = (k + 1) as f32 * slice_len;
+            let fall_duration = slice_len * SIMULTANEOUS_FALLS as f32;
+            let sub_prg = (prg - prg_fall_start)/fall_duration;
+            //println!("{}", sub_prg);
+            let destination = Point {
+                x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
+                y: CHEST_START_Y + CHEST_SPACING_Y*(j as f32) + CHEST_VERTICAL_OFFSET_FACTOR*(i as f32),
+            };
+            let start = Point {
+                x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
+                y: CHEST_DROP_HEIGHT_BASE + CHEST_DROP_ROW_DIFFERENCE*(j as f32),
+            };
+            let location = interpolate(start, destination, Interpolation::Accelerate, sub_prg);
+            self.draw_chest(ctx, location, &chest_states[j][i])?;
+        }
         //
         Ok(())
     }
@@ -144,7 +170,6 @@ impl Graphical {
 }
 
 //        =================== Initialization Helpers =================        //
-
 fn new_sparkle(ctx: &mut Context) -> SpriteElem {
     let mut sparkle = SpriteElem::new(ctx, 4.0, 4.0, "/sparkle.png");
     sparkle.set_animation(

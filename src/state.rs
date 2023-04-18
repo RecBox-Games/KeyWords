@@ -4,8 +4,8 @@ use crate::utility::*;
 use rand::{seq::IteratorRandom, thread_rng};
 
 //================================= Constants ==================================
-pub const TICKS_TITLE: usize = 50; // TODO
-pub const TICKS_CHESTFALL: usize = 50;
+pub const TICKS_TITLE: usize = 180; // TODO
+pub const TICKS_CHESTFALL: usize = 300;
 pub const TICKS_TURN_TRANSITION: usize = 40;
 pub const TICKS_CHEST_OPEN: usize = 220;
 pub const TICKS_PER_HEALTH: usize = 40;
@@ -30,7 +30,7 @@ impl StateManager {
         self.game_state.tick();
         // chests
         for j in 0..ROWS {
-            for i in 0..COLLUMNS {
+            for i in 0..COLUMNS {
                 self.chest_states[j][i].tick();
             }
         }
@@ -39,7 +39,7 @@ impl StateManager {
     pub fn start_open_chest(&mut self, row: usize, collumn: usize) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
             /* parameter validation */ {
-                if ! (row < ROWS && collumn < COLLUMNS) {
+                if ! (row < ROWS && collumn < COLUMNS) {
                     println!("Warning: attempt to open chest out of bounds");
                     return;
                 }
