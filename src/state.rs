@@ -1,16 +1,18 @@
+//==================================<===|===>===================================
 #![allow(dead_code)] // TODO dont allow
 use crate::utility::*;
 use rand::{seq::IteratorRandom, thread_rng};
 
+//================================= Constants ==================================
 pub const TICKS_TITLE: usize = 50; // TODO
 pub const TICKS_CHESTFALL: usize = 50;
 pub const TICKS_TURN_TRANSITION: usize = 40;
 pub const TICKS_CHEST_OPEN: usize = 220;
 pub const TICKS_PER_HEALTH: usize = 40;
 
-
-
-// deals only with dynamic state. static state (like words on chests) is not part of game state.
+//=============================== StateManager =================================
+// deals only with dynamic state. static state (like words on chests) is not
+// part of game state.
 pub struct StateManager {
     pub game_state: GameState,
     pub chest_states: Vec<Vec<ChestState>>,
@@ -60,6 +62,7 @@ impl StateManager {
     }
 }
 
+//        ========================= GameState ========================        //
 pub enum GameState {
     Intro(IntroState),
     //Joining(JoinState),
@@ -130,17 +133,7 @@ impl PlayingState {
 
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum ChestContent {
-    Empty,
-    Bomb1,
-    Bomb2,
-    Bomb5,
-    Sword1,
-    Sword2,
-    Heal3,
-}
-
+//        ======================== ChestState ========================        //
 pub struct ChestState { // TODO: add content and word as part of state
     pub lid_state: LidState,
     pub word: String,
@@ -187,6 +180,18 @@ impl LidState {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ChestContent {
+    Empty,
+    Bomb1,
+    Bomb2,
+    Bomb5,
+    Sword1,
+    Sword2,
+    Heal3,
+}
+
+//        ========================= TurnState ========================        //
 #[derive(PartialEq, Clone)]
 pub enum TurnState {
     RedCluing,
@@ -254,6 +259,7 @@ impl TurnState {
     }
 }
 
+//        ======================== HealthState =======================        //
 struct HealthState {
     src_amount: usize,
     src_fraction: usize,
@@ -301,7 +307,7 @@ impl HealthState {
     }
 }
 
-//
+//        =================== Initialization Helpers =================        //
 
 fn new_chest_states() -> Vec<Vec<ChestState>> {
     let mut chest_states = vec![];
@@ -351,3 +357,4 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
 
     chest_states
 }
+//==================================<===|===>===================================
