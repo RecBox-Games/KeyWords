@@ -70,7 +70,7 @@ fn main() {
 
 struct MyRunner {
     graphical: Graphical,
-    game_state: GameState,
+    state: StateManager,
 }
 
 impl MyRunner {
@@ -78,7 +78,7 @@ impl MyRunner {
     fn new(ctx: &mut Context) -> Result<Self> {
         let runner = MyRunner {
 	    graphical: Graphical::new(ctx),
-            game_state: GameState::new(),
+            state: StateManager::new(),
         };
         
         Ok(runner)
@@ -89,12 +89,12 @@ impl MyRunner {
 impl EventHandler<ggez::GameError> for MyRunner {
 
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        self.game_state.tick();
+        self.state.tick();
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.graphical.draw(ctx, &self.game_state)?;
+        self.graphical.draw(ctx, &self.state)?;
         graphics::present(ctx)
     }
 

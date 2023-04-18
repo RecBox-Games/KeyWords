@@ -46,4 +46,12 @@ impl SpriteElem {
 	Ok(())
     }
 
+    pub fn width(&self) -> f32{
+	self.image.dimensions().w * self.animation[0].w * self.x_scale
+    }
+    pub fn height(&self) -> f32{
+	self.image.dimensions().h * self.animation[0].h * self.y_scale
+    }
 }
+
+

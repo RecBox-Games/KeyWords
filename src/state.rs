@@ -1,5 +1,6 @@
 #![allow(dead_code)] // TODO dont allow
 use crate::utility::*;
+use rand::{seq::IteratorRandom, thread_rng};
 
 pub const TICKS_TITLE: usize = 50; // TODO
 pub const TICKS_CHESTFALL: usize = 50;
@@ -10,6 +11,55 @@ pub const TICKS_PER_HEALTH: usize = 40;
 
 
 // deals only with dynamic state. static state (like words on chests) is not part of game state.
+pub struct StateManager {
+    pub game_state: GameState,
+    pub chest_states: Vec<Vec<ChestState>>,
+}
+
+impl StateManager {
+    pub fn new() -> Self {
+        StateManager {
+            game_state: GameState::new(),
+            chest_states: new_chest_states(),
+        }
+    }
+
+    pub fn tick(&mut self) {
+        self.game_state.tick();
+        // chests
+        for j in 0..ROWS {
+            for i in 0..COLLUMNS {
+                self.chest_states[j][i].tick();
+            }
+        }
+    }
+
+    pub fn start_open_chest(&mut self, row: usize, collumn: usize) {
+        if let GameState::Playing(playing_state) = &mut self.game_state {
+            /* parameter validation */ {
+                if ! (row < ROWS && collumn < COLLUMNS) {
+                    println!("Warning: attempt to open chest out of bounds");
+                    return;
+                }
+                if ! (self.chest_states[row][collumn].lid_state == LidState::Closed) {
+                    println!("Warning: attempt to open non-closed chest");
+                    return;
+                }
+                if ! playing_state.turn_state.is_guessing() {
+                    println!("Warning: attempt to open chest when guessing was not in progress");
+                    return;
+                }
+            }
+            // state change
+            self.chest_states[row][collumn].lid_state = LidState::Opening(0);
+            playing_state.turn_state.reduce_guesses();
+        } else {
+            println!("Warning: attempt to open chest while not in a playing state");
+            return;
+        }
+    }
+}
+
 pub enum GameState {
     Intro(IntroState),
     //Joining(JoinState),
@@ -55,17 +105,14 @@ impl IntroState {
 }
 
 pub struct PlayingState {
-    chest_states: Vec<Vec<ChestState>>,
     red_health_state: HealthState,
     blue_health_state: HealthState,
     turn_state: TurnState,
 }
 
 impl PlayingState {
-
     fn new() -> Self { // TODO
         PlayingState {
-            chest_states: vec![],
             red_health_state: HealthState::new(),
             blue_health_state: HealthState::new(),
             turn_state: TurnState::new(),
@@ -74,12 +121,6 @@ impl PlayingState {
     }
     
     fn tick(&mut self) {
-        // chests
-        for j in 0..ROWS {
-            for i in 0..COLLUMNS {
-                self.chest_states[j][i].tick();
-            }
-        }
         // hearts
         self.red_health_state.tick();
         self.blue_health_state.tick();
@@ -87,38 +128,57 @@ impl PlayingState {
         self.turn_state.tick();
     }
 
-    fn start_open_chest(&mut self, row: usize, collumn: usize) {
-        /* parameter validation */ {
-            if ! (row < ROWS && collumn < COLLUMNS) {
-                println!("Warning: attempt to open chest out of bounds");
-                return;
-            }
-            if ! (self.chest_states[row][collumn] == ChestState::Closed) {
-                println!("Warning: attempt to open non-closed chest");
-                return;
-            }
-            if ! self.turn_state.is_guessing() {
-                println!("Warning: attempt to open chest when guessing was not in progress");
-                return;
-            }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ChestContent {
+    Empty,
+    Bomb1,
+    Bomb2,
+    Bomb5,
+    Sword1,
+    Sword2,
+    Heal3,
+}
+
+pub struct ChestState { // TODO: add content and word as part of state
+    pub lid_state: LidState,
+    pub word: String,
+    pub contents: ChestContent,
+}
+
+impl ChestState {
+    fn nothing() -> Self {
+        ChestState {
+            lid_state: LidState::Closed,
+            word: "Nothing".to_string(),
+            contents: ChestContent::Empty,
         }
-        // state change
-        self.chest_states[row][collumn] = ChestState::Opening(0);
-        self.turn_state.reduce_guesses();
+    }
+
+    fn new(word: String, contents: ChestContent) -> Self {
+        ChestState {
+            lid_state: LidState::Closed,
+            word,
+            contents,
+        }
+    }
+    
+    fn tick(&mut self) {
+        self.lid_state.tick();
     }
 }
 
-
 #[derive(PartialEq)]
-pub enum ChestState { // TODO: add content and word as part of state
+pub enum LidState {
     Closed,
     Opening(usize/*tick number*/),
     Open,
 }
 
-impl ChestState {
+impl LidState {
     fn tick(&mut self) {
-        use ChestState::*;
+        use LidState::*;
         if let Opening(TICKS_CHEST_OPEN) = self {
             *self = Open;
         } else if let Opening(n) = self {
@@ -126,7 +186,6 @@ impl ChestState {
         }
     }
 }
-
 
 #[derive(PartialEq, Clone)]
 pub enum TurnState {
@@ -195,7 +254,6 @@ impl TurnState {
     }
 }
 
-
 struct HealthState {
     src_amount: usize,
     src_fraction: usize,
@@ -241,4 +299,55 @@ impl HealthState {
         }
         self.src_fraction -= 1;
     }
+}
+
+//
+
+fn new_chest_states() -> Vec<Vec<ChestState>> {
+    let mut chest_states = vec![];
+    let mut rng = thread_rng();
+    // choose words from file
+    let s = std::fs::read_to_string("/home/requin/rqn/words/game_words.txt").unwrap(); // TODO
+    let all_words_ = s.split("\n").collect::<Vec<&str>>(); 
+    let all_words = all_words_[..all_words_.len()-1].iter(); // always a newline at the end so last element is empty
+    let chosen_words = all_words.choose_multiple(&mut rng, 25);
+    // randomly choose chest contents
+    let golds: Vec<usize> = (0..25).collect();
+    let yellows = golds.clone().into_iter()
+	.choose_multiple(&mut rng, 25-4);
+    let grays = yellows.clone().into_iter()
+	.choose_multiple(&mut rng, 25-4-5);
+    let reds = grays.clone().into_iter()
+	.choose_multiple(&mut rng, 25-4-5-5);
+    let crimsons = reds.clone().into_iter()
+	.choose_multiple(&mut rng, 25-4-5-5-5);
+    let deaths = crimsons.clone().into_iter()
+	.choose_multiple(&mut rng, 25-4-5-5-5-4);
+    let heals = deaths.clone().into_iter()
+	.choose_multiple(&mut rng, 25-4-5-5-5-4-1);
+    // initiate chests with chosen words and contents
+    for j in 0..5 {
+        chest_states.push(vec![]);
+        for i in 0..5 {
+            let i_flat = j*5 + i;
+            let content = if heals.contains(&i_flat) {
+                ChestContent::Heal3
+            } else if deaths.contains(&i_flat) {
+                ChestContent::Bomb5
+            } else if crimsons.contains(&i_flat) {
+                ChestContent::Bomb2
+            } else if reds.contains(&i_flat) {
+                ChestContent::Bomb1
+            } else if grays.contains(&i_flat) {
+                ChestContent::Empty
+            } else if yellows.contains(&i_flat) {
+                ChestContent::Sword1
+            } else {
+                ChestContent::Sword2
+            };
+            chest_states[j].push(ChestState::new(String::from(*chosen_words[i_flat]), content));
+        }
+    }
+
+    chest_states
 }
