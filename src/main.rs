@@ -1,3 +1,4 @@
+//==================================<===|===>===================================
 #![allow(unused_parens)]
 mod sprite;
 mod utility;
@@ -7,28 +8,13 @@ mod graphical;
 use ggez::{Context, ContextBuilder, GameResult, conf};
 use ggez::event::{self, EventHandler};
 use ggez::graphics;
-//use ggez::graphics::{Color, Rect};
-
-/*use targetlib::{CPSpec, Button, Panel, ControlDatum};
-use controlpads::*;
-
-use std::collections::HashMap;
-use std::fs;
-use rand::{seq::IteratorRandom, thread_rng};
-
-mod json_client;
-use crate::json_client::*;
- */
 
 use crate::utility::*;
 use crate::graphical::*;
 use crate::state::*;
 
-const START_WIDTH:  f32 = 1920.0;
-const START_HEIGHT: f32 = 1080.0;
-
+//=================================== Main =====================================
 fn main() {
-
     // open a window
     let my_window_settings = conf::WindowSetup {
 	title: "KeyWords".to_owned(),
@@ -41,8 +27,8 @@ fn main() {
     my_window_mode.resizable  = true;
     my_window_mode.min_width  = 400.0;
     my_window_mode.min_height = 300.0;
-    my_window_mode.width      = START_WIDTH;
-    my_window_mode.height     = START_HEIGHT;
+    my_window_mode.width      = SCREEN_WIDTH;
+    my_window_mode.height     = SCREEN_HEIGHT;
     //my_window_mode.fullscreen_type = conf::FullscreenType::True;
 
     // Make a Context and an EventLoop.
@@ -68,13 +54,13 @@ fn main() {
 }
 
 
+//================================= MyRunner ==================================
 struct MyRunner {
     graphical: Graphical,
     state: StateManager,
 }
 
 impl MyRunner {
-    
     fn new(ctx: &mut Context) -> Result<Self> {
         let runner = MyRunner {
 	    graphical: Graphical::new(ctx),
@@ -87,7 +73,6 @@ impl MyRunner {
 }
 
 impl EventHandler<ggez::GameError> for MyRunner {
-
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         self.state.tick();
         Ok(())
@@ -97,5 +82,5 @@ impl EventHandler<ggez::GameError> for MyRunner {
         self.graphical.draw(ctx, &self.state)?;
         graphics::present(ctx)
     }
-
 }
+//==================================<===|===>===================================

@@ -4,6 +4,8 @@ use ggez::mint::Point2;
 use std::error::Error;
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
+pub const SCREEN_WIDTH: f32 = 1920.0;
+pub const SCREEN_HEIGHT: f32 = 1080.0;
 pub const ROWS: usize = 5;
 pub const COLLUMNS: usize = 5;
 
