@@ -72,8 +72,8 @@ pub enum GameState {
 
 impl GameState {
     pub fn new() -> Self {
-        //GameState::Intro(IntroState::Title(Progress::new(TICKS_TITLE)))
-        GameState::Playing(PlayingState::new())
+        GameState::Intro(IntroState::Title(Progress::new(TICKS_TITLE)))
+        //GameState::Playing(PlayingState::new())
     }
 
     pub fn tick(&mut self) {
