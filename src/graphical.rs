@@ -1,4 +1,4 @@
-//==================================<===|===>===================================
+//==================================<===|===>=================================//
 use std::collections::HashMap;
 use crate::sprite::*;
 use crate::state::*;
@@ -7,7 +7,7 @@ use ggez::{Context, GameResult};
 use ggez::graphics;
 use ggez::graphics::{Rect, Color};
 
-//================================= Constants ==================================
+//================================= Constants ================================//
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
 const FONT_SIZE_WORDS: f32 = 36.0;
 const COLOR_WORDS: Color = Color::new(0.9, 0.8, 0.7, 1.0);
@@ -19,6 +19,8 @@ const SCALE_CHEST_X: f32 = 7.5;
 const SCALE_CHEST_Y: f32 = 6.0;
 const SCALE_SPARKLE_X: f32 = 4.0;
 const SCALE_SPARKLE_Y: f32 = 4.0;
+const SCALE_NOTIFYBOX_X: f32 = 2.5;
+const SCALE_NOTIFYBOX_Y: f32 = 2.5;
 // Chest Placement
 const CHESTS_START_X: f32 = 86.0;
 const CHESTS_SPACING_X: f32 = 352.0;
@@ -34,9 +36,12 @@ const HEARTS_START_X: f32 = 6.0;
 const HEARTS_SPACING_X: f32 = 80.0;
 const HEARTS_START_Y: f32 = 2.0;
 const HEARTS_DROP_HEIGHT: f32 = -70.0;
+//
 
+type GR = GameResult<()>;
+type Ctx<'a> = &'a mut Context;
 
-//================================= Graphical ==================================
+//================================= Graphical ================================//
 // the members of Graphical are assets used when drawing a representation of
 // the game state
 pub struct Graphical {
@@ -49,6 +54,8 @@ pub struct Graphical {
     // hearts
     heart_red: SpriteElem,
     heart_blue: SpriteElem,
+    // notification
+    notify_box: SpriteElem,
 }
 
 impl Graphical {
@@ -62,16 +69,19 @@ impl Graphical {
             word_meshes: HashMap::new(),
             heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4], true),
             heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4], false),
+            notify_box: new_notify_box(ctx),
         }
     }
 
-    pub fn draw(&mut self, ctx: &mut Context, state: &StateManager)
-                -> GameResult<()> {
+    pub fn draw(&mut self, ctx: Ctx, state: &StateManager) -> GR {
 	let p = Point{x:0.0, y:0.0};
 	self.background.draw(ctx,p)?;
         match &state.game_state {
             GameState::Intro(IntroState::Title(prg)) => {
                 self.draw_intro_title(ctx, prg)?;
+            }
+            GameState::Intro(IntroState::TutNotify(tutnotify_state)) => {
+                self.draw_intro_tut_drop(ctx, &tutnotify_state)?;
             }
             GameState::Intro(IntroState::ChestFall(prg)) => {
                 self.draw_intro_chestfall(ctx, prg, &state.chest_states)?;
@@ -84,11 +94,8 @@ impl Graphical {
         Ok(())
     }
 
-//        ======================= Draw Helpers =======================        //
-
-    fn draw_intro_title(&mut self, ctx: &mut Context, progress: &Progress)
-                        -> GameResult<()> {
-	//let mut p = Point{x:200.0, y:-400.0 + prg*1600.0};
+//        ======================== Draw Intro ========================        //
+    fn draw_intro_title(&mut self, ctx: Ctx, progress: &Progress) -> GR {
         let prg = progress.as_decimal();
 	let p1 = Point{x:400.0, y:-500.0};
 	let p2 = Point{x:400.0, y:340.0};
@@ -117,19 +124,39 @@ impl Graphical {
         //
         Ok(())
     }
+
+    fn draw_intro_tut_drop(&mut self, ctx: Ctx, tutnotify_state: &TutNotifyState) -> GR {
+        let x = 220.0;
+        let p1 = Point {x, y: -1000.0};
+        let p2 = Point {x, y: 100.0};
+        let p3 = Point {x, y: 1100.0};
+        match tutnotify_state {
+            TutNotifyState::DropIn(prg) => {
+                let p = interpolate(p1, p2, Interpolation::RoundEnd, prg.as_decimal());
+                self.notify_box.draw(ctx, p)?;
+            }
+            TutNotifyState::In => {
+                self.notify_box.draw(ctx, p2)?;
+            }
+            TutNotifyState::DropOut(prg) => {
+                let p = interpolate(p2, p3, Interpolation::RoundStart, prg.as_decimal());
+                self.notify_box.draw(ctx, p)?;
+            }
+        }
+        //
+        Ok(())
+    }
     
-    fn draw_intro_chestfall(&mut self, ctx: &mut Context, progress: &Progress,
-                            chest_states: &Vec<Vec<ChestState>>)
-                            -> GameResult<()> {
+    fn draw_intro_chestfall(&mut self, ctx: Ctx, progress: &Progress,
+                            chest_states: &Vec<Vec<ChestState>>) -> GR {
         self.draw_hearts_forming(ctx, progress.as_decimal())?;
         self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
         //
         Ok(())
     }
 
-    fn draw_chests_falling(&mut self, ctx: &mut Context, prg: f32,
-                            chest_states: &Vec<Vec<ChestState>>)
-                            -> GameResult<()> {
+    fn draw_chests_falling(&mut self, ctx: Ctx, prg: f32,
+                            chest_states: &Vec<Vec<ChestState>>) -> GR {
         let num_chests = ROWS*COLUMNS;
         let time_slices = num_chests + SIMULTANEOUS_FALLS + 6;
         let slice_len = 1.0 / time_slices as f32;
@@ -168,8 +195,7 @@ impl Graphical {
         Ok(())
     }
 
-    fn draw_hearts_forming(&mut self, ctx: &mut Context, prg: f32)
-                            -> GameResult<()> {
+    fn draw_hearts_forming(&mut self, ctx: Ctx, prg: f32) -> GR {
         let time_slices = MAX_HEALTH_RED.max(MAX_HEALTH_BLUE) + 2;
         let slice_len = 1.0 / time_slices as f32;
         let nth_heart = (prg * time_slices as f32) as usize; // the index of the currently dropping heart
@@ -228,16 +254,16 @@ impl Graphical {
         Ok(())
     }
     
-    fn draw_playing(&mut self, ctx: &mut Context,
-                    chest_states: &Vec<Vec<ChestState>>, _playing_state: &PlayingState)
-                    -> GameResult<()> {
+//        ======================= Draw Playing =======================        //
+    fn draw_playing(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
+                    _playing_state: &PlayingState) -> GR {
         self.draw_chests(ctx, chest_states)?;
         self.draw_hearts_forming(ctx, 0.99)?;
         Ok(())
     }
 
-    fn draw_chests(&mut self, ctx: &mut Context, chest_states: &Vec<Vec<ChestState>>)
-                   -> GameResult<()> {
+    fn draw_chests(&mut self, ctx: Ctx,
+                   chest_states: &Vec<Vec<ChestState>>) -> GR {
         for j in 0..ROWS {
             for i in 0..COLUMNS {
                 //
@@ -251,8 +277,8 @@ impl Graphical {
         Ok(())
     }
     
-    fn draw_chest(&mut self, ctx: &mut Context, point: Point,
-                  chest_state: &ChestState) -> GameResult<()> {
+    fn draw_chest(&mut self, ctx: Ctx, point: Point,
+                  chest_state: &ChestState) -> GR {
         // chest
         self.chest.draw(ctx, point)?; // TODO: animate()
         // word
@@ -267,6 +293,7 @@ impl Graphical {
         Ok(())
     }
 
+//        =================== Graphical Helpers ======================        //
     fn get_word_mesh(&mut self, word: &str) -> &mut graphics::Text {
         if ! self.word_meshes.contains_key(word) {
             self.word_meshes.insert(
@@ -283,7 +310,7 @@ impl Graphical {
 }
 
 //        =================== Initialization Helpers =================        //
-fn new_sparkle(ctx: &mut Context) -> SpriteElem {
+fn new_sparkle(ctx: Ctx) -> SpriteElem {
     let mut sparkle = SpriteElem::new(ctx, SCALE_SPARKLE_X, SCALE_SPARKLE_Y,
                                       "/sparkle.png");
     sparkle.set_animation(
@@ -301,7 +328,7 @@ fn new_sparkle(ctx: &mut Context) -> SpriteElem {
     sparkle
 }
 
-fn new_chest(ctx: &mut Context) -> SpriteElem {
+fn new_chest(ctx: Ctx) -> SpriteElem {
     let mut chest = SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y,
                                     "/chest_sprites.png");
     chest.set_animation(
@@ -314,7 +341,8 @@ fn new_chest(ctx: &mut Context) -> SpriteElem {
     chest
 }
 
-fn new_text_mesh(text: String, font_size: f32, color: Color) -> graphics::Text {
+fn new_text_mesh(text: String, font_size: f32,
+                 color: Color) -> graphics::Text {
     graphics::Text::new(graphics::TextFragment {
         text: text,
         color: Some(color),
@@ -323,7 +351,7 @@ fn new_text_mesh(text: String, font_size: f32, color: Color) -> graphics::Text {
     })
 }
 
-fn new_heart(ctx: &mut Context, frames: Vec<usize>, red: bool) -> SpriteElem{
+fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
     let path = if red {"/heart_red.png"} else {"/heart_blue.png"};
     let mut heart = SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, path);
     let mut anim: Vec<Rect> = vec![];
@@ -333,4 +361,11 @@ fn new_heart(ctx: &mut Context, frames: Vec<usize>, red: bool) -> SpriteElem{
     heart.set_animation(anim);
     heart
 }
-//==================================<===|===>===================================
+
+fn new_notify_box(ctx: Ctx) -> SpriteElem {
+    let mut notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
+                                      "/tut_notify.png");
+    notify_box
+}
+
+//==================================<===|===>=================================//

@@ -1,4 +1,4 @@
-//==================================<===|===>===================================
+//==================================<===|===>=================================//
 #![allow(dead_code)]
 use std::f32::consts::PI;
 use ggez::mint::Point2;
@@ -6,13 +6,13 @@ use std::error::Error;
 use crate::events::*;
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-//================================= Constants ==================================
+//================================= Constants ================================//
 pub const SCREEN_WIDTH: f32 = 1920.0;
 pub const SCREEN_HEIGHT: f32 = 1080.0;
 pub const ROWS: usize = 5;
 pub const COLUMNS: usize = 5;
 
-//================================= Progress ===================================
+//================================= Progress =================================//
 pub struct Progress {
     pub now: usize,
     pub end: usize,
@@ -38,7 +38,7 @@ impl Progress {
 }
 
 
-//=================================== Point ====================================
+//=================================== Point ==================================//
 pub type Point = Point2<f32>;
 
 pub trait PointMath {
@@ -72,7 +72,7 @@ impl PointMath for Point {
     }
 }
 
-//=============================== Interpolation ================================
+//=============================== Interpolation ==============================//
 pub enum Interpolation {
     Linear,
     Round,
@@ -104,4 +104,4 @@ pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32)
     };
     p1.plus(towards.scale(s))
 }
-//==================================<===|===>===================================
+//==================================<===|===>=================================//

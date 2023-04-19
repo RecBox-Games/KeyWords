@@ -12,8 +12,8 @@ pub const TICKS_CHESTFALL: usize = 320;
 pub const TICKS_TURN_TRANSITION: usize = 40;
 pub const TICKS_CHEST_OPEN: usize = 220;
 pub const TICKS_PER_HEALTH: usize = 40;
-pub const TICKS_TUT_DROP_IN: usize = 40;
-pub const TICKS_TUT_DROP_OUT: usize = 40;
+pub const TICKS_TUT_DROP_IN: usize = 80;
+pub const TICKS_TUT_DROP_OUT: usize = 70;
 // Health
 pub const MAX_HEALTH_RED: usize = 10;
 pub const MAX_HEALTH_BLUE: usize = 12;
@@ -109,10 +109,8 @@ impl IntroState {
             if p.tick().is_done() {
                 *self = TutNotify(TutNotifyState::new());
             }
-        } else if let Title(p) = self {
-            if p.tick().is_done() {
-                *self = ChestFall(Progress::new(TICKS_CHESTFALL));
-            }
+        } else if let TutNotify(tutnotify_state) = self {
+            return tutnotify_state.tick();
         } else if let ChestFall(p) = self {
             return p.tick();
         }
@@ -122,6 +120,7 @@ impl IntroState {
 
 pub enum TutNotifyState {
     DropIn(Progress),
+    In,
     DropOut(Progress),
 }
 
@@ -134,9 +133,12 @@ impl TutNotifyState {
         use TutNotifyState::*;
         if let DropIn(p) = self {
             if p.tick().is_done() {
+                *self = In;
                 return TickEvent::Syn;
             }
-        } else if let DropOut(p) = self{
+        } else if let In = self {
+            return TickEvent::None;
+        } else if let DropOut(p) = self {
             return p.tick();
         }
         TickEvent::None
@@ -356,6 +358,7 @@ impl HealthState {
 
 //        =================== Initialization Helpers =================        //
 
+// randomly pick words and distribute contents for the grid of chests
 fn new_chest_states() -> Vec<Vec<ChestState>> {
     let mut chest_states = vec![];
     let mut rng = thread_rng();

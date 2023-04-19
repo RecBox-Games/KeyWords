@@ -1,3 +1,4 @@
+//==================================<===|===>=================================//
 #![allow(dead_code)]
 use ggez::{Context, GameResult};
 use ggez::graphics;
@@ -5,7 +6,7 @@ use ggez::graphics::{Image, DrawParam};
 
 use crate::utility::*;
 
-
+//================================ SpriteElem ================================//
 pub struct SpriteElem {
     image: Image,
     x_scale: f32,
@@ -53,5 +54,5 @@ impl SpriteElem {
 	self.image.dimensions().h * self.animation[0].h * self.y_scale
     }
 }
-
+//==================================<===|===>=================================//
 
