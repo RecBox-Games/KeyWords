@@ -12,7 +12,7 @@ pub const TICKS_CHEST_OPEN: usize = 220;
 pub const TICKS_PER_HEALTH: usize = 40;
 // Health
 pub const MAX_HEALTH_RED: usize = 10;
-pub const MAX_HEALTH_BLUE: usize = 10;
+pub const MAX_HEALTH_BLUE: usize = 12;
 
 //=============================== StateManager =================================
 // deals only with dynamic state. static state (like words on chests) is not

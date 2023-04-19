@@ -20,16 +20,20 @@ const SCALE_CHEST_Y: f32 = 6.0;
 const SCALE_SPARKLE_X: f32 = 4.0;
 const SCALE_SPARKLE_Y: f32 = 4.0;
 // Chest Placement
-const CHEST_START_X: f32 = 86.0;
-const CHEST_SPACING_X: f32 = 352.0;
-const CHEST_START_Y: f32 = 100.0;
-const CHEST_SPACING_Y: f32 = 180.0;
-const CHEST_VERTICAL_OFFSET_FACTOR: f32 = 2.0;
+const CHESTS_START_X: f32 = 86.0;
+const CHESTS_SPACING_X: f32 = 352.0;
+const CHESTS_START_Y: f32 = 80.0;
+const CHESTS_SPACING_Y: f32 = 186.0;
+const CHESTS_VERTICAL_OFFSET_FACTOR: f32 = 2.0;
 // Chest Fall
-const CHEST_DROP_HEIGHT_BASE: f32 = -500.0;
-const CHEST_DROP_ROW_DIFFERENCE: f32 = 50.0;
+const CHESTS_DROP_HEIGHT_BASE: f32 = -500.0;
+const CHESTS_DROP_ROW_DIFFERENCE: f32 = 50.0;
 const SIMULTANEOUS_FALLS: usize = 5;
 // Hearts
+const HEARTS_START_X: f32 = 6.0;
+const HEARTS_SPACING_X: f32 = 80.0;
+const HEARTS_START_Y: f32 = 2.0;
+const HEARTS_DROP_HEIGHT: f32 = -70.0;
 
 
 //================================= Graphical ==================================
@@ -44,11 +48,7 @@ pub struct Graphical {
     word_meshes: HashMap<String, graphics::Text>,
     // hearts
     heart_red: SpriteElem,
-    heart_red_full: SpriteElem,
-    heart_red_empty: SpriteElem,
     heart_blue: SpriteElem,
-    heart_blue_full: SpriteElem,
-    heart_blue_empty: SpriteElem,
 }
 
 impl Graphical {
@@ -60,12 +60,8 @@ impl Graphical {
             sparkle: new_sparkle(ctx),
             chest: new_chest(ctx),
             word_meshes: HashMap::new(),
-            heart_red: new_heart(ctx, vec![0, 1, 2, 3], true),
-            heart_red_full: new_heart(ctx, vec![0], true),
-            heart_red_empty: new_heart(ctx, vec![4], true),
-            heart_blue: new_heart(ctx, vec![0, 1, 2, 3], false),
-            heart_blue_full: new_heart(ctx, vec![0], false),
-            heart_blue_empty: new_heart(ctx, vec![4], false),
+            heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4], true),
+            heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4], false),
         }
     }
 
@@ -125,16 +121,15 @@ impl Graphical {
     fn draw_intro_chestfall(&mut self, ctx: &mut Context, progress: &Progress,
                             chest_states: &Vec<Vec<ChestState>>)
                             -> GameResult<()> {
-        self.draw_chests_falling(ctx, progress, chest_states);
-        self.draw_hearts_forming(ctx, progress);
+        self.draw_hearts_forming(ctx, progress.as_decimal())?;
+        self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
         //
         Ok(())
     }
 
-    fn draw_chests_falling(&mut self, ctx: &mut Context, progress: &Progress,
+    fn draw_chests_falling(&mut self, ctx: &mut Context, prg: f32,
                             chest_states: &Vec<Vec<ChestState>>)
                             -> GameResult<()> {
-        let prg = progress.as_decimal();
         let num_chests = ROWS*COLUMNS;
         let time_slices = num_chests + SIMULTANEOUS_FALLS + 1;
         let slice_len = 1.0 / time_slices as f32;
@@ -146,8 +141,8 @@ impl Graphical {
             let j = k/COLUMNS;  let i = k%COLUMNS;
             //
             let destination = Point {
-                x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
-                y: CHEST_START_Y + CHEST_SPACING_Y*(j as f32) + CHEST_VERTICAL_OFFSET_FACTOR*(i as f32),
+                x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
+                y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
             };
             self.draw_chest(ctx, destination, &chest_states[j][i])?;
         }
@@ -159,12 +154,12 @@ impl Graphical {
             let fall_duration = slice_len * SIMULTANEOUS_FALLS as f32;
             let sub_prg = (prg - prg_fall_start)/fall_duration;
             let destination = Point {
-                x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
-                y: CHEST_START_Y + CHEST_SPACING_Y*(j as f32) + CHEST_VERTICAL_OFFSET_FACTOR*(i as f32),
+                x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
+                y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
             };
             let start = Point {
-                x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
-                y: CHEST_DROP_HEIGHT_BASE + CHEST_DROP_ROW_DIFFERENCE*(j as f32),
+                x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
+                y: CHESTS_DROP_HEIGHT_BASE + CHESTS_DROP_ROW_DIFFERENCE*(j as f32),
             };
             let location = interpolate(start, destination, Interpolation::Accelerate, sub_prg);
             self.draw_chest(ctx, location, &chest_states[j][i])?;
@@ -173,18 +168,61 @@ impl Graphical {
         Ok(())
     }
 
-    fn draw_hearts_forming(&mut self, ctx: &mut Context, progress: &Progress)
+    fn draw_hearts_forming(&mut self, ctx: &mut Context, prg: f32)
                             -> GameResult<()> {
-        let prg = progress.as_decimal();
-        let time_slices = MAX_HEALTH_RED.max(MAX_HEALTH_BLUE) + 1;
+        let time_slices = MAX_HEALTH_RED.max(MAX_HEALTH_BLUE) + 2;
         let slice_len = 1.0 / time_slices as f32;
         let nth_heart = (prg * time_slices as f32) as usize; // the index of the currently dropping heart
-        for i in 0..nth_heart.max(MAX_HEALTH_RED) {
-            let location = Point {
-                x: 10.0 + 80.0*(i as f32),
-                y: 10.0,
+        // red hearts that have landed
+        for i in 0..nth_heart.min(MAX_HEALTH_RED) {
+            let destination = Point {
+                x: HEARTS_START_X + HEARTS_SPACING_X*(i as f32),
+                y: HEARTS_START_Y,
             };
-            self.heart_red_empty.draw(ctx, location);
+            let formations_since_i = (prg - ((i+1) as f32)*slice_len)/slice_len;
+            let formation_prg = (formations_since_i-1.0).max(0.0).min(0.99);
+            self.heart_red.animate(ctx, destination, 0.99-formation_prg)?;
+        }
+        // dropping red heart
+        if nth_heart < MAX_HEALTH_RED {
+            let sub_prg = (prg - (nth_heart as f32)*slice_len)/slice_len;
+            let destination = Point {
+                x: HEARTS_START_X + HEARTS_SPACING_X*(nth_heart as f32),
+                y: HEARTS_START_Y,
+            };
+            let start = Point {
+                x: HEARTS_START_X + HEARTS_SPACING_X*(nth_heart as f32),
+                y: HEARTS_DROP_HEIGHT,
+            };
+            let location = interpolate(start, destination, Interpolation::RoundEnd, sub_prg);
+            self.heart_red.animate(ctx, location, 0.99)?;
+        }
+        // blue hearts that have landed
+        for i in 0..nth_heart.min(MAX_HEALTH_BLUE) {
+            let destination = Point {
+                x: SCREEN_WIDTH - self.heart_red.width() -
+                    HEARTS_START_X - HEARTS_SPACING_X*(i as f32),
+                y: HEARTS_START_Y,
+            };
+            let formations_since_i = (prg - ((i+1) as f32)*slice_len)/slice_len;
+            let formation_prg = (formations_since_i-1.0).max(0.0).min(0.99);
+            self.heart_blue.animate(ctx, destination, 0.99-formation_prg)?;
+        }
+        // dropping blue heart
+        if nth_heart < MAX_HEALTH_BLUE {
+            let sub_prg = (prg - (nth_heart as f32)*slice_len)/slice_len;
+            let destination = Point {
+                x: SCREEN_WIDTH - self.heart_red.width() -
+                    HEARTS_START_X - HEARTS_SPACING_X*(nth_heart as f32),
+                y: HEARTS_START_Y,
+            };
+            let start = Point {
+                x: SCREEN_WIDTH - self.heart_red.width() -
+                    HEARTS_START_X - HEARTS_SPACING_X*(nth_heart as f32),
+                y: HEARTS_DROP_HEIGHT,
+            };
+            let location = interpolate(start, destination, Interpolation::RoundEnd, sub_prg);
+            self.heart_blue.animate(ctx, location, 0.99)?;
         }
         //
         Ok(())
@@ -194,6 +232,7 @@ impl Graphical {
                     chest_states: &Vec<Vec<ChestState>>, _playing_state: &PlayingState)
                     -> GameResult<()> {
         self.draw_chests(ctx, chest_states)?;
+        self.draw_hearts_forming(ctx, 0.99)?;
         Ok(())
     }
 
@@ -203,8 +242,8 @@ impl Graphical {
             for i in 0..COLUMNS {
                 //
                 let destination = Point {
-                    x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
-                    y: CHEST_START_Y + CHEST_SPACING_Y*(j as f32) + CHEST_VERTICAL_OFFSET_FACTOR*(i as f32),
+                    x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
+                    y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
                 };
                 self.draw_chest(ctx, destination, &chest_states[j][i])?;
             }
