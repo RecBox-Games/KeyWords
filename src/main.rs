@@ -4,6 +4,7 @@ mod sprite;
 mod utility;
 mod state;
 mod graphical;
+mod events;
 
 use ggez::{Context, ContextBuilder, GameResult, conf};
 use ggez::event::{self, EventHandler};

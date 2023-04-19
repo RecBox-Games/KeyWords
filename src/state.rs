@@ -1,7 +1,9 @@
 //==================================<===|===>===================================
 #![allow(dead_code)] // TODO dont allow
 use crate::utility::*;
+use crate::events::*;
 use rand::{seq::IteratorRandom, thread_rng};
+
 
 //================================= Constants ==================================
 // Ticks
@@ -10,13 +12,13 @@ pub const TICKS_CHESTFALL: usize = 320;
 pub const TICKS_TURN_TRANSITION: usize = 40;
 pub const TICKS_CHEST_OPEN: usize = 220;
 pub const TICKS_PER_HEALTH: usize = 40;
+pub const TICKS_TUT_DROP_IN: usize = 40;
+pub const TICKS_TUT_DROP_OUT: usize = 40;
 // Health
 pub const MAX_HEALTH_RED: usize = 10;
 pub const MAX_HEALTH_BLUE: usize = 12;
 
 //=============================== StateManager =================================
-// deals only with dynamic state. static state (like words on chests) is not
-// part of game state.
 pub struct StateManager {
     pub game_state: GameState,
     pub chest_states: Vec<Vec<ChestState>>,
@@ -84,7 +86,7 @@ impl GameState {
         use GameState::*;
         match self {
             Intro(intro_state) => {
-                if ! intro_state.tick() {
+                if intro_state.tick().is_done() {
                     *self = Playing(PlayingState::new());
                 }
             }
@@ -93,25 +95,59 @@ impl GameState {
     }
 }
 
+//        ======================== IntroState ========================        //
 pub enum IntroState {
     Title(Progress),
+    TutNotify(TutNotifyState),
     ChestFall(Progress),
 }
 
 impl IntroState {
-    fn tick(&mut self) -> bool {
+    fn tick(&mut self) -> TickEvent {
         use IntroState::*;
         if let Title(p) = self {
-            if ! p.tick() {
+            if p.tick().is_done() {
+                *self = TutNotify(TutNotifyState::new());
+            }
+        } else if let Title(p) = self {
+            if p.tick().is_done() {
                 *self = ChestFall(Progress::new(TICKS_CHESTFALL));
             }
         } else if let ChestFall(p) = self {
             return p.tick();
         }
-        true
+        TickEvent::None
     }
 }
 
+pub enum TutNotifyState {
+    DropIn(Progress),
+    DropOut(Progress),
+}
+
+impl TutNotifyState {
+    fn new() -> Self {
+        TutNotifyState::DropIn(Progress::new(TICKS_TUT_DROP_IN))
+    }
+
+    fn tick(&mut self) -> TickEvent {
+        use TutNotifyState::*;
+        if let DropIn(p) = self {
+            if p.tick().is_done() {
+                return TickEvent::Syn;
+            }
+        } else if let DropOut(p) = self{
+            return p.tick();
+        }
+        TickEvent::None
+    }
+
+    fn update_ack(&mut self) {
+        *self = TutNotifyState::DropOut(Progress::new(TICKS_TUT_DROP_OUT))
+    }
+}
+
+//        ======================= PlayingState =======================        //
 pub struct PlayingState {
     red_health_state: HealthState,
     blue_health_state: HealthState,
@@ -139,7 +175,7 @@ impl PlayingState {
 }
 
 //        ======================== ChestState ========================        //
-pub struct ChestState { // TODO: add content and word as part of state
+pub struct ChestState {
     pub lid_state: LidState,
     pub word: String,
     pub contents: ChestContent,

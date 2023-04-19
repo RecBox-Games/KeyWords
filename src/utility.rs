@@ -3,6 +3,7 @@
 use std::f32::consts::PI;
 use ggez::mint::Point2;
 use std::error::Error;
+use crate::events::*;
 pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 //================================= Constants ==================================
@@ -26,15 +27,16 @@ impl Progress {
     }
 
     // returns true if still in progress
-    pub fn tick(&mut self) -> bool {
+    pub fn tick(&mut self) -> TickEvent {
         self.now += 1;
-        return self.now < self.end;
+        return if self.now < self.end { TickEvent::None } else { TickEvent::Done };
     }
 
     pub fn as_decimal(&self) -> f32 {
         self.now as f32 / self.end as f32
     }
 }
+
 
 //=================================== Point ====================================
 pub type Point = Point2<f32>;
