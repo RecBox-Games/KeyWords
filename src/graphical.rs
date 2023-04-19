@@ -8,19 +8,22 @@ use ggez::graphics;
 use ggez::graphics::{Rect, Color};
 
 //================================= Constants ==================================
+const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
 const FONT_SIZE_WORDS: f32 = 36.0;
 const COLOR_WORDS: Color = Color::new(0.9, 0.8, 0.7, 1.0);
 const CHEST_WORD_OFFSET_Y: f32 = 40.0;
 // Chest Placement
-const CHEST_START_X: f32 = 220.0;
-const CHEST_SPACING_X: f32 = 300.0;
-const CHEST_START_Y: f32 = 30.0;
-const CHEST_SPACING_Y: f32 = 195.0;
+const CHEST_START_X: f32 = 86.0;
+const CHEST_SPACING_X: f32 = 352.0;
+const CHEST_START_Y: f32 = 100.0;
+const CHEST_SPACING_Y: f32 = 180.0;
 const CHEST_VERTICAL_OFFSET_FACTOR: f32 = 2.0;
 // Chest Fall
 const CHEST_DROP_HEIGHT_BASE: f32 = -500.0;
 const CHEST_DROP_ROW_DIFFERENCE: f32 = 50.0;
 const SIMULTANEOUS_FALLS: usize = 5;
+// Hearts
+
 
 //================================= Graphical ==================================
 // the members of Graphical are assets used when drawing a representation of
@@ -56,6 +59,9 @@ impl Graphical {
             GameState::Intro(IntroState::ChestFall(prg)) => {
                 self.draw_intro_chestfall(ctx, prg, &state.chest_states)?;
             }
+            GameState::Playing(playing_state) => {
+                self.draw_playing(ctx, &state.chest_states, &playing_state)?;
+            }
             _ => (),
         }
         Ok(())
@@ -88,7 +94,7 @@ impl Graphical {
 	self.title.draw(ctx,p)?;
         if prg > t1+tbuf && prg < t1+t2-tbuf {
             let sub_prg = (prg-t1-tbuf)/(t2-tbuf*2.0);
-            let sparkle_p = p2.plus(Point{x:395.0, y:35.0});
+            let sparkle_p = p2.plus(SPARKLE_OFFSET);
             self.sparkle.animate(ctx, sparkle_p, sub_prg)?;
         }
         //
@@ -122,7 +128,6 @@ impl Graphical {
             let prg_fall_start = (k + 1) as f32 * slice_len;
             let fall_duration = slice_len * SIMULTANEOUS_FALLS as f32;
             let sub_prg = (prg - prg_fall_start)/fall_duration;
-            //println!("{}", sub_prg);
             let destination = Point {
                 x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
                 y: CHEST_START_Y + CHEST_SPACING_Y*(j as f32) + CHEST_VERTICAL_OFFSET_FACTOR*(i as f32),
@@ -138,6 +143,28 @@ impl Graphical {
         Ok(())
     }
 
+    fn draw_playing(&mut self, ctx: &mut Context,
+                    chest_states: &Vec<Vec<ChestState>>, _playing_state: &PlayingState)
+                    -> GameResult<()> {
+        self.draw_chests(ctx, chest_states)?;
+        Ok(())
+    }
+
+    fn draw_chests(&mut self, ctx: &mut Context, chest_states: &Vec<Vec<ChestState>>)
+                   -> GameResult<()> {
+        for j in 0..ROWS {
+            for i in 0..COLUMNS {
+                //
+                let destination = Point {
+                    x: CHEST_START_X + CHEST_SPACING_X*(i as f32),
+                    y: CHEST_START_Y + CHEST_SPACING_Y*(j as f32) + CHEST_VERTICAL_OFFSET_FACTOR*(i as f32),
+                };
+                self.draw_chest(ctx, destination, &chest_states[j][i])?;
+            }
+        }
+        Ok(())
+    }
+    
     fn draw_chest(&mut self, ctx: &mut Context, point: Point,
                   chest_state: &ChestState) -> GameResult<()> {
         // chest
@@ -188,7 +215,7 @@ fn new_sparkle(ctx: &mut Context) -> SpriteElem {
 }
 
 fn new_chest(ctx: &mut Context) -> SpriteElem {
-    let mut chest = SpriteElem::new(ctx, 6.0, 6.0, "/chest_sprites.png");
+    let mut chest = SpriteElem::new(ctx, 7.5, 6.0, "/chest_sprites.png");
     chest.set_animation(
 	vec![
             Rect::new(0.0*0.0909, 0.0, 0.0909, 1.0),
