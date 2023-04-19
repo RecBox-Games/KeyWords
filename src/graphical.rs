@@ -26,9 +26,9 @@ const CHESTS_START_Y: f32 = 80.0;
 const CHESTS_SPACING_Y: f32 = 186.0;
 const CHESTS_VERTICAL_OFFSET_FACTOR: f32 = 2.0;
 // Chest Fall
-const CHESTS_DROP_HEIGHT_BASE: f32 = -500.0;
-const CHESTS_DROP_ROW_DIFFERENCE: f32 = 50.0;
-const SIMULTANEOUS_FALLS: usize = 5;
+const CHESTS_DROP_HEIGHT_BASE: f32 = -600.0;
+const CHESTS_DROP_ROW_DIFFERENCE: f32 = 40.0;
+const SIMULTANEOUS_FALLS: usize = 6;
 // Hearts
 const HEARTS_START_X: f32 = 6.0;
 const HEARTS_SPACING_X: f32 = 80.0;
@@ -131,7 +131,7 @@ impl Graphical {
                             chest_states: &Vec<Vec<ChestState>>)
                             -> GameResult<()> {
         let num_chests = ROWS*COLUMNS;
-        let time_slices = num_chests + SIMULTANEOUS_FALLS + 1;
+        let time_slices = num_chests + SIMULTANEOUS_FALLS + 6;
         let slice_len = 1.0 / time_slices as f32;
         let nth_chest = (prg * time_slices as f32) as usize; // the index of the last chest that has started to fall
         // draw chests that have already landed
