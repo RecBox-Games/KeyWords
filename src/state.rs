@@ -4,11 +4,15 @@ use crate::utility::*;
 use rand::{seq::IteratorRandom, thread_rng};
 
 //================================= Constants ==================================
+// Ticks
 pub const TICKS_TITLE: usize = 180; // TODO
-pub const TICKS_CHESTFALL: usize = 300;
+pub const TICKS_CHESTFALL: usize = 260;
 pub const TICKS_TURN_TRANSITION: usize = 40;
 pub const TICKS_CHEST_OPEN: usize = 220;
 pub const TICKS_PER_HEALTH: usize = 40;
+// Health
+pub const MAX_HEALTH_RED: usize = 10;
+pub const MAX_HEALTH_BLUE: usize = 10;
 
 //=============================== StateManager =================================
 // deals only with dynamic state. static state (like words on chests) is not

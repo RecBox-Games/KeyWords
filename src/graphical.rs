@@ -12,6 +12,13 @@ const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
 const FONT_SIZE_WORDS: f32 = 36.0;
 const COLOR_WORDS: Color = Color::new(0.9, 0.8, 0.7, 1.0);
 const CHEST_WORD_OFFSET_Y: f32 = 40.0;
+// Scale
+const SCALE_HEART_X: f32 = 6.0;
+const SCALE_HEART_Y: f32 = 6.0;
+const SCALE_CHEST_X: f32 = 7.5;
+const SCALE_CHEST_Y: f32 = 6.0;
+const SCALE_SPARKLE_X: f32 = 4.0;
+const SCALE_SPARKLE_Y: f32 = 4.0;
 // Chest Placement
 const CHEST_START_X: f32 = 86.0;
 const CHEST_SPACING_X: f32 = 352.0;
@@ -32,8 +39,16 @@ pub struct Graphical {
     background: SpriteElem,
     title: SpriteElem,
     sparkle: SpriteElem,
+    // chests
     chest: SpriteElem,
     word_meshes: HashMap<String, graphics::Text>,
+    // hearts
+    heart_red: SpriteElem,
+    heart_red_full: SpriteElem,
+    heart_red_empty: SpriteElem,
+    heart_blue: SpriteElem,
+    heart_blue_full: SpriteElem,
+    heart_blue_empty: SpriteElem,
 }
 
 impl Graphical {
@@ -45,6 +60,12 @@ impl Graphical {
             sparkle: new_sparkle(ctx),
             chest: new_chest(ctx),
             word_meshes: HashMap::new(),
+            heart_red: new_heart(ctx, vec![0, 1, 2, 3], true),
+            heart_red_full: new_heart(ctx, vec![0], true),
+            heart_red_empty: new_heart(ctx, vec![4], true),
+            heart_blue: new_heart(ctx, vec![0, 1, 2, 3], false),
+            heart_blue_full: new_heart(ctx, vec![0], false),
+            heart_blue_empty: new_heart(ctx, vec![4], false),
         }
     }
 
@@ -104,6 +125,15 @@ impl Graphical {
     fn draw_intro_chestfall(&mut self, ctx: &mut Context, progress: &Progress,
                             chest_states: &Vec<Vec<ChestState>>)
                             -> GameResult<()> {
+        self.draw_chests_falling(ctx, progress, chest_states);
+        self.draw_hearts_forming(ctx, progress);
+        //
+        Ok(())
+    }
+
+    fn draw_chests_falling(&mut self, ctx: &mut Context, progress: &Progress,
+                            chest_states: &Vec<Vec<ChestState>>)
+                            -> GameResult<()> {
         let prg = progress.as_decimal();
         let num_chests = ROWS*COLUMNS;
         let time_slices = num_chests + SIMULTANEOUS_FALLS + 1;
@@ -143,6 +173,23 @@ impl Graphical {
         Ok(())
     }
 
+    fn draw_hearts_forming(&mut self, ctx: &mut Context, progress: &Progress)
+                            -> GameResult<()> {
+        let prg = progress.as_decimal();
+        let time_slices = MAX_HEALTH_RED.max(MAX_HEALTH_BLUE) + 1;
+        let slice_len = 1.0 / time_slices as f32;
+        let nth_heart = (prg * time_slices as f32) as usize; // the index of the currently dropping heart
+        for i in 0..nth_heart.max(MAX_HEALTH_RED) {
+            let location = Point {
+                x: 10.0 + 80.0*(i as f32),
+                y: 10.0,
+            };
+            self.heart_red_empty.draw(ctx, location);
+        }
+        //
+        Ok(())
+    }
+    
     fn draw_playing(&mut self, ctx: &mut Context,
                     chest_states: &Vec<Vec<ChestState>>, _playing_state: &PlayingState)
                     -> GameResult<()> {
@@ -198,7 +245,8 @@ impl Graphical {
 
 //        =================== Initialization Helpers =================        //
 fn new_sparkle(ctx: &mut Context) -> SpriteElem {
-    let mut sparkle = SpriteElem::new(ctx, 4.0, 4.0, "/sparkle.png");
+    let mut sparkle = SpriteElem::new(ctx, SCALE_SPARKLE_X, SCALE_SPARKLE_Y,
+                                      "/sparkle.png");
     sparkle.set_animation(
 	vec![
             Rect::new(0.0*0.125, 0.0, 0.125, 1.0),
@@ -215,7 +263,8 @@ fn new_sparkle(ctx: &mut Context) -> SpriteElem {
 }
 
 fn new_chest(ctx: &mut Context) -> SpriteElem {
-    let mut chest = SpriteElem::new(ctx, 7.5, 6.0, "/chest_sprites.png");
+    let mut chest = SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y,
+                                    "/chest_sprites.png");
     chest.set_animation(
 	vec![
             Rect::new(0.0*0.0909, 0.0, 0.0909, 1.0),
@@ -235,4 +284,14 @@ fn new_text_mesh(text: String, font_size: f32, color: Color) -> graphics::Text {
     })
 }
 
+fn new_heart(ctx: &mut Context, frames: Vec<usize>, red: bool) -> SpriteElem{
+    let path = if red {"/heart_red.png"} else {"/heart_blue.png"};
+    let mut heart = SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, path);
+    let mut anim: Vec<Rect> = vec![];
+    for f in frames {
+        anim.push(Rect::new((f as f32)*0.2, 0.0, 0.2, 1.0));
+    }
+    heart.set_animation(anim);
+    heart
+}
 //==================================<===|===>===================================
