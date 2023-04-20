@@ -2,6 +2,7 @@
 #![allow(dead_code)] // TODO dont allow
 use crate::utility::*;
 use crate::events::*;
+use crate::messages::*;
 use rand::{seq::IteratorRandom, thread_rng};
 
 
@@ -42,6 +43,17 @@ impl StateManager {
         }
     }
 
+//        ======================= InputHandling ======================        //
+    pub fn handle_input(&mut self, message: InputMessage) {
+        match message {
+            InputMessage::Ack => {
+                if let GameState::Intro(IntroState::TutNotify(tutnotify_state)) = &mut self.game_state {
+                    tutnotify_state.update_ack();
+                }
+            }
+        }
+    }
+    
     pub fn start_open_chest(&mut self, row: usize, collumn: usize) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
             /* parameter validation */ {
@@ -110,7 +122,9 @@ impl IntroState {
                 *self = TutNotify(TutNotifyState::new());
             }
         } else if let TutNotify(tutnotify_state) = self {
-            return tutnotify_state.tick();
+            if tutnotify_state.tick().is_done() {
+                *self = ChestFall(Progress::new(TICKS_CHESTFALL));
+            }
         } else if let ChestFall(p) = self {
             return p.tick();
         }

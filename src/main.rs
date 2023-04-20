@@ -5,14 +5,16 @@ mod utility;
 mod state;
 mod graphical;
 mod events;
+mod messages;
 
 use ggez::{Context, ContextBuilder, GameResult, conf};
-use ggez::event::{self, EventHandler};
+use ggez::event::{self, EventHandler, KeyCode, KeyMods};
 use ggez::graphics;
 
 use crate::utility::*;
 use crate::graphical::*;
 use crate::state::*;
+use crate::messages::*;
 
 //=================================== Main ===================================//
 fn main() {
@@ -58,14 +60,16 @@ fn main() {
 //================================= MyRunner ================================//
 struct MyRunner {
     graphical: Graphical,
-    state: StateManager,
+    state_manager: StateManager,
+    message_manager: MessageManager,
 }
 
 impl MyRunner {
     fn new(ctx: &mut Context) -> Result<Self> {
         let runner = MyRunner {
 	    graphical: Graphical::new(ctx),
-            state: StateManager::new(),
+            state_manager: StateManager::new(),
+            message_manager: MessageManager::new(),
         };
         
         Ok(runner)
@@ -75,13 +79,22 @@ impl MyRunner {
 
 impl EventHandler<ggez::GameError> for MyRunner {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        self.state.tick();
+        self.state_manager.tick();
+        let messages = self.message_manager.get_messages();
+        for m in messages {
+            self.state_manager.handle_input(m);
+        }
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.graphical.draw(ctx, &self.state)?;
+        self.graphical.draw(ctx, &self.state_manager)?;
         graphics::present(ctx)
     }
+
+    fn key_down_event(&mut self, _ctx: &mut Context, key: KeyCode, _mods: KeyMods, _:bool) {
+        self.message_manager.handle_keyboard_input(key);
+    }
+
 }
 //==================================<===|===>=================================//

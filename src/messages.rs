@@ -1,14 +1,7 @@
 //==================================<===|===>=================================//
-
+use ggez::event::KeyCode;
 use targetlib::{Button, Panel, ControlDatum, CPSpec};
 use controlpads::*;
-
-
-/*enum ControlpadMessage {
-    Out(OutMessage),
-    In(InMessage),
-}
- */
 
 //================================ OutMessage ================================//
 enum OutMessage {
@@ -17,24 +10,42 @@ enum OutMessage {
     Syn,
 }
 
+struct StateMessage {}
+
 //================================= InMessage ================================//
 enum InMessage {
     Input(InputMessage),
     Warn(String),
+}
+
+pub enum InputMessage {
     Ack,
 }
 
 //============================== MessageManager ==============================//
 pub struct MessageManager {
-    client_map: HashMap<Role, ClientHandle>,
-
+    simulated_messages: Vec<InputMessage>,
+    //client_map: HashMap<Role, ClientHandle>,
 }
 
-//        ===================== Message Handling =====================        //
-pub fn get_messages() -> Vec<InMessage> {
+impl MessageManager {
+    pub fn new() -> Self {
+        Self {
+            simulated_messages: vec![],
+        }
+    }
+    pub fn get_messages(&mut self) -> Vec<InputMessage> {
+        std::mem::take(&mut self.simulated_messages)
+    }
 
+    pub fn handle_keyboard_input(&mut self, key: KeyCode) {
+        match key {
+            KeyCode::S => {
+                println!("S");
+                self.simulated_messages.push(InputMessage::Ack)
+            }
+            _ => ()
+        }
+    }
 }
-
-pub fn send_message
-    
 //==================================<===|===>=================================//
