@@ -6,6 +6,7 @@ class Triggerable {
 	_state: number = NONE;
 	_isTriggered: Function;
 	_handleTrigger: Function;
+    data?: any;
 
 	constructor(isTriggered:Function, handleTrigger:Function){
 		this._isTriggered = isTriggered;

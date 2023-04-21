@@ -1,9 +1,22 @@
 import { buttons_update } from "./button.js";
+import { get_context } from "./init.js";
 import { Point, Rectangle } from "./types/shapes.js";
 
 export const TOUCH_START = 1;
 export const TOUCH_MOVE = 2;
 export const TOUCH_END = 3;
+
+//TODO : ADD scale & center option ot text object
+
+export const center_text = (text:string, font:string, dest:Rectangle) => {
+    const ctx = get_context();
+    ctx.ctx.font = font;
+    const measurements = ctx.ctx.measureText(text);
+    let newTextBox = scale_and_center(
+        <Rectangle>{x:0, y:0, w:measurements.width, h: measurements.actualBoundingBoxAscent + measurements.actualBoundingBoxDescent},
+        dest, 1);
+    return <Point>{x: newTextBox.x, y:newTextBox.y + newTextBox.h};
+}
 
 export const checkAllFieldsExist = (correct:any, compare:any) => {
 	const correctKeys = Object.keys(correct).sort();

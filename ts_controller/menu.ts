@@ -64,6 +64,7 @@ export const init_menu = () => {
     window.onorientationchange = resize_assets;
 }
 
+// TODO set button bounding box to be a bit bigge than text
 const set_wait_text = (ctx:Context) => {
      menu.text.text = "Waiting for game to start...";
     ctx.ctx.font = menu.text.font;
