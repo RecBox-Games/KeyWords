@@ -19,8 +19,13 @@ enum InMessage {
 }
 
 pub enum InputMessage {
+    PrintTurn,
+    PrintChests,
+    //
     Ack,
     Clue(Clue),
+    Guess(usize, usize),
+    Second(bool), // true for support, false for dissent
 }
 
 //============================== MessageManager ==============================//
@@ -45,6 +50,16 @@ impl MessageManager {
             return;
         }
         match parts[0] {
+            "warn" => {
+                let q = &parts[1..];
+                println!("{}", q.join(" "));
+            }
+            "t" => {
+                self.simulated_messages.push(InputMessage::PrintTurn)
+            }
+            "p" => {
+                self.simulated_messages.push(InputMessage::PrintChests)
+            }
             "a" => {
                 self.simulated_messages.push(InputMessage::Ack)
             }
@@ -53,6 +68,24 @@ impl MessageManager {
                     let clue = parts[1].to_string();
                     if let Ok(num) = parts[2].parse::<usize>() {
                         self.simulated_messages.push(InputMessage::Clue(Clue::new(clue, num)));
+                    }
+                }
+            }
+            "g" => {
+                if parts.len() == 3 {
+                    if let Ok(col) = parts[1].parse::<usize>() {
+                        if let Ok(row) = parts[2].parse::<usize>() {
+                            self.simulated_messages.push(InputMessage::Guess(row, col));
+                        }
+                    }
+                }
+            }
+            "s" => {
+                if parts.len() == 2 {
+                    if parts[1] == "s" {
+                        self.simulated_messages.push(InputMessage::Second(true));
+                    } else if parts[1] == "d" {
+                        self.simulated_messages.push(InputMessage::Second(false));
                     }
                 }
             }

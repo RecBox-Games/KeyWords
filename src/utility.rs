@@ -13,6 +13,7 @@ pub const ROWS: usize = 5;
 pub const COLUMNS: usize = 5;
 
 //================================= Progress =================================//
+#[derive(Debug)]
 pub struct Progress {
     pub now: usize,
     pub end: usize,
@@ -107,7 +108,7 @@ pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32)
 
 
 //=================================== Clue ===================================//
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Clue {
     pub word: String,
     pub num: usize,

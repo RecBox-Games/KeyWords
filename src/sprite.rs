@@ -46,7 +46,7 @@ impl SpriteElem {
 	graphics::draw(ctx, &self.image, parms)?;
 	Ok(())
     }
-
+    
     pub fn width(&self) -> f32{
 	self.image.dimensions().w * self.animation[0].w * self.x_scale
     }

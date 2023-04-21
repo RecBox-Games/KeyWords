@@ -1,5 +1,4 @@
 //==================================<===|===>===================================
-#![allow(dead_code)] // TODO dont allow
 use crate::utility::*;
 use crate::events::*;
 use crate::messages::*;
@@ -47,18 +46,38 @@ impl StateManager {
 //        ======================= InputHandling ======================        //
     pub fn handle_input(&mut self, message: InputMessage) {
         match message {
+            InputMessage::PrintTurn => {
+                self.handle_print_turn();
+            }
+            InputMessage::PrintChests => {
+                self.handle_print_chests();
+            }
             InputMessage::Ack => {
                 self.handle_ack();
             }
             InputMessage::Clue(clue) => {
                 self.handle_clue(clue);
             }
+            InputMessage::Guess(row, col) => {
+                self.handle_guess(row, col);
+            }
+            InputMessage::Second(support) => {
+                self.handle_second(support);
+            }
         }
     }
 
+    fn handle_print_turn(&self) {
+        println!("{}", &self.game_state);
+    }
+
+    fn handle_print_chests(&self) {
+        println!("{}", self);
+    }
+    
     fn handle_ack(&mut self) {
         if let GameState::Intro(IntroState::TutNotify(tutnotify_state)) = &mut self.game_state {
-            tutnotify_state.update_ack();
+            tutnotify_state.handle_ack();
         } else {
             println!("Warning: bad ack");
         }
@@ -66,39 +85,36 @@ impl StateManager {
 
     fn handle_clue(&mut self, clue: Clue) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
-            playing_state.turn_state.update_clue(clue);
+            playing_state.turn_state.handle_clue(clue);
         } else {
             println!("Warning: bad clue (1)");
         }
     }
-    
-    fn start_open_chest(&mut self, row: usize, collumn: usize) {
+
+    fn handle_guess(&mut self, row: usize, col: usize) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
-            /* parameter validation */ {
-                if ! (row < ROWS && collumn < COLUMNS) {
-                    println!("Warning: attempt to open chest out of bounds");
-                    return;
-                }
-                if ! (self.chest_states[row][collumn].lid_state == LidState::Closed) {
-                    println!("Warning: attempt to open non-closed chest");
-                    return;
-                }
-                if ! playing_state.turn_state.is_guessing() {
-                    println!("Warning: attempt to open chest when guessing was not in progress");
-                    return;
-                }
-            }
-            // state change
-            self.chest_states[row][collumn].lid_state = LidState::Opening(0);
-            playing_state.turn_state.reduce_guesses();
+            playing_state.turn_state.handle_guess(row, col);
         } else {
-            println!("Warning: attempt to open chest while not in a playing state");
-            return;
+            println!("Warning: bad guess (1)");
         }
     }
+    
+    fn handle_second(&mut self, support: bool) {
+        if let GameState::Playing(playing_state) = &mut self.game_state {
+            let guess = playing_state.turn_state.handle_second(support);
+            if let Some((row, col)) = guess {
+                // start openning chest
+                self.chest_states[row][col].lid_state = LidState::Opening(0);
+            }
+        } else {
+            println!("Warning: bad second (1)");
+        }
+    }
+    
 }
 
 //        ========================= GameState ========================        //
+#[derive(Debug)]
 pub enum GameState {
     Intro(IntroState),
     //Joining(JoinState),
@@ -120,12 +136,16 @@ impl GameState {
                     *self = Playing(PlayingState::new());
                 }
             }
-            _ => (),
+            Playing(playing_state) => {
+                playing_state.tick();
+            }
+            //_ => (),
         }
     }
 }
 
 //        ======================== IntroState ========================        //
+#[derive(Debug)]
 pub enum IntroState {
     Title(Progress),
     TutNotify(TutNotifyState),
@@ -150,6 +170,7 @@ impl IntroState {
     }
 }
 
+#[derive(Debug)]
 pub enum TutNotifyState {
     DropIn(Progress),
     In,
@@ -176,12 +197,13 @@ impl TutNotifyState {
         TickEvent::None
     }
 
-    fn update_ack(&mut self) {
+    fn handle_ack(&mut self) {
         *self = TutNotifyState::DropOut(Progress::new(TICKS_TUT_DROP_OUT))
     }
 }
 
 //        ======================= PlayingState =======================        //
+#[derive(Debug)]
 pub struct PlayingState {
     red_health_state: HealthState,
     blue_health_state: HealthState,
@@ -205,7 +227,6 @@ impl PlayingState {
         // turn
         self.turn_state.tick();
     }
-
 }
 
 //        ======================== ChestState ========================        //
@@ -216,13 +237,13 @@ pub struct ChestState {
 }
 
 impl ChestState {
-    fn nothing() -> Self {
+    /*fn nothing() -> Self {
         ChestState {
             lid_state: LidState::Closed,
             word: "Nothing".to_string(),
             contents: ChestContent::Empty,
         }
-    }
+    }*/
 
     fn new(word: String, contents: ChestContent) -> Self {
         ChestState {
@@ -237,7 +258,7 @@ impl ChestState {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum LidState {
     Closed,
     Opening(usize/*tick number*/),
@@ -267,17 +288,18 @@ pub enum ChestContent {
 }
 
 //        ========================= TurnState ========================        //
+#[derive(Debug)]
 pub enum TurnState {
     RedCluing,
     RedCluingEnd(Progress, Clue),
     //
-    RedGuessing(Clue),
+    RedGuessing(Clue, Option<(usize, usize)>/* proposed guess */),
     RedGuessingEnd(Progress),
     //
     BlueCluing,
     BlueCluingEnd(Progress, Clue),
     //
-    BlueGuessing(Clue),
+    BlueGuessing(Clue, Option<(usize, usize)>/* proposed guess */),
     BlueGuessingEnd(Progress),
 }
 
@@ -291,7 +313,7 @@ impl TurnState {
         match self {
             RedCluingEnd(prg, clue) => {
                 if prg.tick().is_done() {
-                    *self = RedGuessing(take(clue));
+                    *self = RedGuessing(take(clue), None);
                 }
             }
             RedGuessingEnd(prg) => {
@@ -301,7 +323,7 @@ impl TurnState {
             }
             BlueCluingEnd(prg, clue) => {
                 if prg.tick().is_done() {
-                    *self = BlueGuessing(take(clue));
+                    *self = BlueGuessing(take(clue), None);
                 }
             }
             BlueGuessingEnd(prg) => {
@@ -313,47 +335,99 @@ impl TurnState {
         }
     }
 
-    fn update_clue(&mut self, clue: Clue) {
+    fn handle_clue(&mut self, clue: Clue) {
+        use TurnState::*;
         match self {
             RedCluing => {
-
+                *self = RedCluingEnd(Progress::new(TICKS_TURN_TRANSITION), clue);
+            }
+            BlueCluing => {
+                *self = BlueCluingEnd(Progress::new(TICKS_TURN_TRANSITION), clue);
+            }
+            _ => {
+                println!("Warning: bad clue (2)")
             }
         }
     }
     
+    fn handle_guess(&mut self, row: usize, col: usize) {
+        use TurnState::*;
+        match self {
+            RedGuessing(_, current_guess) | BlueGuessing(_, current_guess)  => {
+                if current_guess.is_none() {
+                    *current_guess = Some((row, col));
+                } else {
+                    println!("Warning: bad guess (2)")
+                }
+            }
+            _ => {
+                println!("Warning: bad guess (3)")
+            }
+        }
+            
+    }
+
+    // TODO: refactor
+    fn handle_second(&mut self, support: bool) -> Option<(usize, usize)> {
+        use TurnState::*;
+        let mut current_guess = None;
+        match self {
+            RedGuessing(clue, guess) => {
+                current_guess = guess.take();
+                if ! support {
+                    return None;
+                }
+                if current_guess.is_some() {
+                    clue.num -= 1;
+                    if clue.num == 0 {
+                        *self = RedGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
+                    }
+                }
+            }
+            BlueGuessing(clue, guess) => {
+                current_guess = guess.take();
+                if ! support {
+                    return None;
+                }
+                if current_guess.is_some() {
+                    clue.num -= 1;
+                    if clue.num == 0 {
+                        *self = BlueGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
+                    }
+                }
+            }
+            _ => {
+                println!("Warning: bad second (2)");
+            }
+        }
+        return current_guess;
+    } 
+
+}
+/*
     fn is_guessing(&self) -> bool {
         match self {
-            Self::RedGuessing(_) | Self::BlueGuessing(_) => true,
+            Self::RedGuessing(_,_) | Self::BlueGuessing(_,_) => true,
             _ => false,
         }
     }
 
-    fn reduce_guesses(&mut self) {
-        use TurnState::*;
-        match self {
-            RedGuessing(clue) => {
-                if clue.num == 0 {
-                    *self = RedGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
-                } else {
-                    clue.num -= 1;
-                }
-            }
-            BlueGuessing(clue) => {
-                if clue.num == 0 {
-                    *self = BlueGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
-                } else {
-                    clue.num -= 1;
-                }
-            }
-            _ => panic!("can't reduce guess when not guessing"),
+    /*
+    fn accept_guess(clue: &mut Clue, guess: &mut Option<(usize, usize)>)
+                    -> Option<(usize, usize)> {
+        clue.num -= 1;
+        if clue.num == 0 {
+            *self = RedGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
         }
-    }
+        
+    }*/
+        
 
     fn current_team(&self) -> Team {
         use TurnState::*;
         match self {
-            RedCluing | RedGuessing(_) | RedCluingEnd(_,_) | RedGuessingEnd(_) => Team::Red,
-            BlueCluing | BlueGuessing(_) | BlueCluingEnd(_,_) | BlueGuessingEnd(_) => Team::Blue,            
+            RedCluing | RedGuessing(_,_) | RedCluingEnd(_,_) | RedGuessingEnd(_) => Team::Red,
+            BlueCluing | BlueGuessing(_,_) | BlueCluingEnd(_,_) | BlueGuessingEnd(_) => Team::Blue,            
         }
     }
 
@@ -364,8 +438,9 @@ pub enum Team {
     Red,
     Blue,
 }
-
+*/
 //        ======================== HealthState =======================        //
+#[derive(Debug)]
 struct HealthState {
     src_amount: usize,
     src_fraction: usize,
@@ -464,4 +539,58 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
 
     chest_states
 }
+
+//        ====================== Pretty Printing =====================        //
+impl std::fmt::Display for ChestState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let LidState::Open = &self.lid_state {
+            write!(f, "O", )
+        } else {
+            write!(f, "#", )
+        }
+    }
+}
+
+impl std::fmt::Display for StateManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut j = 0;
+        write!(f, "{}{}{}{}{}\n",
+               self.chest_states[j][0], self.chest_states[j][1],
+               self.chest_states[j][2], self.chest_states[j][3],
+               self.chest_states[j][4])?;
+        j = 1;
+        write!(f, "{}{}{}{}{}\n",
+               self.chest_states[j][0], self.chest_states[j][1],
+               self.chest_states[j][2], self.chest_states[j][3],
+               self.chest_states[j][4])?;
+        j = 2;
+        write!(f, "{}{}{}{}{}\n",
+               self.chest_states[j][0], self.chest_states[j][1],
+               self.chest_states[j][2], self.chest_states[j][3],
+               self.chest_states[j][4])?;
+        j = 3;
+        write!(f, "{}{}{}{}{}\n",
+               self.chest_states[j][0], self.chest_states[j][1],
+               self.chest_states[j][2], self.chest_states[j][3],
+               self.chest_states[j][4])?;
+        j = 4;
+        write!(f, "{}{}{}{}{}\n",
+               self.chest_states[j][0], self.chest_states[j][1],
+               self.chest_states[j][2], self.chest_states[j][3],
+               self.chest_states[j][4])?;
+        write!(f, "{}", self.game_state)
+    }
+}
+
+impl std::fmt::Display for GameState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let GameState::Playing(playing_state) = self {
+            write!(f, "{:?}", &playing_state.turn_state)
+        } else {
+            write!(f, "{:?}", self)
+        }
+    }
+}
+    
+
 //==================================<===|===>===================================
