@@ -54,15 +54,24 @@ interface Board {
     background: DrawableImage;
     chests:((ChestGuesser | ChestGiver)[])[];
     topbar:TopBar;
-    buttons:(Button[])[]
+    buttons:(Button[])[];
+    guessedWord: string | undefined;
+    totalGuesses: number;
+    currentGuesses: number;
 }
 
 let board:Board;
 
 const chest_clicked_guessser = (self:Button) =>
 {
-    const id = (self.data as ChestGuesser).id;
-    console.log("Chest clicked at ", id % BOARD_W, (id / BOARD_H)| 0);
+    if (board.guessedWord)
+        console.log("Someone already guessed a word, accept or deny ", board.guessedWord);
+        else
+        {
+            console.log("Guessing ", (self.data as ChestGuesser).text.text);
+            board.topbar.text.text = "Team's guess : \"" + (self.data as ChestGuesser).text.text + "\"";
+            board.guessedWord = (self.data as ChestGuesser).text.text;
+        }
 }
 
 const construct_chestGiver = (row:number, col: number) => {
@@ -124,18 +133,26 @@ const construct_Board = () => {
 
 const construct_topbar = ():TopBar =>
 {
-    const TopBar:TopBar = {
-        text: DEFAULT_DRAWABLE_TEXT,
-        subText: DEFAULT_DRAWABLE_TEXT,
-        accept: DEFAULT_DRAWABLE_RECT,
-        deny: DEFAULT_DRAWABLE_RECT,
+    const topBar:TopBar = {
+        text: {...DEFAULT_DRAWABLE_TEXT},
+        subText:{...DEFAULT_DRAWABLE_TEXT},
+        accept: {...DEFAULT_DRAWABLE_RECT},
+        deny: {...DEFAULT_DRAWABLE_RECT},
     };
     const ctx = get_context();
-    const boundingBox:Rectangle = {x:0, y:0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.2};
+    const boundingBox:Rectangle = {x:0, y:0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.1};
+
+    topBar.text.boundingBox = {...boundingBox};
+    topBar.text.text = "Your clue is {{insert_clue}}";
+
+    boundingBox.y += boundingBox.h;
+    boundingBox.h = ctx.dimensions.y * 0.05;
+
+    topBar.subText.text = "Guess X out of Y";
+    topBar.subText.boundingBox = {...boundingBox};
 
 
-
-    return TopBar
+    return topBar
 }
 
 const init_app = () => {
@@ -150,7 +167,10 @@ const init_app = () => {
         background: bg,
         chests: construct_Board(),
         topbar: construct_topbar(),
-        buttons: []
+        buttons: [],
+        guessedWord:undefined,
+        totalGuesses: 4,
+        currentGuesses:2
     };
     (bg.image as HTMLImageElement).src = '../resources/keywords_background.png';
     // init_menu();
@@ -165,6 +185,8 @@ const main_loop = () => {
             drawablesAdd(board.chests[i][j].sprite);
             drawablesAdd(board.chests[i][j].text)
         }
+    drawablesAdd(board.topbar.text);
+    drawablesAdd(board.topbar.subText);
 }
 
 const app = () => {

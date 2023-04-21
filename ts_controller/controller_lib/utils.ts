@@ -12,7 +12,7 @@ export const center_text = (text:string, font:string, dest:Rectangle) => {
     const ctx = get_context();
     ctx.ctx.font = font;
     const measurements = ctx.ctx.measureText(text);
-    let newTextBox = scale_and_center(
+    const newTextBox = scale_and_center(
         <Rectangle>{x:0, y:0, w:measurements.width, h: measurements.actualBoundingBoxAscent + measurements.actualBoundingBoxDescent},
         dest, 1);
     return <Point>{x: newTextBox.x, y:newTextBox.y + newTextBox.h};
