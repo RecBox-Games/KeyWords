@@ -104,4 +104,22 @@ pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32)
     };
     p1.plus(towards.scale(s))
 }
+
+
+//=================================== Clue ===================================//
+#[derive(Default)]
+pub struct Clue {
+    pub word: String,
+    pub num: usize,
+}
+
+impl Clue {
+    pub fn new(word: String, num: usize) -> Self {
+        Self {
+            word,
+            num,
+        }
+    }
+}
+
 //==================================<===|===>=================================//

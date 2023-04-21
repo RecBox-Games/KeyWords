@@ -89,7 +89,7 @@ impl Graphical {
             GameState::Playing(playing_state) => {
                 self.draw_playing(ctx, &state.chest_states, &playing_state)?;
             }
-            _ => (),
+            //_ => (),
         }
         Ok(())
     }
@@ -363,7 +363,7 @@ fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
 }
 
 fn new_notify_box(ctx: Ctx) -> SpriteElem {
-    let mut notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
+    let notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
                                       "/tut_notify.png");
     notify_box
 }

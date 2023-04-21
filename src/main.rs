@@ -10,6 +10,7 @@ mod messages;
 use ggez::{Context, ContextBuilder, GameResult, conf};
 use ggez::event::{self, EventHandler, KeyCode, KeyMods};
 use ggez::graphics;
+use std::io::Write;
 
 use crate::utility::*;
 use crate::graphical::*;
@@ -62,6 +63,7 @@ struct MyRunner {
     graphical: Graphical,
     state_manager: StateManager,
     message_manager: MessageManager,
+    keyboard_input: String,
 }
 
 impl MyRunner {
@@ -70,6 +72,7 @@ impl MyRunner {
 	    graphical: Graphical::new(ctx),
             state_manager: StateManager::new(),
             message_manager: MessageManager::new(),
+            keyboard_input: String::new(),
         };
         
         Ok(runner)
@@ -93,7 +96,24 @@ impl EventHandler<ggez::GameError> for MyRunner {
     }
 
     fn key_down_event(&mut self, _ctx: &mut Context, key: KeyCode, _mods: KeyMods, _:bool) {
-        self.message_manager.handle_keyboard_input(key);
+        match key  {
+            KeyCode::Return => {
+                println!("");
+                self.message_manager.handle_keyboard_input(std::mem::take(&mut self.keyboard_input));
+            }
+            _ => ()
+        }
+    }
+
+    fn text_input_event(&mut self, _ctx: &mut Context, character: char) {
+        match character {
+            '\n' | '\r' | '\u{0008}' | '\u{001B}' => (),
+            c => {
+                print!("{}", c);
+                std::io::stdout().flush().unwrap(); // TODO
+                self.keyboard_input.push(c);
+            },
+        }
     }
 
 }

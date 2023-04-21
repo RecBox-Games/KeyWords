@@ -4,6 +4,7 @@ use crate::utility::*;
 use crate::events::*;
 use crate::messages::*;
 use rand::{seq::IteratorRandom, thread_rng};
+use std::mem::take;
 
 
 //================================= Constants ==================================
@@ -47,14 +48,31 @@ impl StateManager {
     pub fn handle_input(&mut self, message: InputMessage) {
         match message {
             InputMessage::Ack => {
-                if let GameState::Intro(IntroState::TutNotify(tutnotify_state)) = &mut self.game_state {
-                    tutnotify_state.update_ack();
-                }
+                self.handle_ack();
+            }
+            InputMessage::Clue(clue) => {
+                self.handle_clue(clue);
             }
         }
     }
+
+    fn handle_ack(&mut self) {
+        if let GameState::Intro(IntroState::TutNotify(tutnotify_state)) = &mut self.game_state {
+            tutnotify_state.update_ack();
+        } else {
+            println!("Warning: bad ack");
+        }
+    }
+
+    fn handle_clue(&mut self, clue: Clue) {
+        if let GameState::Playing(playing_state) = &mut self.game_state {
+            playing_state.turn_state.update_clue(clue);
+        } else {
+            println!("Warning: bad clue (1)");
+        }
+    }
     
-    pub fn start_open_chest(&mut self, row: usize, collumn: usize) {
+    fn start_open_chest(&mut self, row: usize, collumn: usize) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
             /* parameter validation */ {
                 if ! (row < ROWS && collumn < COLUMNS) {
@@ -249,19 +267,18 @@ pub enum ChestContent {
 }
 
 //        ========================= TurnState ========================        //
-#[derive(PartialEq, Clone)]
 pub enum TurnState {
     RedCluing,
-    RedCluingEnd(usize/*tick number*/, usize/*guesses*/),
+    RedCluingEnd(Progress, Clue),
     //
-    RedGuessing(usize/*guesses remaining*/),
-    RedGuessingEnd(usize/*tick number*/),
+    RedGuessing(Clue),
+    RedGuessingEnd(Progress),
     //
     BlueCluing,
-    BlueCluingEnd(usize/*tick number*/, usize/*guesses*/),
+    BlueCluingEnd(Progress, Clue),
     //
-    BlueGuessing(usize/*guesses remaining*/),
-    BlueGuessingEnd(usize/*tick number*/),
+    BlueGuessing(Clue),
+    BlueGuessingEnd(Progress),
 }
 
 impl TurnState {
@@ -271,24 +288,39 @@ impl TurnState {
 
     fn tick(&mut self) {
         use TurnState::*;
-        *self = match self {
-            // dynamic
-            RedCluingEnd(TICKS_TURN_TRANSITION, guesses) => RedGuessing(*guesses),
-            RedCluingEnd(n, guesses) => RedCluingEnd(*n+1, *guesses),
-            RedGuessingEnd(TICKS_TURN_TRANSITION) => BlueCluing,
-            RedGuessingEnd(n) => RedGuessingEnd(*n+1),
-            BlueCluingEnd(TICKS_TURN_TRANSITION, guesses) => BlueGuessing(*guesses),
-            BlueCluingEnd(n, guesses) => BlueCluingEnd(*n+1, *guesses),
-            BlueGuessingEnd(TICKS_TURN_TRANSITION) => RedCluing,
-            BlueGuessingEnd(n) => BlueGuessingEnd(*n+1),
-            // static
-            RedCluing => RedCluing,
-            RedGuessing(n) => RedGuessing(*n),
-            BlueCluing => BlueCluing,
-            BlueGuessing(n) => BlueGuessing(*n),
+        match self {
+            RedCluingEnd(prg, clue) => {
+                if prg.tick().is_done() {
+                    *self = RedGuessing(take(clue));
+                }
+            }
+            RedGuessingEnd(prg) => {
+                if prg.tick().is_done() {
+                    *self = BlueCluing;
+                }
+            }
+            BlueCluingEnd(prg, clue) => {
+                if prg.tick().is_done() {
+                    *self = BlueGuessing(take(clue));
+                }
+            }
+            BlueGuessingEnd(prg) => {
+                if prg.tick().is_done() {
+                    *self = RedCluing;
+                }
+            }
+            _ => ()
         }
     }
 
+    fn update_clue(&mut self, clue: Clue) {
+        match self {
+            RedCluing => {
+
+            }
+        }
+    }
+    
     fn is_guessing(&self) -> bool {
         match self {
             Self::RedGuessing(_) | Self::BlueGuessing(_) => true,
@@ -298,22 +330,33 @@ impl TurnState {
 
     fn reduce_guesses(&mut self) {
         use TurnState::*;
-        *self = match self {
-            RedGuessing(1) => RedGuessingEnd(0),
-            RedGuessing(n) => RedGuessing(*n-1),
-            BlueGuessing(1) => BlueGuessingEnd(0),            
-            BlueGuessing(n) => BlueGuessing(*n-1),
+        match self {
+            RedGuessing(clue) => {
+                if clue.num == 0 {
+                    *self = RedGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
+                } else {
+                    clue.num -= 1;
+                }
+            }
+            BlueGuessing(clue) => {
+                if clue.num == 0 {
+                    *self = BlueGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
+                } else {
+                    clue.num -= 1;
+                }
+            }
             _ => panic!("can't reduce guess when not guessing"),
         }
     }
-    
-    pub fn current_team(&self) -> Team {
+
+    fn current_team(&self) -> Team {
         use TurnState::*;
         match self {
             RedCluing | RedGuessing(_) | RedCluingEnd(_,_) | RedGuessingEnd(_) => Team::Red,
             BlueCluing | BlueGuessing(_) | BlueCluingEnd(_,_) | BlueGuessingEnd(_) => Team::Blue,            
         }
     }
+
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
