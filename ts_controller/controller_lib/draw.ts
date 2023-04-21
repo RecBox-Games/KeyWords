@@ -2,7 +2,7 @@ import { get_context } from "./init.js";
 import { Context } from "./types/context.js";
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableRect, DrawableText } from "./types/drawables.js";
 import { Rectangle } from "./types/shapes.js";
-import { checkAllFieldsExist } from "./utils.js";
+import { center_text, checkAllFieldsExist } from "./utils.js";
 
 let Idrawables: (DrawableImage | DrawableRect | DrawableText) [] = []
 
@@ -78,7 +78,10 @@ export const drawableRenderSingle = (ctx:Context, drawable:DrawableImage | Drawa
         // let oldFont = ctx.ctx.font;
 		ctx.ctx.fillStyle = text.color;
         ctx.ctx.font = text.font;
-		ctx.ctx.fillText(text.text as string, text.x, text.y);
+        if (text.center)
+            text.coords = center_text(text.text,text.font, text.boundingBox);
+
+		ctx.ctx.fillText(text.text as string, text.coords.x, text.coords.y);
 	}
 	else throw "Drawable types matches none"
 }

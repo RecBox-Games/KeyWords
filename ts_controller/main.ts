@@ -76,13 +76,9 @@ const construct_chestGuesser = (x:number, y: number, box:Rectangle) : ChestGuess
     words_good.splice(rand, 1);
     const newChest: ChestGuesser = {
         id: x + (BOARD_W * y),
-        text: {...DEFAULT_DRAWABLE_TEXT, text: words_good[rand], color:"#FFFFFF"},
+        text: {...DEFAULT_DRAWABLE_TEXT, text: words_good[rand], color:"#FFFFFF", boundingBox:{...box}},
         sprite: {...DEFAULT_DRAWABLE_RECT, boundingBox: {...box}}// {..box} or else it will assign as reference
     }
-    const newTextBox = center_text(newChest.text.text, newChest.text.font, box);
-    newChest.text.x = newTextBox.x;
-    newChest.text.y = newTextBox.y;
-
 
     return newChest;
 }
@@ -134,6 +130,9 @@ const construct_topbar = ():TopBar =>
         accept: DEFAULT_DRAWABLE_RECT,
         deny: DEFAULT_DRAWABLE_RECT,
     };
+    const ctx = get_context();
+    const boundingBox:Rectangle = {x:0, y:0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.2};
+
 
 
     return TopBar
