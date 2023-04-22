@@ -83,7 +83,7 @@ impl MyRunner {
 impl EventHandler<ggez::GameError> for MyRunner {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         self.state_manager.tick();
-        let messages = self.message_manager.get_messages();
+        let messages = self.message_manager.get_input_messages();
         for m in messages {
             self.state_manager.handle_input(m);
         }
