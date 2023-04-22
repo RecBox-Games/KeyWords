@@ -6,6 +6,7 @@ import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableTex
 import { Rectangle } from "./controller_lib/types/shapes.js";
 import { Button } from "./controller_lib/types/triggerable.js";
 import { scale_and_center } from "./controller_lib/utils.js";
+import { set_state } from "./main.js";
 
 interface Team {
     name:DrawableText,
@@ -66,38 +67,29 @@ export const init_menu = () => {
 
 // TODO set button bounding box to be a bit bigge than text
 const set_wait_text = (ctx:Context) => {
-     menu.text.text = "Waiting for game to start...";
-    ctx.ctx.font = menu.text.font;
-    let textDim = ctx.ctx.measureText(menu.text.text);
-    let newTextBox = scale_and_center(
-        <Rectangle>{x:0, y:0, w:textDim.width, h: textDim.actualBoundingBoxAscent + textDim.actualBoundingBoxDescent},
-        menu.container.boundingBox, 1);
-    // menu.text.x = newTextBox.x;
-    // menu.text.y = newTextBox.y;
+    menu.text.text = "Waiting for game to start...";
+    set_state(1);
 }
 
 const set_chosen_text = () => {
     let ctx:Context = get_context();
 
     set_wait_text(ctx);
-    ctx.ctx.font = menu.blueTeam.name.font;
+    menu.blueTeam.name.font = '50px serif';
+    menu.redTeam.name.font = '50px serif';
+
+    menu.blueTeam.name.boundingBox = menu.container.boundingBox;
+    menu.redTeam.name.boundingBox = menu.container.boundingBox;
+
     ctx.ctx.font = menu.blueTeam.name.text = "Blue team " + (menu.role == GUESS ? "guesser" : "clue giver");
     ctx.ctx.font = menu.redTeam.name.text = "Red team " + (menu.role == GUESS ? "guesser" : "clue giver");
-    let textDim = ctx.ctx.measureText(menu.text.text);
-    let newTextBox = scale_and_center(
-        <Rectangle>{x:0, y:0, w:textDim.width, h: textDim.actualBoundingBoxAscent + textDim.actualBoundingBoxDescent},
-        menu.container.boundingBox, 1);
-    // menu.redTeam.name.x = newTextBox.x;
-    // menu.redTeam.name.y = menu.container.boundingBox.y + newTextBox.h * 2;
-    // menu.blueTeam.name.x = newTextBox.x;
-    // menu.blueTeam.name.y = menu.container.boundingBox.y + newTextBox.h * 2;
 }
 
 export const menu_loop = () => {
     drawablesAdd(menu.container);
     drawablesAdd(menu.text);
     if (menu.team != RED_TEAM)
-    drawablesAdd(menu.blueTeam.name);
+        drawablesAdd(menu.blueTeam.name);
     if (menu.team != BLUE_TEAM)
         drawablesAdd(menu.redTeam.name);
     if (!menu.team)
@@ -109,75 +101,39 @@ export const menu_loop = () => {
     }
 }
 
-const resize_team = (box:Rectangle, team:Team, ctx:Context) => {
-    // ctx.ctx.font = team.name.font;
-    // let textDim = ctx.ctx.measureText(team.name.text);
-    // let newTextBox = scale_and_center(
-    //     <Rectangle>{x:0, y:0, w:textDim.width, h: textDim.actualBoundingBoxAscent + textDim.actualBoundingBoxDescent},
-    //     box, 1);
-    // team.name.x = newTextBox.x;
-    // team.name.y = box.y + newTextBox.h * 2;
+const init_team = (box:Rectangle, team:Team, ctx:Context) => {
 
-    // box.y =  team.name.y + newTextBox.h * 2;
-    // box.h -= newTextBox.h;
-    // ctx.ctx.font = team.giverSprite.font;
-    // ctx.ctx.measureText(team.giverSprite.text);
-    // newTextBox = scale_and_center(
-    //     <Rectangle>{x:0, y:0, w:textDim.width, h: textDim.actualBoundingBoxAscent + textDim.actualBoundingBoxDescent},
-    //     box, 1);
-    // team.giverSprite.x = newTextBox.x;
-    // team.giverSprite.y = box.y + newTextBox.h * 2;
-    // team.giverBtn._boundingBox = {...newTextBox, y: team.giverSprite.y - newTextBox.h};
-    // team.giverRect.boundingBox = team.giverBtn._boundingBox;
-    // // console.log(newTextBox, team.giverSprite,team.giverBtn._boundingBox)
+    team.name.boundingBox = {...box, h: box.h *0.2};
 
-    // box.y =  team.giverSprite.y + newTextBox.h * 2;
-    // box.h -= newTextBox.h;
-    //  newTextBox = scale_and_center(
-    //     <Rectangle>{x:0, y:0, w:textDim.width, h: textDim.actualBoundingBoxAscent + textDim.actualBoundingBoxDescent},
-    //     box, 1);
-    // team.guesserSprite.x = newTextBox.x;
-    // team.guesserSprite.y = box.y + newTextBox.h * 2;
-    // team.guesserBtn._boundingBox = {...box, y:team.guesserSprite.y - newTextBox.h};
+    box.y += box.h * 0.2;
+    team.giverSprite.boundingBox = {...box, x: box.x + box.w * 0.25, w: box.w * 0.5, h:  box.h * 0.3}
+    team.giverBtn._boundingBox =  team.giverSprite.boundingBox;
+
+    box.y += box.h * 0.35;
+
+    team.guesserSprite.boundingBox = {...box,x: box.x + box.w * 0.25, w: box.w * 0.5, h:  box.h * 0.3}
+    team.guesserBtn._boundingBox =  team.guesserSprite.boundingBox;
 }
 
 const resize_assets = () => {
-    // console.log("ME");
-    const ctx:Context = get_context();
-    ctx.canvas.width = window.innerWidth-1;
-    ctx.canvas.height = window.innerHeight-1;
-    ctx.dimensions.x = window.innerWidth;
-    ctx.dimensions.y = document.body.clientHeight;
-    menu.container.boundingBox.h = window.innerHeight - 100;
-    menu.container.boundingBox.w = window.innerWidth - 100;
-    menu.container.boundingBox.x = 50;
-    menu.container.boundingBox.y = 50;
 
-    // ctx.ctx.font = menu.text.font;
-    // let textDim = ctx.ctx.measureText(menu.text.text);
-    // let newTextBox = scale_and_center(
-    //     <Rectangle>{x:0, y:0, w:textDim.width, h: textDim.actualBoundingBoxAscent + textDim.actualBoundingBoxDescent},
-    //     menu.container.boundingBox, 1);
-    // menu.text.x = newTextBox.x;
-    // menu.text.y = menu.container.boundingBox.y + newTextBox.h * 2;
+    const ctx = get_context();
 
-    // let box: Rectangle = {
-    //     x: menu.container.boundingBox.x,
-    //     y: menu.text.y + (newTextBox.h * 2),
-    //     w: menu.container.boundingBox.w * 0.45,
-    //     h: menu.container.boundingBox.h - (newTextBox.h * 2),
-    //     }
-    // resize_team(box, menu.blueTeam, ctx);
-    // box.y = menu.text.y + (newTextBox.h * 2);
-    // box.x = (menu.container.boundingBox.x + menu.container.boundingBox.w) - box.w;
-    // resize_team(box, menu.redTeam, ctx);
-    // console.log(menu.blueTeam.giverBtn);
-}
+    ctx.ctx.font = menu.text.font;
 
-const render_choice = () => {
+    menu.container.boundingBox.w = ctx.dimensions.x * 0.8;
+    menu.container.boundingBox.h = ctx.dimensions.y * 0.8;
+    menu.container.boundingBox.x = ctx.dimensions.x * 0.1;
+    menu.container.boundingBox.y = ctx.dimensions.y * 0.1;
 
-}
-
-const render_chosen = () => {
-
+    menu.text.boundingBox = {...menu.container.boundingBox, h: menu.container.boundingBox.h * 0.2}
+    let box: Rectangle = {
+        x: menu.container.boundingBox.x,
+        y: menu.container.boundingBox.y + menu.container.boundingBox.h * 0.2,
+        w: menu.container.boundingBox.w * 0.45,
+        h: menu.container.boundingBox.h * 0.7,
+        }
+    init_team({...box}, menu.blueTeam, ctx)
+    box.x +=  menu.container.boundingBox.w * 0.55;
+    init_team({...box}, menu.redTeam, ctx);
 }
