@@ -170,7 +170,8 @@ export const init_main_screen = (role:number) =>
         guessedWord:undefined,
         totalGuesses: 4,
         currentGuesses:2,
-        showOverlay: false
+        showOverlay: false,
+        clue: undefined
     };
     construct_Board(role);
 }

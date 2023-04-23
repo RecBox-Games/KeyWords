@@ -18,7 +18,7 @@ const acknowledge = () => {
     const ctx = get_context();
 
     buttons_flush();
-    ctx.ws.send("ack");
+    ctx.ws.send("input:ack");
     switch_to_menu();
 }
 

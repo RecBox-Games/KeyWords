@@ -46,4 +46,8 @@ export interface Board {
     currentGuesses: number;
     overlay:Overlay;
     showOverlay:boolean;
+    clue:string | undefined;
 }
+
+export const GUESSER:number = 0;
+export const GIVER:number = 1;
