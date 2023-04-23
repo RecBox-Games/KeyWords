@@ -1,6 +1,6 @@
 import { get_context } from "./init.js";
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "./types/drawables.js";
-import { checkAllFieldsExist } from "./utils.js";
+import { center_text, checkAllFieldsExist } from "./utils.js";
 let Idrawables = [];
 export const drawablesPrint = () => {
     console.log("Drawables", Idrawables);
@@ -58,7 +58,9 @@ export const drawableRenderSingle = (ctx, drawable) => {
         // let oldFont = ctx.ctx.font;
         ctx.ctx.fillStyle = text.color;
         ctx.ctx.font = text.font;
-        ctx.ctx.fillText(text.text, text.x, text.y);
+        if (text.center)
+            text.coords = center_text(text.text, text.font, text.boundingBox);
+        ctx.ctx.fillText(text.text, text.coords.x, text.coords.y);
     }
     else
         throw "Drawable types matches none";

@@ -9,7 +9,10 @@ export const buttons_add = (button) => {
 export const buttons_update = (touch, touchType) => {
     // console.log("updating buttons", _buttons);
     for (let item of _buttons) {
-        if (item._active)
-            item.tryTrigger(touch, touchType);
+        if (item._active) {
+            if (item.tryTrigger(touch, touchType)) {
+                return;
+            }
+        }
     }
 };

@@ -18,15 +18,14 @@ export const init_context = () => {
         dimensions: { x: canvas.width, y: canvas.width },
         ws: ws,
         subid: subid,
-        box_ip: box_ip
+        box_ip: box_ip,
+        wsState: 0,
+        wsMessage: null
     };
     // if (ws.readyState == WebSocket.CLOSED) {
     //     ws = new WebSocket("ws://" + box_ip + ":50079");
     // }
-    context.canvas.width = document.body.clientWidth;
-    context.canvas.height = document.body.clientHeight;
-    context.dimensions.x = document.body.clientWidth;
-    context.dimensions.y = document.body.clientHeight;
+    screenChange();
     // window.onload = () => {
     // 	context.dimensions.x = window.innerWidth;
     // 	context.dimensions.y = window.innerHeight;
@@ -39,11 +38,11 @@ export const init_context = () => {
     };
     context.ws.onopen = (event) => {
         console.log("openned websocket");
-        // let byte_array: Uint8Array = new Uint8Array(1);
-        // byte_array[0] = subid;
-        // context.ws.send(byte_array.buffer);
+        // byte_array[0] = (subid as string);
+        context.ws.send(subid);
         context.ws.addEventListener('message', (event) => {
-            // let msg = event.data;
+            const msg = event.data;
+            context.wsMessage = msg;
             //     handleMessage(msg);
         });
     };
@@ -52,10 +51,11 @@ export const init_context = () => {
 window.onresize = screenChange;
 window.onorientationchange = screenChange;
 function screenChange() {
-    context.canvas.width = window.innerWidth - 1;
-    context.canvas.height = window.innerHeight - 1;
-    context.dimensions.x = window.innerWidth;
-    context.dimensions.y = window.innerHeight;
+    context.canvas.width = Math.max(window.innerWidth, window.innerHeight);
+    context.canvas.height = Math.min(window.innerWidth, window.innerHeight);
+    context.dimensions.x = Math.max(window.innerWidth, window.innerHeight);
+    context.dimensions.y = Math.min(window.innerWidth, window.innerHeight);
+    console.log("width", context.dimensions.x, "Height", context.dimensions.y);
     // onFlip(window.innerWidth, window.innerHeight);
 }
 window.addEventListener("touchstart", (event) => {
