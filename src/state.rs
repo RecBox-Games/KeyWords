@@ -8,12 +8,12 @@ use std::mem::take;
 
 //================================= Constants ==================================
 // Ticks
-pub const TICKS_TITLE: usize = 180; // TODO
-pub const TICKS_CHESTFALL: usize = 320;
+pub const TICKS_TITLE: usize = 10;//180;
+pub const TICKS_CHESTFALL: usize = 30;//320;
 pub const TICKS_TURN_TRANSITION: usize = 40;
-pub const TICKS_CHEST_GROW: usize = 40;
-pub const TICKS_CHEST_OPEN: usize = 40;
-pub const TICKS_CHEST_SHRINK: usize = 30;
+pub const TICKS_CHEST_GROW: usize = 150;
+pub const TICKS_CHEST_OPEN: usize = 60;
+pub const TICKS_CHEST_SHRINK: usize = 120;
 pub const TICKS_PER_HEALTH: usize = 30;
 pub const TICKS_TUT_DROP_IN: usize = 80;
 pub const TICKS_TUT_DROP_OUT: usize = 70;
@@ -257,6 +257,14 @@ impl ChestState {
         }
         tick_event
     }
+
+    pub fn is_static(&self) -> bool {
+        use OpeningState::*;
+        match &self.opening_state {
+            Closed | Open => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -286,13 +294,13 @@ impl OpeningState {
             }
             Deploying(deploying_state) => {
                 // TODO
-                if deploying_state.tick().is_done() {
+                //if deploying_state.tick().is_done() {
                     *self = Shrinking(Progress::new(TICKS_CHEST_SHRINK));
-                }
+            //}
             }
             Shrinking(prg) => {
                 if prg.tick().is_done() {
-                    *self = Closed;
+                    *self = Open;
                 }
             }
             _ => ()

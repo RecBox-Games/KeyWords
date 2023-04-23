@@ -46,7 +46,17 @@ impl SpriteElem {
 	graphics::draw(ctx, &self.image, parms)?;
 	Ok(())
     }
-    
+
+    pub fn animate_scaled(&self, ctx: &mut Context, p: Point, scale: Point, progress: f32) -> GameResult<()> {
+        let frame = (self.animation.len() as f32 * progress ) as usize;
+	let parms = DrawParam::new()
+	    .scale(Point{x:self.x_scale*scale.x, y:self.y_scale*scale.y})
+	    .src(self.animation[frame])
+	    .dest(p);
+	graphics::draw(ctx, &self.image, parms)?;
+	Ok(())
+    }
+
     pub fn width(&self) -> f32{
 	self.image.dimensions().w * self.animation[0].w * self.x_scale
     }

@@ -36,7 +36,9 @@ const HEARTS_START_X: f32 = 6.0;
 const HEARTS_SPACING_X: f32 = 80.0;
 const HEARTS_START_Y: f32 = 2.0;
 const HEARTS_DROP_HEIGHT: f32 = -70.0;
-//
+// Chest Opening
+const CENTER_CHEST_SCALE: Point = Point{x: 3.0, y:3.0};
+
 
 type GR = GameResult<()>;
 type Ctx<'a> = &'a mut Context;
@@ -257,42 +259,98 @@ impl Graphical {
 //        ======================= Draw Playing =======================        //
     fn draw_playing(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
                     _playing_state: &PlayingState) -> GR {
-        self.draw_chests(ctx, chest_states)?;
+        self.draw_static_chests(ctx, chest_states)?;
+        self.draw_opening_chests(ctx, chest_states)?;
         self.draw_hearts_forming(ctx, 0.99)?;
         Ok(())
     }
 
-    fn draw_chests(&mut self, ctx: Ctx,
+    fn draw_static_chests(&mut self, ctx: Ctx,
                    chest_states: &Vec<Vec<ChestState>>) -> GR {
         for j in 0..ROWS {
             for i in 0..COLUMNS {
-                //
-                let destination = Point {
-                    x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
-                    y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
-                };
-                self.draw_chest(ctx, destination, &chest_states[j][i])?;
+                let chest_state = &chest_states[j][i];
+                if chest_state.is_static() {
+                    let destination = Point {
+                        x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
+                        y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
+                    };
+                    self.draw_chest(ctx, destination, chest_state)?;
+                }
             }
         }
         Ok(())
     }
     
-    fn draw_chest(&mut self, ctx: Ctx, point: Point,
-                  chest_state: &ChestState) -> GR {
+    fn draw_opening_chests(&mut self, ctx: Ctx,
+                   chest_states: &Vec<Vec<ChestState>>) -> GR {
+        for j in 0..ROWS {
+            for i in 0..COLUMNS {
+                let chest_state = &chest_states[j][i];
+                if ! chest_state.is_static() {
+                    let destination = Point {
+                        x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
+                        y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
+                    };
+                    self.draw_chest(ctx, destination, chest_state)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    
+    fn draw_chest(&mut self, ctx: Ctx, point: Point, chest_state: &ChestState) -> GR {
+        let center_chest_point = Point {
+            x: (SCREEN_WIDTH - self.chest.width()*CENTER_CHEST_SCALE.x)/2.0,
+            y: (SCREEN_HEIGHT - self.chest.height()*CENTER_CHEST_SCALE.y)/2.0,
+        };
+        let word = &chest_state.word;
         // chest
-        self.chest.draw(ctx, point)?; // TODO: animate()
-        // word
-        let word_mesh_width = self.get_word_mesh(&chest_state.word).width(ctx);
-        let offset_x = self.chest.width()*0.05 +
-            (self.chest.width() - word_mesh_width)/2.0;
-        let offset_y = self.chest.height() - CHEST_WORD_OFFSET_Y;
-        let offset = Point{x:offset_x, y:offset_y};
-        graphics::draw(ctx, self.get_word_mesh(&chest_state.word),
-                       (point.plus(offset),))?;
+        match &chest_state.opening_state {
+            OpeningState::Closed => {
+                self.draw_chest_scaled(ctx, point, Point{x:1.0, y:1.0}, word, 0.0)?;
+            }
+            OpeningState::Growing(prg) => {
+                let p = interpolate(point, center_chest_point,
+                                    Interpolation::Linear, prg.as_decimal());
+                let s = interpolate(Point{x:1.0, y:1.0}, CENTER_CHEST_SCALE,
+                                    Interpolation::RoundEnd, prg.as_decimal());
+                self.draw_chest_scaled(ctx, p, s, word, 0.0)?; // TODO: animate()
+            }
+            OpeningState::Opening(prg) => {
+                self.draw_chest_scaled(ctx, center_chest_point,
+                                          CENTER_CHEST_SCALE, word, prg.as_decimal())?;
+            }
+            OpeningState::Shrinking(prg) => {
+                let p = interpolate(center_chest_point, point,
+                                    Interpolation::Linear, prg.as_decimal());
+                let s = interpolate(CENTER_CHEST_SCALE, Point{x:1.0, y:1.0},
+                                    Interpolation::RoundStart, prg.as_decimal());
+                self.draw_chest_scaled(ctx, p, s, word, 0.99)?; // TODO: animate()
+            }
+            OpeningState::Open => {
+                self.draw_chest_scaled(ctx, point, Point{x:1.0, y:1.0}, word, 0.99)?;
+            }
+            _ => ()
+        }
         //
         Ok(())
     }
 
+    fn draw_chest_scaled(&mut self, ctx: Ctx, point: Point, scale: Point,
+                         word: &str, prg: f32) -> GR {
+        self.chest.animate_scaled(ctx, point, scale, prg)?; // TODO: animate()
+        // word
+        let word_mesh_width = self.get_word_mesh(word).width(ctx);
+        let offset_x = self.chest.width()*0.05 +
+            (self.chest.width() - word_mesh_width)/2.0;
+        let offset_y = self.chest.height() - CHEST_WORD_OFFSET_Y;
+        let offset = Point{x:offset_x, y:offset_y};
+        graphics::draw(ctx, self.get_word_mesh(word),
+                       (point.plus(offset),))?;
+        //
+        Ok(())
+    }
 //        =================== Graphical Helpers ======================        //
     fn get_word_mesh(&mut self, word: &str) -> &mut graphics::Text {
         if ! self.word_meshes.contains_key(word) {
@@ -336,6 +394,8 @@ fn new_chest(ctx: Ctx) -> SpriteElem {
             Rect::new(0.0*0.0909, 0.0, 0.0909, 1.0),
             Rect::new(1.0*0.0909, 0.0, 0.0909, 1.0),
             Rect::new(2.0*0.0909, 0.0, 0.0909, 1.0),            
+            Rect::new(3.0*0.0909, 0.0, 0.0909, 1.0),            
+            Rect::new(4.0*0.0909, 0.0, 0.0909, 1.0),            
         ],
     );
     chest
