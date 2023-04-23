@@ -70,7 +70,10 @@ export const start_turn = () =>
     set_chests_status(true);
 }
 
-
+export const parse_message = (message:string) =>
+{
+    console.log("received", message);
+}
 
 export const end_turn = () =>
 {

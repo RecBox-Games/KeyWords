@@ -6,5 +6,7 @@ export interface Context {
 	dimensions: Point,
 	ws:WebSocket,
 	subid:string,
-	box_ip:string
+	box_ip:string,
+    wsState: number,
+    wsMessage: string | null
 }

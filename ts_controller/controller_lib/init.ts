@@ -26,7 +26,10 @@ export const init_context = () => {
 		dimensions: {x:  canvas.width, y:  canvas.width},
 		ws: ws,
 		subid:subid as string,
-		box_ip: box_ip
+		box_ip: box_ip,
+        wsState: 0,
+        wsMessage: null
+
 	};
     // if (ws.readyState == WebSocket.CLOSED) {
     //     ws = new WebSocket("ws://" + box_ip + ":50079");
@@ -44,17 +47,18 @@ export const init_context = () => {
 	context.ws.onclose = (event) => {
 		console.log("closed websocket");
 		ws = new WebSocket("ws://" + box_ip + ":50079");
+
 	}
 
 	context.ws.onopen = (event) => {
 		console.log("openned websocket")
 
-		// let byte_array: Uint8Array = new Uint8Array(1);
-		// byte_array[0] = subid;
-		// context.ws.send(byte_array.buffer);
+		// byte_array[0] = (subid as string);
+		context.ws.send(subid as string);
 
 		context.ws.addEventListener('message', (event) => {
-		// let msg = event.data;
+            const msg = event.data;
+            context.wsMessage = msg;
 		//     handleMessage(msg);
 		});
 	}
