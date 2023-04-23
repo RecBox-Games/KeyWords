@@ -19,7 +19,9 @@ export const buttons_update = (touch:Point, touchType:number) =>{
         if (item._active)
         {
             if (item.tryTrigger(touch, touchType))
+            {
                 return ;
+            }
 
         }
 	}

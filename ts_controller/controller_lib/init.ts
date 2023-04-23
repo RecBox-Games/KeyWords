@@ -31,10 +31,7 @@ export const init_context = () => {
     // if (ws.readyState == WebSocket.CLOSED) {
     //     ws = new WebSocket("ws://" + box_ip + ":50079");
     // }
-    context.canvas.width = document.body.clientWidth;
-    context.canvas.height = document.body.clientHeight;
-    context.dimensions.x = document.body.clientWidth;
-    context.dimensions.y = document.body.clientHeight;
+    screenChange();
 
 	// window.onload = () => {
 	// 	context.dimensions.x = window.innerWidth;
@@ -69,10 +66,11 @@ window.onresize = screenChange;
 window.onorientationchange = screenChange;
 
 function screenChange() {
-    context.canvas.width = window.innerWidth-1;
-    context.canvas.height = window.innerHeight-1;
-    context.dimensions.x = window.innerWidth;
-    context.dimensions.y = window.innerHeight;
+    context.canvas.width = Math.max(window.innerWidth, window.innerHeight);
+    context.canvas.height = Math.min(window.innerWidth, window.innerHeight);
+    context.dimensions.x = Math.max(window.innerWidth, window.innerHeight);
+    context.dimensions.y = Math.min(window.innerWidth, window.innerHeight);
+    console.log("width", context.dimensions.x, "Height", context.dimensions.y)
 
     // onFlip(window.innerWidth, window.innerHeight);
 }

@@ -1,4 +1,4 @@
-import { buttons_add } from "./controller_lib/button.js";
+import { buttons_add, buttons_flush } from "./controller_lib/button.js";
 import { drawablesAdd } from "./controller_lib/draw.js";
 import { get_context } from "./controller_lib/init.js";
 import { Context } from "./controller_lib/types/context.js";
@@ -6,7 +6,7 @@ import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableTex
 import { Rectangle } from "./controller_lib/types/shapes.js";
 import { Button } from "./controller_lib/types/triggerable.js";
 import { scale_and_center } from "./controller_lib/utils.js";
-import { set_state } from "./main.js";
+import { switch_to_game } from "./main.js";
 
 interface Team {
     name:DrawableText,
@@ -30,8 +30,8 @@ let menu:Menu;
 
 const BLUE_TEAM = 1;
 const RED_TEAM = 2;
-const GUESS = 1;
-const CLUE = 2;
+const GUESS = 0;
+const CLUE = 1;
 
 export const init_menu = () => {
     menu = {
@@ -68,13 +68,13 @@ export const init_menu = () => {
 // TODO set button bounding box to be a bit bigge than text
 const set_wait_text = (ctx:Context) => {
     menu.text.text = "Waiting for game to start...";
-    set_state(1);
+    buttons_flush();
+    switch_to_game(menu.role);
 }
 
 const set_chosen_text = () => {
     let ctx:Context = get_context();
 
-    set_wait_text(ctx);
     menu.blueTeam.name.font = '50px serif';
     menu.redTeam.name.font = '50px serif';
 
@@ -83,6 +83,7 @@ const set_chosen_text = () => {
 
     ctx.ctx.font = menu.blueTeam.name.text = "Blue team " + (menu.role == GUESS ? "guesser" : "clue giver");
     ctx.ctx.font = menu.redTeam.name.text = "Red team " + (menu.role == GUESS ? "guesser" : "clue giver");
+    set_wait_text(ctx);
 }
 
 export const menu_loop = () => {

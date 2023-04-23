@@ -4,28 +4,24 @@ import { Button } from "../controller_lib/types/triggerable.js";
 export const BOARD_W: number = 5;
 export const BOARD_H: number = 5;
 
-
-export interface ChestGuesser {
-    open:boolean;
-    id: number;
-    text:DrawableText;
-    sprite:DrawableRect;
+export interface ChestContents {
+    sprite?: DrawableImage;
+    name: string;
+    effect:string;
 }
 
-export interface ChestGiver {
+export interface Chest {
     open:boolean;
     id: number;
-    contentText: DrawableText;
-    contentImage: DrawableRect;
-    contentContainer: DrawableRect;
+    content: number;
     text:DrawableText;
     sprite:DrawableRect;
 }
 
 export interface Overlay {
-    shadow: DrawableRect;
-    exit: Button;
-    exitSprite: DrawableRect;
+    shadow?: DrawableRect;
+    exit?: Button;
+    exitSprite?: DrawableRect;
     box:DrawableRect;
     text:DrawableText;
     subtext:DrawableText;
@@ -42,8 +38,7 @@ export interface TopBar {
 }
 
 export interface Board {
-    background: DrawableImage;
-    chests:((ChestGuesser | ChestGiver)[])[];
+    chests:((Chest)[])[];
     topbar:TopBar;
     buttons:(Button[])[];
     guessedWord: string | undefined;
