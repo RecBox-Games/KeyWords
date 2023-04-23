@@ -3,7 +3,7 @@ import { get_context, } from "../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../controller_lib/types/drawables.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { BOARD_H, BOARD_W } from "./interfaces.js";
-import { chest_clicked_giver, chest_clicked_guessser, close_overlay, confirm_guess, deny_guess } from "./utils.js";
+import { chest_clicked_giver, chest_clicked_guessser, close_overlay, confirm_clue, confirm_guess, deny_guess } from "./utils.js";
 const words_good = ["Building", "Tax", "Paper", "Space", "Ground", "Couple", "Table", "Court", "American", "Oil", "Street", "Image", "Phone", "Doctor", "Wall", "Worker", "News", "Movie", "North", "Computer", "Film", "Republican", "Tree", "Hair", "Window", "Brother", "Period", "Course", "Summer", "Letter", "Choice", "Daughter", "South", "Husband", "Congress", "Floor", "Campaign", "Material", "Population", "Hospital", "Church", "Bank", "West", "Sport", "Board", "Officer", "Goal", "Bed", "Author", "Blood", "Page", "Language", "Article", "East", "Artist", "Scene", "Dog", "Media", "Thought", "Pressure", "Meeting", "Disease", "Cup", "Staff", "Box", "TV", "Bill", "Message", "Lawyer", "Glass", "Sister", "Professor", "Crime", "Stage", "Gun", "Station", "Truth", "Song", "Leg", "Manager", "Science", "Card", "Cell", "Democrat", "Radio", "Ball", "Chair", "Camera", "Evening", "Writer", "Shoulder", "Sea", "Bar", "Magazine", "Hotel", "Soldier", "Bag", "Marriage", "Skin", "Gas", "Cancer", "Yard", "Finger", "Garden", "Kitchen", "Shot", "Painting", "Scientist", "Capital", "Mouth", "Newspaper", "Dinner", "Citizen", "Mission", "Forest", "Video", "Troop", "Freedom", "Plane", "Camp", "Brain", "Fan", "Hole", "Stone", "Ice", "Boat", "Sun", "Wood", "Truck", "Mountain", "Winter", "Village", "Gold", "Club", "Farm", "Band", "Horse", "Prison", "Text", "River", "Path", "Ear", "Christmas", "Baseball", "Egg", "Coffee", "Quarter", "Shoe", "Bone", "Wine", "Bus", "Internet", "Medicine", "Photo", "Classroom", "Pair", "Knee", "Flower", "Tape", "Closet", "Pitcher", "Snake", "Pig", "Beef", "Elbow", "Duck", "Van", "Sandwich", "Trunk", "Cloth", "Lens", "Nail", "Rat", "Cave", "Crystal", "Pen", "Arena", "Warrior", "Bacteria", "Mud", "Temple", "Wrist", "Curtain", "Pond", "Cattle", "Skirt", "Horn", "Guitar", "Towel", "Bat", "Alarm", "Astronomer", "Thumb", "Fork", "Sodium", "Needle", "Doll", "Oxygen", "Magic", "Jazz", "Opera", "Pit", "Gym", "Bath", "Laser", "Pizza", "Candle", "Lamp", "Garbage", "Chin", "Silk", "Alien", "Angel", "Pillow", "Ranch", "Diamond", "Gasoline", "Diabetes", "Rocket", "Carpet", "Bubble", "Barn", "Sword", "Drum", "Queen", "Fridge", "Nest", "Steam", "Cage", "Shrimp", "Wolf", "Bug", "Vaccine", "Wagon", "Bush", "Bull", "Sheep", "Skull", "Bee", "Mushroom", "Jar", "Pork", "Sock", "Helmet", "Lion", "Cliff", "Casino", "Tumor", "Spoon", "Soap", "Pin", "Purse", "Bicycle", "Rabbit", "Coin", "Stove", "Dough", "Hormone", "Pencil", "Oak", "Notebook", "Shark"
 ];
 const contents = [];
@@ -64,20 +64,18 @@ const construct_Board = (role) => {
 };
 const construct_topbar = (role) => {
     const topBar = {
-        text: { ...DEFAULT_DRAWABLE_TEXT },
-        subText: { ...DEFAULT_DRAWABLE_TEXT },
+        text: { ...DEFAULT_DRAWABLE_TEXT, text: "" },
+        subText: { ...DEFAULT_DRAWABLE_TEXT, text: "" },
         accept: { ...DEFAULT_DRAWABLE_RECT, color: "#00FF00" },
         deny: { ...DEFAULT_DRAWABLE_RECT, color: "#FF0000" },
-        acceptButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, confirm_guess),
+        acceptButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, (role == GUESSER ? confirm_guess : confirm_clue)),
         denyButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, deny_guess),
     };
     const ctx = get_context();
     const boundingBox = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.1 };
     topBar.text.boundingBox = { ...boundingBox };
-    topBar.text.text = "Your clue is {{insert_clue}}";
     boundingBox.y += boundingBox.h;
     boundingBox.h = ctx.dimensions.y * 0.05;
-    topBar.subText.text = "Guess X out of Y";
     topBar.subText.boundingBox = { ...boundingBox };
     boundingBox.w = boundingBox.w * 0.1;
     boundingBox.x = ctx.dimensions.x * 0.5 - (boundingBox.w + boundingBox.w * 0.5);

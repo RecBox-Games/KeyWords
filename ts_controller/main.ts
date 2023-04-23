@@ -3,6 +3,7 @@ import { get_context, init_context } from "./controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG, DrawableImage } from "./controller_lib/types/drawables.js";
 import { get_board, init_main_screen } from "./game/init.js";
 import { main_loop } from "./game/loop.js";
+import { start_turn } from "./game/utils.js";
 import { init_menu, menu_loop } from "./menu.js";
 import { init_tutorial, tutorial_loop } from "./tutorial.js";
 
@@ -16,6 +17,7 @@ let bg;
 
 export const switch_to_game = (role:number) => {
     init_main_screen(role);
+    start_turn(role);
     state = 2;
 }
 

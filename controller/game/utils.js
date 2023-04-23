@@ -1,5 +1,6 @@
+import { get_context } from "../controller_lib/init.js";
 import { get_board } from "./init.js";
-import { BOARD_W } from "./interfaces.js";
+import { BOARD_W, GUESSER } from "./interfaces.js";
 export const set_chests_status = (status) => {
     const board = get_board();
     for (let i = 0; i < BOARD_W; i += 1)
@@ -33,23 +34,67 @@ export const chest_clicked_giver = (self) => {
 };
 export const chest_clicked_guessser = (self) => {
     const board = get_board();
-    console.log(" :( ");
-    if (board.guessedWord)
-        console.log("Someone already guessed a word, accept or deny ", board.guessedWord);
-    else {
-        console.log("Guessing ", self.data.text.text);
-        board.topbar.acceptButton._active = true;
-        board.topbar.denyButton._active = true;
-        board.topbar.text.text = "Team's guess : \"" + self.data.text.text + "\"";
-        board.guessedWord = self.data.text.text;
+    if (!board.clue) {
+        console.log("No clue");
+        return;
     }
+    if (board.guessedWord) {
+        console.log("Someone already guessed a word, accept or deny ", board.guessedWord);
+        return;
+    }
+    console.log("Guessing ", self.data.text.text);
+    board.topbar.acceptButton._active = true;
+    board.topbar.denyButton._active = true;
+    board.topbar.text.text = "Team's guess : \"" + self.data.text.text + "\"";
+    board.guessedWord = self.data.text.text;
 };
-export const start_turn = () => {
+export const start_turn = (role) => {
     const board = get_board();
-    board.topbar.text.text = "Your clue is {{insert_clue}}";
-    board.currentGuesses = 0;
-    board.totalGuesses = 5;
-    board.topbar.subText.text = "";
+    if (role == GUESSER) {
+        board.topbar.text.text = "Waiting for a clue...";
+        board.currentGuesses = 0;
+        board.totalGuesses = 0;
+        board.clue = undefined;
+        board.topbar.subText.text = "";
+    }
+    else {
+        const input = document.getElementById("clue_input");
+        const number = document.getElementById("clue_number");
+        board.topbar.acceptButton._active = true;
+        if (input) {
+            input.style.display = "flex";
+            input.style.position = "absolute";
+            input.style.top = "4%";
+            input.style.left = "33%";
+            input.style.width = "15%";
+            input.style.fontSize = "20px";
+            input.style.background = "transparent";
+            input.style.border = "none";
+            input.style.borderBottom = "1px solid";
+            input.value = "";
+            input.onchange = (e) => {
+                get_board().clue = e.target.value;
+                console.log(e.target.value);
+            };
+        }
+        if (number) {
+            number.style.display = "flex";
+            number.style.position = "absolute";
+            number.style.top = "4%";
+            number.style.left = "55%";
+            number.style.width = "5%";
+            number.style.fontSize = "20px";
+            number.style.background = "transparent";
+            number.style.border = "none";
+            number.style.borderBottom = "1px solid";
+            number.value = (1).toString();
+            number.onchange = (e) => {
+                const val = parseInt(e.target.value);
+                get_board().totalGuesses = Math.min(Math.max(1, val), 5);
+                console.log(val);
+            };
+        }
+    }
     set_chests_status(true);
 };
 export const parse_message = (message) => {
@@ -59,7 +104,7 @@ export const end_turn = () => {
     const board = get_board();
     board.topbar.text.text = "Other team's turn";
     board.currentGuesses = 0;
-    board.totalGuesses = 5;
+    board.totalGuesses = 0;
     set_chests_status(false);
 };
 export const open_chest = (id) => {
@@ -97,4 +142,13 @@ export const deny_guess = () => {
     board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
     console.log("deny");
+};
+export const confirm_clue = () => {
+    const board = get_board();
+    const ctx = get_context();
+    board.topbar.text.text = "Your clue is " + board.clue;
+    board.topbar.acceptButton._active = false;
+    ctx.ws.send("input:clue," + board.clue + board.totalGuesses.toString());
+    document.getElementById("clue_input").style.display = 'none';
+    document.getElementById("clue_number").style.display = 'none';
 };

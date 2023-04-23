@@ -16,12 +16,13 @@ export const main_loop = () => {
             drawablesAdd(board.chests[i][j].text);
         }
     drawablesAdd(board.topbar.text);
-    if (board.guessedWord) {
-        drawablesAdd(board.topbar.accept);
-        drawablesAdd(board.topbar.deny);
-    }
-    else
+    if (!board.guessedWord) {
         drawablesAdd(board.topbar.subText);
+    }
+    if (board.topbar.acceptButton._active)
+        drawablesAdd(board.topbar.accept);
+    if (board.topbar.denyButton._active)
+        drawablesAdd(board.topbar.deny);
     if (board.showOverlay) {
         if (board.overlay.shadow)
             drawablesAdd(board.overlay.shadow);
