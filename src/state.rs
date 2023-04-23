@@ -292,7 +292,7 @@ impl OpeningState {
                     return TickEvent::Deploy;
                 } 
             }
-            Deploying(deploying_state) => {
+            Deploying(_deploying_state) => {
                 // TODO
                 //if deploying_state.tick().is_done() {
                     *self = Shrinking(Progress::new(TICKS_CHEST_SHRINK));

@@ -4,7 +4,6 @@ use crate::sprite::*;
 use crate::state::*;
 use crate::utility::*;
 use ggez::{Context, GameResult};
-use ggez::graphics;
 use ggez::graphics::{Rect, Color};
 
 //================================= Constants ================================//

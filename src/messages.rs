@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 //use controlpads::*;
 use crate::utility::*;
+use crate::state::StateManager;
 
 //================================ OutMessage ================================//
 enum OutMessage {
@@ -16,11 +17,14 @@ struct StateMessage {}
 enum InMessage {
     Input(InputMessage),
     Warn(String),
+    StateRequest,
 }
 
 pub enum InputMessage {
     PrintTurn,
     PrintChests,
+    //
+    
     //
     Ack,
     Clue(Clue),
@@ -31,7 +35,8 @@ pub enum InputMessage {
 //============================== MessageManager ==============================//
 pub struct MessageManager {
     simulated_messages: Vec<InputMessage>,
-    client_manager: ClientManager
+    client_manager: ClientManager,
+    clients_needing_state: Vec<Handle>,
 }
 
 impl MessageManager {
@@ -39,6 +44,7 @@ impl MessageManager {
         Self {
             simulated_messages: vec![],
             client_manager: ClientManager::new(),
+            clients_needing_state: vec![],
         }
     }
 
@@ -46,9 +52,14 @@ impl MessageManager {
         let mut input_messages = vec![];
         match self.client_manager.get_messages() {
             Ok(raw_messages) => {
-                for raw_msg in raw_messages {
-                    if let Some(input_message) = parse_message(raw_msg) {
+                for (handle, msg) in raw_messages {
+                    let pm = parse_message(msg);
+                    if let Some(InMessage::Input(input_message)) = pm {
+                        // add this input message to the vec to be returned
                         input_messages.push(input_message);
+                    } else if let Some(InMessage::StateRequest) = pm {
+                        // take note of the client who requested state
+                        self.clients_needing_state.push(handle);
                     }
                 }
             }
@@ -110,6 +121,16 @@ impl MessageManager {
             _ => ()
         }
     }
+
+    pub fn needs_state(&self) -> bool {
+        self.clients_needing_state.len() > 0
+    }
+
+    pub fn send_state(&mut self, state: &StateManager) {
+        for handle in std::mem::take(&mut self.clients_needing_state) {
+            self.client_manager.send_state(handle, state.to_string());
+        }
+    }
 }
 
 //=============================== ClientManager ==============================//
@@ -133,28 +154,63 @@ impl ClientManager {
         }
     }
     
-    fn get_messages(&mut self) -> Result<Vec<String>> {
+    fn get_messages(&mut self) -> Result<Vec<(Handle, String)>> {
         if controlpads::clients_changed()? {
             self.clients = controlpads::get_client_handles()?;
         }
-        let mut all_messages: Vec<String> = vec![];
+        let mut all_messages: Vec<_> = vec![];
         for handle in &self.clients {
             let messages = controlpads::get_messages(handle)?;
-            all_messages.extend(messages);
+            for msg in messages {
+                all_messages.push((handle.to_string(), msg));
+            }
         }
         Ok(all_messages)
+    }
+
+    fn send_state(&self, handle: Handle, state_suffix: String) {
+        let state_string = format!("state:{}:{}", self.role_string(&handle),
+                                   state_suffix);
+        let result = controlpads::send_message(&handle, &state_string);
+        if let Err(e) = result {
+            println!("Warning: failed to send state to {}: {}", &handle, e);
+        }
+    }
+
+    fn role_string(&self, handle: &Handle) -> String {
+        if let Some(h) = self.red_cluegiver.as_ref() {
+            if h == handle {
+                return "redcluer".to_string();
+            }
+        }
+        if let Some(h) = self.blue_cluegiver.as_ref() {
+            if h == handle {
+                return "bluecluer".to_string();
+            }
+        }
+        if self.red_guessers.iter().any(|s| s == handle) {
+            return "redguesser".to_string();
+        }
+        if self.blue_guessers.iter().any(|s| s == handle) {
+            return "blueguesser".to_string();
+        }
+        return "choosing".to_string();
     }
 }
 
 //================================== Helpers =================================//
-fn parse_message(message: String) -> Option<InputMessage> {
+fn parse_message(message: String) -> Option<InMessage> {
+    use InMessage::*;
     let parts: Vec<_> = message.split(':').collect();
     match parts[0] {
+        "staterequest" => {
+            return Some(StateRequest);
+        }
         "input" => {
             let q: Vec<_> = parts[1..].iter().collect();
             match parse_input_message(q) {
                 Ok(input_message) => {
-                    return Some(input_message);
+                    return Some(Input(input_message));
                 }
                 Err(e) => {
                     println!("Warning: error while parsing {}: {}", &message, e);
@@ -165,7 +221,9 @@ fn parse_message(message: String) -> Option<InputMessage> {
         }
         "warn" => {
             let q = &parts[1..];
+            let w = q.join(" ");
             println!("ControlpadWarning:{}", q.join(" "));
+            return Some(Warn(w));
         }
         _ => {
             println!("Warning: unrecognized message from controlpad: {}", &message);

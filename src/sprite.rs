@@ -90,7 +90,7 @@ impl TextElem {
 
     pub fn draw(&self, ctx: &mut Context, color: Color, p: Point) -> GameResult<()> {
         //graphics::set_default_filter(ctx, graphics::FilterMode::Nearest);
-	let mut parms = DrawParam::new()
+	let parms = DrawParam::new()
 	    .scale(Point{x:self.x_scale, y:self.y_scale})
             .color(color)
 	    .dest(p);
