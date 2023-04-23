@@ -53,8 +53,9 @@ export const init_context = () => {
 	context.ws.onopen = (event) => {
 		console.log("openned websocket")
 
-		// byte_array[0] = (subid as string);
-		context.ws.send(subid as string);
+	        byte_array = new UInt8Array(1);
+                byte_array[0] = subid;
+		context.ws.send(byte_array);
 
 		context.ws.addEventListener('message', (event) => {
             const msg = event.data;
