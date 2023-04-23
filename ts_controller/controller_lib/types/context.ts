@@ -5,7 +5,7 @@ export interface Context {
 	ctx: CanvasRenderingContext2D,
 	dimensions: Point,
 	ws:WebSocket,
-	subid:string,
+	subid:number,
 	box_ip:string,
     wsState: number,
     wsMessage: string | null

@@ -17,7 +17,7 @@ export const init_context = () => {
         ctx: canvas.getContext("2d"),
         dimensions: { x: canvas.width, y: canvas.width },
         ws: ws,
-        subid: subid,
+        subid: parseInt(subid),
         box_ip: box_ip,
         wsState: 0,
         wsMessage: null
@@ -38,8 +38,9 @@ export const init_context = () => {
     };
     context.ws.onopen = (event) => {
         console.log("openned websocket");
-        // byte_array[0] = (subid as string);
-        context.ws.send(subid);
+        let byte_array = new Uint8Array(1);
+        byte_array[0] = context.subid;
+        context.ws.send(byte_array);
         context.ws.addEventListener('message', (event) => {
             const msg = event.data;
             context.wsMessage = msg;
