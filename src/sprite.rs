@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 use ggez::{Context, GameResult};
 use ggez::graphics;
-use ggez::graphics::{Image, DrawParam};
+use ggez::graphics::{Image, Text, DrawParam, Color};
 
 use crate::utility::*;
 
@@ -64,5 +64,55 @@ impl SpriteElem {
 	self.image.dimensions().h * self.animation[0].h * self.y_scale
     }
 }
-//==================================<===|===>=================================//
 
+pub struct TextElem {
+    mesh: Text,
+    size: f32,
+    x_scale: f32,
+    y_scale: f32,
+}
+
+impl TextElem {
+    pub fn new(text: &str, size: f32, x_scale: f32, y_scale: f32) -> Self {
+        let mesh = Text::new(graphics::TextFragment {
+            text: text.to_string(),
+            color: None,
+            font: Some(graphics::Font::default()),
+            scale: Some(graphics::PxScale::from(size)),
+        });
+	TextElem {
+	    mesh,
+            size,
+	    x_scale,
+	    y_scale,
+	}
+    }
+
+    pub fn draw(&self, ctx: &mut Context, color: Color, p: Point) -> GameResult<()> {
+        //graphics::set_default_filter(ctx, graphics::FilterMode::Nearest);
+	let mut parms = DrawParam::new()
+	    .scale(Point{x:self.x_scale, y:self.y_scale})
+            .color(color)
+	    .dest(p);
+	graphics::draw(ctx, &self.mesh, parms)?;
+	Ok(())
+    }
+
+    pub fn draw_scaled(&self, ctx: &mut Context, color: Color, p: Point, scale: Point) -> GameResult<()> {
+	let parms = DrawParam::new()
+	    .scale(Point{x:self.x_scale*scale.x, y:self.y_scale*scale.y})
+            .color(color)
+	    .dest(p);
+	graphics::draw(ctx, &self.mesh, parms)?;
+	Ok(())
+    }
+
+    pub fn width(&self, ctx: &mut Context) -> f32{
+	self.mesh.dimensions(ctx).w  * self.x_scale
+    }
+    pub fn height(&self, ctx: &mut Context) -> f32{
+	self.mesh.dimensions(ctx).h  * self.y_scale
+    }
+}
+
+//==================================<===|===>=================================//

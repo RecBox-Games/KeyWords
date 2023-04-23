@@ -11,6 +11,7 @@ use ggez::graphics::{Rect, Color};
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
 const FONT_SIZE_WORDS: f32 = 36.0;
 const COLOR_WORDS: Color = Color::new(0.9, 0.8, 0.7, 1.0);
+const COLOR_DARK_WORDS: Color = Color::new(0.5, 0.4, 0.3, 1.0);
 const CHEST_WORD_OFFSET_Y: f32 = 40.0;
 // Scale
 const SCALE_HEART_X: f32 = 6.0;
@@ -52,7 +53,7 @@ pub struct Graphical {
     sparkle: SpriteElem,
     // chests
     chest: SpriteElem,
-    word_meshes: HashMap<String, graphics::Text>,
+    word_meshes: HashMap<String, TextElem>,
     // hearts
     heart_red: SpriteElem,
     heart_blue: SpriteElem,
@@ -93,6 +94,7 @@ impl Graphical {
             }
             //_ => (),
         }
+        //
         Ok(())
     }
 
@@ -308,28 +310,30 @@ impl Graphical {
         // chest
         match &chest_state.opening_state {
             OpeningState::Closed => {
-                self.draw_chest_scaled(ctx, point, Point{x:1.0, y:1.0}, word, 0.0)?;
+                self.draw_chest_scaled(ctx, point, Point{x:1.0, y:1.0}, word,
+                                       COLOR_WORDS, 0.0)?;
             }
             OpeningState::Growing(prg) => {
                 let p = interpolate(point, center_chest_point,
                                     Interpolation::Linear, prg.as_decimal());
                 let s = interpolate(Point{x:1.0, y:1.0}, CENTER_CHEST_SCALE,
                                     Interpolation::RoundEnd, prg.as_decimal());
-                self.draw_chest_scaled(ctx, p, s, word, 0.0)?; // TODO: animate()
+                self.draw_chest_scaled(ctx, p, s, word, COLOR_WORDS, 0.0)?; 
             }
             OpeningState::Opening(prg) => {
                 self.draw_chest_scaled(ctx, center_chest_point,
-                                          CENTER_CHEST_SCALE, word, prg.as_decimal())?;
+                                       CENTER_CHEST_SCALE, word, COLOR_WORDS,
+                                       prg.as_decimal())?;
             }
             OpeningState::Shrinking(prg) => {
                 let p = interpolate(center_chest_point, point,
                                     Interpolation::Linear, prg.as_decimal());
                 let s = interpolate(CENTER_CHEST_SCALE, Point{x:1.0, y:1.0},
                                     Interpolation::RoundStart, prg.as_decimal());
-                self.draw_chest_scaled(ctx, p, s, word, 0.99)?; // TODO: animate()
+                self.draw_chest_scaled(ctx, p, s, word, COLOR_WORDS, 0.99)?;
             }
             OpeningState::Open => {
-                self.draw_chest_scaled(ctx, point, Point{x:1.0, y:1.0}, word, 0.99)?;
+                self.draw_chest_scaled(ctx, point, Point{x:1.0, y:1.0}, word, COLOR_DARK_WORDS, 0.99)?;
             }
             _ => ()
         }
@@ -338,28 +342,26 @@ impl Graphical {
     }
 
     fn draw_chest_scaled(&mut self, ctx: Ctx, point: Point, scale: Point,
-                         word: &str, prg: f32) -> GR {
-        self.chest.animate_scaled(ctx, point, scale, prg)?; // TODO: animate()
+                         word: &str, word_color: Color, prg: f32) -> GR {
+        self.chest.animate_scaled(ctx, point, scale, prg)?;
         // word
         let word_mesh_width = self.get_word_mesh(word).width(ctx);
         let offset_x = self.chest.width()*0.05 +
             (self.chest.width() - word_mesh_width)/2.0;
         let offset_y = self.chest.height() - CHEST_WORD_OFFSET_Y;
-        let offset = Point{x:offset_x, y:offset_y};
-        graphics::draw(ctx, self.get_word_mesh(word),
-                       (point.plus(offset),))?;
+        let offset = Point{x:offset_x*scale.x, y:offset_y*scale.y};
+        self.get_word_mesh(word).draw_scaled(ctx, word_color, point.plus(offset), scale)?;
         //
         Ok(())
     }
 //        =================== Graphical Helpers ======================        //
-    fn get_word_mesh(&mut self, word: &str) -> &mut graphics::Text {
+    fn get_word_mesh(&mut self, word: &str) -> &mut TextElem {
         if ! self.word_meshes.contains_key(word) {
             self.word_meshes.insert(
                 word.to_string(), // key
-                new_text_mesh(    // value
+                new_text_elem(    // value
                     word.to_string(),
                     FONT_SIZE_WORDS,
-                    COLOR_WORDS,
                 )
             );
         }
@@ -401,14 +403,8 @@ fn new_chest(ctx: Ctx) -> SpriteElem {
     chest
 }
 
-fn new_text_mesh(text: String, font_size: f32,
-                 color: Color) -> graphics::Text {
-    graphics::Text::new(graphics::TextFragment {
-        text: text,
-        color: Some(color),
-        font: Some(graphics::Font::default()),
-        scale: Some(graphics::PxScale::from(font_size)),
-    })
+fn new_text_elem(text: String, font_size: f32) -> TextElem {
+    TextElem::new(&text, font_size, 1.0, 1.0)
 }
 
 fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
@@ -429,3 +425,4 @@ fn new_notify_box(ctx: Ctx) -> SpriteElem {
 }
 
 //==================================<===|===>=================================//
+
