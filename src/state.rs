@@ -11,10 +11,13 @@ use std::mem::take;
 pub const TICKS_TITLE: usize = 180; // TODO
 pub const TICKS_CHESTFALL: usize = 320;
 pub const TICKS_TURN_TRANSITION: usize = 40;
-pub const TICKS_CHEST_OPEN: usize = 220;
-pub const TICKS_PER_HEALTH: usize = 40;
+pub const TICKS_CHEST_GROW: usize = 40;
+pub const TICKS_CHEST_OPEN: usize = 40;
+pub const TICKS_CHEST_SHRINK: usize = 30;
+pub const TICKS_PER_HEALTH: usize = 30;
 pub const TICKS_TUT_DROP_IN: usize = 80;
 pub const TICKS_TUT_DROP_OUT: usize = 70;
+pub const TICKS_PROJECTILE: usize = 15;
 // Health
 pub const MAX_HEALTH_RED: usize = 10;
 pub const MAX_HEALTH_BLUE: usize = 12;
@@ -103,8 +106,8 @@ impl StateManager {
         if let GameState::Playing(playing_state) = &mut self.game_state {
             let guess = playing_state.turn_state.handle_second(support);
             if let Some((row, col)) = guess {
-                // start openning chest
-                self.chest_states[row][col].lid_state = LidState::Opening(0);
+                // start opening chest
+                self.chest_states[row][col].opening_state.start_opening();
             }
         } else {
             println!("Warning: bad second (1)");
@@ -231,48 +234,112 @@ impl PlayingState {
 
 //        ======================== ChestState ========================        //
 pub struct ChestState {
-    pub lid_state: LidState,
+    pub opening_state: OpeningState,
     pub word: String,
     pub contents: ChestContent,
 }
 
 impl ChestState {
-    /*fn nothing() -> Self {
-        ChestState {
-            lid_state: LidState::Closed,
-            word: "Nothing".to_string(),
-            contents: ChestContent::Empty,
-        }
-    }*/
-
     fn new(word: String, contents: ChestContent) -> Self {
         ChestState {
-            lid_state: LidState::Closed,
+            opening_state: OpeningState::Closed,
             word,
             contents,
         }
     }
     
-    fn tick(&mut self) {
-        self.lid_state.tick();
+    fn tick(&mut self) -> TickEvent {
+        use OpeningState::*;
+        let tick_event = self.opening_state.tick();
+        if let TickEvent::Deploy = tick_event {
+            self.opening_state = Deploying(DeployingState::new(self.contents));
+            return TickEvent::None;
+        }
+        tick_event
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub enum LidState {
+#[derive(Debug)]
+pub enum OpeningState {
     Closed,
-    Opening(usize/*tick number*/),
+    Growing(Progress),
+    Opening(Progress),
+    Deploying(DeployingState),
+    Shrinking(Progress),
     Open,
 }
 
-impl LidState {
-    fn tick(&mut self) {
-        use LidState::*;
-        if let Opening(TICKS_CHEST_OPEN) = self {
-            *self = Open;
-        } else if let Opening(n) = self {
-            *self = Opening(*n+1);
+impl OpeningState {
+    
+    fn tick(&mut self) -> TickEvent {
+        use OpeningState::*;
+        match self {
+            Growing(prg) => {
+                if prg.tick().is_done() {
+                    *self = Opening(Progress::new(TICKS_CHEST_OPEN));
+                }
+            }
+            Opening(prg) => {
+                if prg.tick().is_done() {
+                    return TickEvent::Deploy;
+                } 
+            }
+            Deploying(deploying_state) => {
+                // TODO
+                if deploying_state.tick().is_done() {
+                    *self = Shrinking(Progress::new(TICKS_CHEST_SHRINK));
+                }
+            }
+            Shrinking(prg) => {
+                if prg.tick().is_done() {
+                    *self = Closed;
+                }
+            }
+            _ => ()
         }
+        TickEvent::None
+    }
+
+    fn start_opening(&mut self) {
+        use OpeningState::*;
+        *self = Growing(Progress::new(TICKS_CHEST_GROW));
+    }
+}
+
+#[derive(Debug)]
+pub struct DeployingState {
+    current_projectile_progress: Progress,
+    projectiles: Vec<Projectile>,
+}
+
+impl DeployingState {
+    fn new(content: ChestContent) -> Self {
+        use ChestContent::*;
+        use Projectile::*;
+        Self {
+            current_projectile_progress: Progress::new(TICKS_PROJECTILE),
+            projectiles: match content {
+                Empty => vec![],
+                Bomb1 => vec![Bomb],
+                Bomb2 => vec![Bomb, Bomb],
+                Bomb5 => vec![Bomb, Bomb, Bomb, Bomb, Bomb],
+                Sword1 => vec![Sword],
+                Sword2 => vec![Sword, Sword],
+                Heal3 => vec![Heart, Heart, Heart],
+            }
+        }
+    }
+
+    fn tick(&mut self) -> TickEvent {
+        if self.projectiles.len() == 0 {
+            return TickEvent::Done;
+        }
+        if self.current_projectile_progress.tick().is_done() {
+            self.current_projectile_progress = Progress::new(TICKS_PROJECTILE);
+            return TickEvent::ProjectileHit(self.projectiles.pop().unwrap());
+            // we can unwrap because we already checked for 0 len
+        }
+        TickEvent::None
     }
 }
 
@@ -285,6 +352,13 @@ pub enum ChestContent {
     Sword1,
     Sword2,
     Heal3,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Projectile {
+    Sword,
+    Bomb,
+    Heart,
 }
 
 //        ========================= TurnState ========================        //
@@ -543,7 +617,7 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
 //        ====================== Pretty Printing =====================        //
 impl std::fmt::Display for ChestState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let LidState::Open = &self.lid_state {
+        if let OpeningState::Open = &self.opening_state {
             write!(f, "O", )
         } else {
             write!(f, "#", )

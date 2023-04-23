@@ -1,10 +1,5 @@
 //==================================<===|===>=================================//
-
-/*//================================ InputEvent ================================//
-pub enum InputEvent {
-
-}*/
-
+use crate::state::Projectile;
 
 //================================= TickEvent ================================//
 pub enum TickEvent {
@@ -12,6 +7,8 @@ pub enum TickEvent {
     Done,
     //
     Syn,
+    Deploy,
+    ProjectileHit(Projectile),
 }
 
 impl TickEvent {

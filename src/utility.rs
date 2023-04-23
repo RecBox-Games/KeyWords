@@ -36,6 +36,10 @@ impl Progress {
     pub fn as_decimal(&self) -> f32 {
         self.now as f32 / self.end as f32
     }
+
+    pub fn is_done(&self) -> bool{
+        self.now >= self.end
+    }
 }
 
 
