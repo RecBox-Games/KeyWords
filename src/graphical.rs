@@ -11,7 +11,7 @@ use ggez::graphics::{Rect, Color};
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
 const FONT_SIZE_WORDS: f32 = 36.0;
 const COLOR_WORDS: Color = Color::new(0.9, 0.8, 0.7, 1.0);
-const COLOR_DARK_WORDS: Color = Color::new(0.5, 0.4, 0.3, 1.0);
+const COLOR_DARK_WORDS: Color = Color::new(0.10, 0.05, 0.03, 1.0);
 const CHEST_WORD_OFFSET_Y: f32 = 40.0;
 // Scale
 const SCALE_HEART_X: f32 = 6.0;
@@ -59,6 +59,10 @@ pub struct Graphical {
     heart_blue: SpriteElem,
     // notification
     notify_box: SpriteElem,
+    // chest contents
+    sword: SpriteElem,
+    bomb: SpriteElem,
+    heal: SpriteElem,
 }
 
 impl Graphical {
@@ -73,6 +77,9 @@ impl Graphical {
             heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4], true),
             heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4], false),
             notify_box: new_notify_box(ctx),
+            sword: SpriteElem::new(ctx, 3.0, 3.0, "/sword.png"),
+            bomb: SpriteElem::new(ctx, 3.0, 3.0, "/bomb.png"),
+            heal: SpriteElem::new(ctx, 3.0, 3.0, "/heal.png"),
         }
     }
 
