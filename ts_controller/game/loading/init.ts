@@ -1,5 +1,5 @@
 import { get_context } from "../../controller_lib/init.js";
-import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "../../controller_lib/types/drawables";
+import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
 
 export interface Loading {
     bar:DrawableRect;
@@ -30,4 +30,5 @@ export const init_loading =  () => {
     loading.text.text = 'Loading';
     loading.text.font = '4px serif'
 
+    ctx.ws.send('staterequest');
 }
