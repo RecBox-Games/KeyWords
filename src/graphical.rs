@@ -44,8 +44,7 @@ const CONTENTS_X: f32 = SCREEN_WIDTH/2.0;
 const CONTENTS_Y: f32 = 370.0;
 const CONTENTS_SPACING_X: f32 = 100.0;
 // Select
-const SELECTION_OFFSET_Y: f32 = 20.0;
-const SELECTION_OFFSET_X: f32 = 4.0;
+const SELECTION_OFFSET: Point = Point{x:4.0, y:20.0};
 //
 
 type GR = GameResult<()>;
@@ -190,10 +189,8 @@ impl Graphical {
         for k in 0..next_to_land.min(num_chests) {
             let j = k/COLUMNS;  let i = k%COLUMNS;
             //
-            let destination = Point {
-                x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
-                y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
-            };
+            
+            let destination = self.get_chest_location(j,i);
             self.draw_chest(ctx, destination, &chest_states[j][i])?;
         }
         // draw chests that are still falling
@@ -203,10 +200,7 @@ impl Graphical {
             let prg_fall_start = (k + 1) as f32 * slice_len;
             let fall_duration = slice_len * SIMULTANEOUS_FALLS as f32;
             let sub_prg = (prg - prg_fall_start)/fall_duration;
-            let destination = Point {
-                x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
-                y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
-            };
+            let destination = self.get_chest_location(j,i);
             let start = Point {
                 x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
                 y: CHESTS_DROP_HEIGHT_BASE + CHESTS_DROP_ROW_DIFFERENCE*(j as f32),
@@ -262,11 +256,11 @@ impl Graphical {
         self.draw_static_chests(ctx, chest_states)?;
         self.draw_selection(ctx, &playing_state.turn_state)?;
         self.draw_opening_chests(ctx, chest_states)?;
+        self.draw_health(ctx, &playing_state.red_health_state, &playing_state.blue_health_state )?;
         if let Some(deploying_state) = get_deploying_state(chest_states) {
             self.draw_deploying(ctx, deploying_state, playing_state.current_team(),
                                 playing_state.red_health(), playing_state.blue_health())?;
         }
-        self.draw_health(ctx, &playing_state.red_health_state, &playing_state.blue_health_state )?;
         Ok(())
     }
 
@@ -305,10 +299,7 @@ impl Graphical {
             for i in 0..COLUMNS {
                 let chest_state = &chest_states[j][i];
                 if chest_state.is_static() {
-                    let destination = Point {
-                        x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
-                        y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
-                    };
+                    let destination = self.get_chest_location(j,i);
                     self.draw_chest(ctx, destination, chest_state)?;
                 }
             }
@@ -322,10 +313,8 @@ impl Graphical {
             for i in 0..COLUMNS {
                 let chest_state = &chest_states[j][i];
                 if ! chest_state.is_static() {
-                    let destination = Point {
-                        x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
-                        y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
-                    };
+                    
+                    let destination = self.get_chest_location(j, i);
                     self.draw_chest(ctx, destination, chest_state)?;
                 }
             }
@@ -453,12 +442,8 @@ impl Graphical {
 
     fn draw_selection(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
         if let Some((row, col)) = turn_state.proposed_guess() {
-            let p = Point {
-                x: SELECTION_OFFSET_X + CHESTS_START_X + CHESTS_SPACING_X*(col as f32),
-                y: SELECTION_OFFSET_Y + CHESTS_START_Y +
-                    CHESTS_SPACING_Y*(row as f32) +
-                    CHESTS_VERTICAL_OFFSET_FACTOR*(row as f32),
-            };
+            let chest_loc = self.get_chest_location(row, col);
+            let p = chest_loc.plus(SELECTION_OFFSET);
             match turn_state.current_team() {
                 Team::Red => {
                     self.select_red.draw(ctx, p)?;
@@ -500,6 +485,13 @@ impl Graphical {
                     y: HEARTS_START_Y,
                 }
             }
+        }
+    }
+
+    fn get_chest_location(&self, j: usize, i: usize) -> Point {
+        Point {
+            x: CHESTS_START_X + CHESTS_SPACING_X*(i as f32),
+            y: CHESTS_START_Y + CHESTS_SPACING_Y*(j as f32) + CHESTS_VERTICAL_OFFSET_FACTOR*(i as f32),
         }
     }
 }
