@@ -46,13 +46,14 @@ export const init_context = () => {
 
 	context.ws.onclose = (event) => {
 		console.log("closed websocket");
-		ws = new WebSocket("ws://" + box_ip + ":50079");
+        context.wsState = 0;
+		context.ws = new WebSocket("ws://" + box_ip + ":50079");
 
 	}
 
 	context.ws.onopen = (event) => {
 		console.log("openned websocket")
-
+        context.wsState = 1;
         let byte_array:Uint8Array = new Uint8Array(1);
 		byte_array[0] = context.subid;
 		context.ws.send(byte_array);

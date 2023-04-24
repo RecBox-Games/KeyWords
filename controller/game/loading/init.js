@@ -3,20 +3,27 @@ import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_l
 const loading = {
     text: { ...DEFAULT_DRAWABLE_TEXT },
     barBG: { ...DEFAULT_DRAWABLE_RECT },
-    bar: { ...DEFAULT_DRAWABLE_RECT }
+    bar: { ...DEFAULT_DRAWABLE_RECT },
+    sent: false,
+    BG: { ...DEFAULT_DRAWABLE_RECT }
 };
 export const get_loading = () => loading;
 export const init_loading = () => {
     const ctx = get_context();
     const box = {
-        x: ctx.dimensions.x * 0.25,
-        y: ctx.dimensions.y * 0.75,
-        w: ctx.dimensions.x * 0.5,
-        h: ctx.dimensions.y * 0.2
+        x: ctx.dimensions.x * 0.15,
+        y: ctx.dimensions.y * 0.65,
+        w: ctx.dimensions.x * 0.70,
+        h: ctx.dimensions.y * 0.1
     };
     loading.barBG.boundingBox = box;
     loading.bar.boundingBox = box;
+    loading.text.boundingBox = { ...box, y: box.y - (box.h * 2) };
     loading.text.text = 'Loading';
-    loading.text.font = '4px serif';
-    ctx.ws.send('staterequest');
+    loading.text.font = '80px serif';
+    loading.text.color = '#FF0000';
+    loading.BG.boundingBox.w = ctx.dimensions.x;
+    loading.BG.boundingBox.h = ctx.dimensions.y;
+    loading.BG.color = '#AAAAAA';
+    // console.log("socket", ctx.ws, ctx.wsState)
 };
