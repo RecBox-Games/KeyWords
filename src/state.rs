@@ -623,47 +623,87 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
 }
 
 //        ====================== Pretty Printing =====================        //
-impl std::fmt::Display for ChestState {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let OpeningState::Open = &self.opening_state {
-            write!(f, "O", )
-        } else {
-            write!(f, "#", )
-        }
-    }
-}
-
 impl std::fmt::Display for StateManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut j = 0;
-        write!(f, "{}{}{}{}{}\n",
-               self.chest_states[j][0], self.chest_states[j][1],
-               self.chest_states[j][2], self.chest_states[j][3],
-               self.chest_states[j][4])?;
-        j = 1;
-        write!(f, "{}{}{}{}{}\n",
-               self.chest_states[j][0], self.chest_states[j][1],
-               self.chest_states[j][2], self.chest_states[j][3],
-               self.chest_states[j][4])?;
-        j = 2;
-        write!(f, "{}{}{}{}{}\n",
-               self.chest_states[j][0], self.chest_states[j][1],
-               self.chest_states[j][2], self.chest_states[j][3],
-               self.chest_states[j][4])?;
-        j = 3;
-        write!(f, "{}{}{}{}{}\n",
-               self.chest_states[j][0], self.chest_states[j][1],
-               self.chest_states[j][2], self.chest_states[j][3],
-               self.chest_states[j][4])?;
-        j = 4;
-        write!(f, "{}{}{}{}{}\n",
-               self.chest_states[j][0], self.chest_states[j][1],
-               self.chest_states[j][2], self.chest_states[j][3],
-               self.chest_states[j][4])?;
-        write!(f, "{}", self.game_state)
+        let mut turn_state_string = String::from("none");
+        let mut health_state_string = String::from("none");
+        if let GameState::Playing(playing_state) = &self.game_state {
+            turn_state_string = playing_state.turn_state.to_string();
+            health_state_string = format!("{},{}",
+                                          playing_state.red_health_state.src_amount,
+                                          playing_state.blue_health_state.src_amount);
+        }
+        let mut q: Vec<String> = vec![];
+        for row in &self.chest_states {
+            for chest in row {
+                q.push(chest.to_string())
+            }
+        }
+        let mut chest_states_string = q.join(";");
+        write!(f, "{}:{}:{}", turn_state_string, health_state_string, chest_states_string)
     }
 }
 
+impl std::fmt::Display for TurnState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use TurnState::*;
+        let s = match &self {
+            RedCluing | RedCluingEnd(_,_) | BlueGuessingEnd(_) => String::from("redcluing"),
+            BlueCluing | BlueCluingEnd(_,_) | RedGuessingEnd(_) => String::from("bluecluing"),
+            RedGuessing(clue, proposed_guess) => {
+                let pg_str = match proposed_guess {
+                    Some(_) => "true",
+                    None => "false",
+                };
+                format!("redguessing,{},{},{}",clue.word, clue.num, pg_str)
+            }
+            BlueGuessing(clue, proposed_guess) => {
+                let pg_str = match proposed_guess {
+                    Some(_) => "true",
+                    None => "false",
+                };
+                format!("blueguessing,{},{},{}",clue.word, clue.num, pg_str)
+            }
+        };
+        write!(f, "{}", s)
+
+    }
+}
+    
+impl std::fmt::Display for ChestState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{},{},{}", self.word, self.opening_state, self.contents)
+    }
+}
+
+impl std::fmt::Display for ChestContent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use ChestContent::*;
+        let s = match self {
+            Empty => "empty",
+            Bomb1 => "bomb1",
+            Bomb2 => "bomb2",
+            Bomb5 => "bomb5",
+            Sword1 => "sword1",
+            Sword2 => "sword2",
+            Heal3 => "heal3",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+impl std::fmt::Display for OpeningState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use OpeningState::*;
+        let s = match self {
+            Open => "open",
+            _ => "closed",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+// only for debug
 impl std::fmt::Display for GameState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let GameState::Playing(playing_state) = self {
@@ -673,6 +713,5 @@ impl std::fmt::Display for GameState {
         }
     }
 }
-    
 
 //==================================<===|===>===================================

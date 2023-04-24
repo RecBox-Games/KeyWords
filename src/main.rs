@@ -87,6 +87,10 @@ impl EventHandler<ggez::GameError> for MyRunner {
         for m in messages {
             self.state_manager.handle_input(m);
         }
+        //
+        if self.message_manager.needs_state() {
+            self.message_manager.send_state(&self.state_manager);
+        }
         Ok(())
     }
 
