@@ -13,6 +13,7 @@ const COLOR_WORDS: Color = Color::new(0.9, 0.8, 0.7, 1.0);
 const COLOR_DARK_WORDS: Color = Color::new(0.10, 0.05, 0.03, 1.0);
 const CHEST_WORD_OFFSET_Y: f32 = 40.0;
 // Scale
+const SCALE_CONTENTS: f32 = 6.0;
 const SCALE_HEART_X: f32 = 6.0;
 const SCALE_HEART_Y: f32 = 6.0;
 const SCALE_CHEST_X: f32 = 7.5;
@@ -38,6 +39,9 @@ const HEARTS_START_Y: f32 = 2.0;
 const HEARTS_DROP_HEIGHT: f32 = -70.0;
 // Chest Opening
 const CENTER_CHEST_SCALE: Point = Point{x: 3.0, y:3.0};
+const CONTENTS_X: f32 = SCREEN_WIDTH/2.0;
+const CONTENTS_Y: f32 = 370.0;
+const CONTENTS_SPACING_X: f32 = 100.0;
 
 
 type GR = GameResult<()>;
@@ -76,9 +80,9 @@ impl Graphical {
             heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4], true),
             heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4], false),
             notify_box: new_notify_box(ctx),
-            sword: SpriteElem::new(ctx, 3.0, 3.0, "/sword.png"),
-            bomb: SpriteElem::new(ctx, 3.0, 3.0, "/bomb.png"),
-            heal: SpriteElem::new(ctx, 3.0, 3.0, "/heal.png"),
+            sword: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/sword.png"),
+            bomb: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/bomb.png"),
+            heal: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/heal.png"),
         }
     }
 
@@ -211,10 +215,7 @@ impl Graphical {
         let nth_heart = (prg * time_slices as f32) as usize; // the index of the currently dropping heart
         // red hearts that have landed
         for i in 0..nth_heart.min(MAX_HEALTH_RED) {
-            let destination = Point {
-                x: HEARTS_START_X + HEARTS_SPACING_X*(i as f32),
-                y: HEARTS_START_Y,
-            };
+            let destination = self.get_heart_location(Team::Red, i);
             let formations_since_i = (prg - ((i+1) as f32)*slice_len)/slice_len;
             let formation_prg = (formations_since_i-1.0).max(0.0).min(0.99);
             self.heart_red.animate(ctx, destination, 0.99-formation_prg)?;
@@ -222,24 +223,14 @@ impl Graphical {
         // dropping red heart
         if nth_heart < MAX_HEALTH_RED {
             let sub_prg = (prg - (nth_heart as f32)*slice_len)/slice_len;
-            let destination = Point {
-                x: HEARTS_START_X + HEARTS_SPACING_X*(nth_heart as f32),
-                y: HEARTS_START_Y,
-            };
-            let start = Point {
-                x: HEARTS_START_X + HEARTS_SPACING_X*(nth_heart as f32),
-                y: HEARTS_DROP_HEIGHT,
-            };
+            let destination = self.get_heart_location(Team::Red, nth_heart);
+            let start = destination.minus(Point{x:0.0, y:HEARTS_DROP_HEIGHT});
             let location = interpolate(start, destination, Interpolation::RoundEnd, sub_prg);
             self.heart_red.animate(ctx, location, 0.99)?;
         }
         // blue hearts that have landed
         for i in 0..nth_heart.min(MAX_HEALTH_BLUE) {
-            let destination = Point {
-                x: SCREEN_WIDTH - self.heart_red.width() -
-                    HEARTS_START_X - HEARTS_SPACING_X*(i as f32),
-                y: HEARTS_START_Y,
-            };
+            let destination = self.get_heart_location(Team::Blue, i);
             let formations_since_i = (prg - ((i+1) as f32)*slice_len)/slice_len;
             let formation_prg = (formations_since_i-1.0).max(0.0).min(0.99);
             self.heart_blue.animate(ctx, destination, 0.99-formation_prg)?;
@@ -247,16 +238,8 @@ impl Graphical {
         // dropping blue heart
         if nth_heart < MAX_HEALTH_BLUE {
             let sub_prg = (prg - (nth_heart as f32)*slice_len)/slice_len;
-            let destination = Point {
-                x: SCREEN_WIDTH - self.heart_red.width() -
-                    HEARTS_START_X - HEARTS_SPACING_X*(nth_heart as f32),
-                y: HEARTS_START_Y,
-            };
-            let start = Point {
-                x: SCREEN_WIDTH - self.heart_red.width() -
-                    HEARTS_START_X - HEARTS_SPACING_X*(nth_heart as f32),
-                y: HEARTS_DROP_HEIGHT,
-            };
+            let destination = self.get_heart_location(Team::Blue, nth_heart);
+            let start = destination.minus(Point{x:0.0, y:HEARTS_DROP_HEIGHT});
             let location = interpolate(start, destination, Interpolation::RoundEnd, sub_prg);
             self.heart_blue.animate(ctx, location, 0.99)?;
         }
@@ -266,13 +249,46 @@ impl Graphical {
     
 //        ======================= Draw Playing =======================        //
     fn draw_playing(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
-                    _playing_state: &PlayingState) -> GR {
+                    playing_state: &PlayingState) -> GR {
         self.draw_static_chests(ctx, chest_states)?;
         self.draw_opening_chests(ctx, chest_states)?;
-        self.draw_hearts_forming(ctx, 0.99)?;
+        self.draw_health(ctx, &playing_state.red_health_state, &playing_state.blue_health_state )?;
+        if let Some(deploying_state) = get_deploying_state(chest_states) {
+            self.draw_deploying(ctx, deploying_state, playing_state.current_team(),
+                                playing_state.red_health(), playing_state.blue_health())?;
+        }
         Ok(())
     }
 
+    fn draw_health(&mut self, ctx: Ctx, red_health: &HealthState, blue_health: &HealthState) -> GR {
+        // red
+        for i in 0..MAX_HEALTH_RED {
+            let p = self.get_heart_location(Team::Red, i);
+            let prg = if i < red_health.src_amount {
+                0.0
+            } else if i == red_health.src_amount {
+                0.99 - red_health.fraction()
+            } else {
+                0.99
+            };
+            self.heart_red.animate(ctx, p, prg)?;            
+        }
+        //blue
+        for i in 0..MAX_HEALTH_BLUE {
+            let p = self.get_heart_location(Team::Blue, i);
+            let prg = if i < blue_health.src_amount {
+                0.0
+            } else if i == blue_health.src_amount {
+                0.99 - blue_health.fraction()
+            } else {
+                0.99
+            };
+            self.heart_blue.animate(ctx, p, prg)?;            
+        }
+        //
+        Ok(())
+    }
+    
     fn draw_static_chests(&mut self, ctx: Ctx,
                    chest_states: &Vec<Vec<ChestState>>) -> GR {
         for j in 0..ROWS {
@@ -331,6 +347,11 @@ impl Graphical {
                                        CENTER_CHEST_SCALE, word, COLOR_WORDS,
                                        prg.as_decimal())?;
             }
+            OpeningState::Deploying(_) => {
+                self.draw_chest_scaled(ctx, center_chest_point,
+                                       CENTER_CHEST_SCALE, word, COLOR_WORDS,
+                                       0.99)?;
+            }
             OpeningState::Shrinking(prg) => {
                 let p = interpolate(center_chest_point, point,
                                     Interpolation::Linear, prg.as_decimal());
@@ -341,7 +362,6 @@ impl Graphical {
             OpeningState::Open => {
                 self.draw_chest_scaled(ctx, point, Point{x:1.0, y:1.0}, word, COLOR_DARK_WORDS, 0.99)?;
             }
-            _ => ()
         }
         //
         Ok(())
@@ -360,6 +380,67 @@ impl Graphical {
         //
         Ok(())
     }
+
+    fn draw_deploying(&mut self, ctx: Ctx, deploying_state: &DeployingState,
+                      team: Team, red_health: usize, blue_health: usize) -> GR {
+        let base_p = Point{x:CONTENTS_X, y:CONTENTS_Y};
+        let offset = Point{x:-CONTENTS_SPACING_X, y:0.0}
+        .scale(deploying_state.total_projectiles as f32 / 2.0);
+        let first_p = base_p.plus(offset);
+        let spacing = Point{x:CONTENTS_SPACING_X, y:0.0};
+        for i in 0..deploying_state.projectiles.len() {
+            let projectile = &deploying_state.projectiles[i];
+            let start_p = first_p.plus(spacing.scale(i as f32));
+            match projectile {
+                Projectile::Sword => {
+                    let p = if i == deploying_state.projectiles.len() - 1 {
+                        let heart_index = match team.opposite() {
+                            Team::Red => red_health - 1,
+                            Team::Blue => blue_health - 1,
+                        };
+                        let end_p = self.get_heart_location(team.opposite(), heart_index);
+                        interpolate(start_p, end_p, Interpolation::Accelerate,
+                                    deploying_state.current_projectile_progress.as_decimal())
+                    } else {
+                        start_p
+                    };
+                    self.sword.draw(ctx, p)?;
+                }
+                Projectile::Bomb => {
+                    let p = if i == deploying_state.projectiles.len() - 1 {
+                        let heart_index = match team {
+                            Team::Red => red_health - 1,
+                            Team::Blue => blue_health - 1,
+                        };
+                        let end_p = self.get_heart_location(team, heart_index);
+                        interpolate(start_p, end_p, Interpolation::RoundEnd,
+                                    deploying_state.current_projectile_progress.as_decimal())
+                    } else {
+                        start_p
+                    };
+                    self.bomb.draw(ctx, p)?;
+
+                }
+                Projectile::Heart => {
+                    let p = if i == deploying_state.projectiles.len() - 1 {
+                        let heart_index = match team {
+                            Team::Red => red_health,
+                            Team::Blue => blue_health,
+                        };
+                        let end_p = self.get_heart_location(team, heart_index);
+                        interpolate(start_p, end_p, Interpolation::RoundEnd,
+                                    deploying_state.current_projectile_progress.as_decimal())
+                    } else {
+                        start_p
+                    };
+                    self.heal.draw(ctx, p)?;
+                }
+            }
+        }
+        //
+        Ok(())
+    }
+
 //        =================== Graphical Helpers ======================        //
     fn get_word_mesh(&mut self, word: &str) -> &mut TextElem {
         if ! self.word_meshes.contains_key(word) {
@@ -372,6 +453,24 @@ impl Graphical {
             );
         }
         self.word_meshes.get_mut(word).unwrap()
+    }
+
+    fn get_heart_location(&self, team: Team, i: usize) -> Point {
+        match team {
+            Team::Red => {
+                Point {
+                    x: HEARTS_START_X + HEARTS_SPACING_X*(i as f32),
+                    y: HEARTS_START_Y,
+                }
+            }
+            Team::Blue => {
+                Point {
+                    x: SCREEN_WIDTH - self.heart_blue.width() -
+                        HEARTS_START_X - HEARTS_SPACING_X*(i as f32),
+                    y: HEARTS_START_Y,
+                }
+            }
+        }
     }
 }
 

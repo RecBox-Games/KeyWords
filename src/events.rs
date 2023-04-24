@@ -9,6 +9,7 @@ pub enum TickEvent {
     Syn,
     Deploy,
     ProjectileHit(Projectile),
+    DoneOpening,
 }
 
 impl TickEvent {

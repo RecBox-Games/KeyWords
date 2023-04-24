@@ -127,4 +127,20 @@ impl Clue {
     }
 }
 
+//=================================== Team ===================================//
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Team {
+    Red,
+    Blue,
+}
+
+impl Team {
+    pub fn opposite(&self) -> Team {
+        match self {
+            Team::Red => Team::Blue,
+            Team::Blue => Team::Red,
+        }
+    }
+}
+
 //==================================<===|===>=================================//

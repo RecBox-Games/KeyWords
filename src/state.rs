@@ -17,7 +17,8 @@ pub const TICKS_CHEST_SHRINK: usize = 120;
 pub const TICKS_PER_HEALTH: usize = 30;
 pub const TICKS_TUT_DROP_IN: usize = 80;
 pub const TICKS_TUT_DROP_OUT: usize = 70;
-pub const TICKS_PROJECTILE: usize = 15;
+pub const TICKS_PROJECTILE: usize = 40;
+pub const TICKS_DISPLAY_CONTENTS: usize = 40;
 // Health
 pub const MAX_HEALTH_RED: usize = 10;
 pub const MAX_HEALTH_BLUE: usize = 12;
@@ -39,9 +40,17 @@ impl StateManager {
     pub fn tick(&mut self) {
         self.game_state.tick();
         // chests
-        for j in 0..ROWS {
-            for i in 0..COLUMNS {
-                self.chest_states[j][i].tick();
+        if let GameState::Playing(playing_state) = &mut self.game_state {
+            for j in 0..ROWS {
+                for i in 0..COLUMNS {
+                    let tick_event = self.chest_states[j][i].tick();
+                    if let TickEvent::ProjectileHit(projectile) = tick_event { // TODO refactor
+                        playing_state.handle_projectile_hit(projectile);
+                    }
+                    if let TickEvent::DoneOpening = tick_event {
+                        playing_state.handle_done_opening();
+                    }
+                }
             }
         }
     }
@@ -113,7 +122,6 @@ impl StateManager {
             println!("Warning: bad second (1)");
         }
     }
-    
 }
 
 //        ========================= GameState ========================        //
@@ -208,16 +216,16 @@ impl TutNotifyState {
 //        ======================= PlayingState =======================        //
 #[derive(Debug)]
 pub struct PlayingState {
-    red_health_state: HealthState,
-    blue_health_state: HealthState,
+    pub red_health_state: HealthState,
+    pub blue_health_state: HealthState,
     turn_state: TurnState,
 }
 
 impl PlayingState {
-    fn new() -> Self { // TODO
+    fn new() -> Self {
         PlayingState {
-            red_health_state: HealthState::new(),
-            blue_health_state: HealthState::new(),
+            red_health_state: HealthState::new(MAX_HEALTH_RED),
+            blue_health_state: HealthState::new(MAX_HEALTH_BLUE),
             turn_state: TurnState::new(),
         }
             
@@ -229,6 +237,48 @@ impl PlayingState {
         self.blue_health_state.tick();
         // turn
         self.turn_state.tick();
+    }
+
+    fn handle_projectile_hit(&mut self, projectile: Projectile) {
+        match (projectile, self.current_team()) {
+            (Projectile::Sword, Team::Red) |
+            (Projectile::Bomb, Team::Blue) => {
+                self.blue_health_state.take_damage(1, MAX_HEALTH_BLUE);
+            }
+            (Projectile::Sword, Team::Blue) |
+            (Projectile::Bomb, Team::Red) => {
+                self.red_health_state.take_damage(1, MAX_HEALTH_RED);
+            }
+            (Projectile::Heart, Team::Red) => {
+                self.red_health_state.take_damage(-1, MAX_HEALTH_RED);
+            }
+            (Projectile::Heart, Team::Blue) => {
+                self.blue_health_state.take_damage(-1, MAX_HEALTH_BLUE);
+            }
+        }
+    }
+
+    fn handle_done_opening(&mut self) {
+        match self.turn_state {
+            TurnState::RedGuessingEnd(_) => {
+                self.turn_state = TurnState::BlueCluing;
+            }
+            TurnState::BlueGuessingEnd(_) => {
+                self.turn_state = TurnState::RedCluing;
+            }
+            _ => (),
+        }
+    }
+    
+    pub fn current_team(&self) -> Team {
+        self.turn_state.current_team()
+    }
+
+    pub fn red_health(&self) -> usize {
+        self.red_health_state.dst_amount
+    }
+    pub fn blue_health(&self) -> usize {
+        self.blue_health_state.dst_amount
     }
 }
 
@@ -292,16 +342,19 @@ impl OpeningState {
                     return TickEvent::Deploy;
                 } 
             }
-            Deploying(_deploying_state) => {
-                // TODO
-                //if deploying_state.tick().is_done() {
+            Deploying(deploying_state) => {
+                let tick_event = deploying_state.tick();
+                if tick_event.is_done() {
                     *self = Shrinking(Progress::new(TICKS_CHEST_SHRINK));
-            //}
+                } else {
+                    return tick_event;
+                }
             }
             Shrinking(prg) => {
                 if prg.tick().is_done() {
                     *self = Open;
                 }
+                return TickEvent::DoneOpening;
             }
             _ => ()
         }
@@ -316,29 +369,39 @@ impl OpeningState {
 
 #[derive(Debug)]
 pub struct DeployingState {
-    current_projectile_progress: Progress,
-    projectiles: Vec<Projectile>,
+    pub display_progress: Progress,
+    pub current_projectile_progress: Progress,
+    pub projectiles: Vec<Projectile>,
+    pub total_projectiles: usize,
 }
 
 impl DeployingState {
     fn new(content: ChestContent) -> Self {
         use ChestContent::*;
         use Projectile::*;
+        let projectiles = match content {
+            Empty => vec![],
+            Bomb1 => vec![Bomb],
+            Bomb2 => vec![Bomb, Bomb],
+            Bomb5 => vec![Bomb, Bomb, Bomb, Bomb, Bomb],
+            Sword1 => vec![Sword],
+            Sword2 => vec![Sword, Sword],
+            Heal3 => vec![Heart, Heart, Heart],
+        };
+        let total_projectiles = projectiles.len();
         Self {
+            display_progress: Progress::new(TICKS_DISPLAY_CONTENTS),
             current_projectile_progress: Progress::new(TICKS_PROJECTILE),
-            projectiles: match content {
-                Empty => vec![],
-                Bomb1 => vec![Bomb],
-                Bomb2 => vec![Bomb, Bomb],
-                Bomb5 => vec![Bomb, Bomb, Bomb, Bomb, Bomb],
-                Sword1 => vec![Sword],
-                Sword2 => vec![Sword, Sword],
-                Heal3 => vec![Heart, Heart, Heart],
-            }
+            projectiles,
+            total_projectiles,
         }
     }
 
     fn tick(&mut self) -> TickEvent {
+        if ! self.display_progress.is_done() {
+            self.display_progress.tick();
+            return TickEvent::None;
+        }
         if self.projectiles.len() == 0 {
             return TickEvent::Done;
         }
@@ -350,7 +413,7 @@ impl DeployingState {
         TickEvent::None
     }
 }
-
+    
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ChestContent {
     Empty,
@@ -399,9 +462,7 @@ impl TurnState {
                 }
             }
             RedGuessingEnd(prg) => {
-                if prg.tick().is_done() {
-                    *self = BlueCluing;
-                }
+                prg.tick();
             }
             BlueCluingEnd(prg, clue) => {
                 if prg.tick().is_done() {
@@ -409,9 +470,7 @@ impl TurnState {
                 }
             }
             BlueGuessingEnd(prg) => {
-                if prg.tick().is_done() {
-                    *self = RedCluing;
-                }
+                prg.tick();
             }
             _ => ()
         }
@@ -485,6 +544,13 @@ impl TurnState {
         return current_guess;
     } 
 
+    fn current_team(&self) -> Team {
+        use TurnState::*;
+        match self {
+            RedCluing | RedGuessing(_,_) | RedCluingEnd(_,_) | RedGuessingEnd(_) => Team::Red,
+            BlueCluing | BlueGuessing(_,_) | BlueCluingEnd(_,_) | BlueGuessingEnd(_) => Team::Blue,            
+        }
+    }
 }
 /*
     fn is_guessing(&self) -> bool {
@@ -505,36 +571,24 @@ impl TurnState {
     }*/
         
 
-    fn current_team(&self) -> Team {
-        use TurnState::*;
-        match self {
-            RedCluing | RedGuessing(_,_) | RedCluingEnd(_,_) | RedGuessingEnd(_) => Team::Red,
-            BlueCluing | BlueGuessing(_,_) | BlueCluingEnd(_,_) | BlueGuessingEnd(_) => Team::Blue,            
-        }
-    }
 
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Team {
-    Red,
-    Blue,
-}
 */
 //        ======================== HealthState =======================        //
 #[derive(Debug)]
-struct HealthState {
-    src_amount: usize,
-    src_fraction: usize,
-    dst_amount: usize,
+pub struct HealthState {
+    pub src_amount: usize,
+    pub src_fraction: usize,
+    pub dst_amount: usize,
 }
 
 impl HealthState {
-    fn new() -> Self { // TODO
+    fn new(max_health: usize) -> Self { 
         HealthState {
-            src_amount: 0,
+            src_amount: max_health,
             src_fraction: 0,
-            dst_amount: 0,
+            dst_amount: max_health,
         }
     }
 
@@ -567,6 +621,20 @@ impl HealthState {
             self.src_fraction = TICKS_PER_HEALTH;
         }
         self.src_fraction -= 1;
+    }
+
+    fn take_damage(&mut self, damage: isize, max: usize) {
+        if damage > self.dst_amount as isize {
+            self.dst_amount = 0;
+        } else if self.dst_amount as isize - damage > max as isize {
+            self.dst_amount = max;
+        } else {
+            self.dst_amount = ((self.dst_amount as isize) - damage) as usize;
+        }
+    }
+
+    pub fn fraction(&self) -> f32 {
+        self.src_fraction as f32 / TICKS_PER_HEALTH as f32
     }
 }
 
@@ -622,6 +690,17 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
     chest_states
 }
 
+pub fn get_deploying_state(chests: &Vec<Vec<ChestState>>) -> Option<&DeployingState> {
+    for row in chests {
+        for chest in row {
+            if let OpeningState::Deploying(deploying_state) = &chest.opening_state {
+                return Some(deploying_state);
+            }
+        }
+    }
+    None
+}
+
 //        ====================== Pretty Printing =====================        //
 impl std::fmt::Display for StateManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -639,7 +718,7 @@ impl std::fmt::Display for StateManager {
                 q.push(chest.to_string())
             }
         }
-        let mut chest_states_string = q.join(";");
+        let chest_states_string = q.join(";");
         write!(f, "{}:{}:{}", turn_state_string, health_state_string, chest_states_string)
     }
 }
