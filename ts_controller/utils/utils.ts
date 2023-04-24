@@ -2,8 +2,10 @@
 import { get_context } from "../controller_lib/init.js";
 import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
-import { get_board } from "./init.js";
-import { BOARD_W, Board, Chest, GUESSER } from "./interfaces.js";
+import { Board, get_board } from "../game/main/init.js";
+import { BOARD_W, GUESSER } from "../game/interfaces.js";
+import { Chest } from "../game/main/init_chest.js";
+
 
 export const set_chests_status = (status:boolean) =>
 {

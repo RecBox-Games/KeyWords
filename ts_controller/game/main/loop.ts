@@ -1,22 +1,12 @@
 
 
-import { drawablesAdd} from "../controller_lib/draw.js";
-import { get_context } from "../controller_lib/init.js";
-import { DrawableRect } from "../controller_lib/types/drawables.js";
-import { get_board } from "./init.js";
-import { BOARD_H, BOARD_W, Board } from "./interfaces.js";
-import { parse_message } from "./utils.js";
+import { drawablesAdd } from "../../controller_lib/draw.js";
+import { BOARD_H, BOARD_W } from "../interfaces.js";
+import { Board, get_board } from "./init.js";
 
 
 export const main_loop = () => {
     const board:Board = get_board();
-    const ctx = get_context();
-
-    if (ctx.wsMessage)
-    {
-        parse_message(ctx.wsMessage);
-        ctx.wsMessage = null;
-    }
 
     for (let i = 0; i < BOARD_H; i += 1)
         for (let j = 0; j < BOARD_W; j += 1)
