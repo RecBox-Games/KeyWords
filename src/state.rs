@@ -218,7 +218,7 @@ impl TutNotifyState {
 pub struct PlayingState {
     pub red_health_state: HealthState,
     pub blue_health_state: HealthState,
-    turn_state: TurnState,
+    pub turn_state: TurnState,
 }
 
 impl PlayingState {
@@ -551,30 +551,17 @@ impl TurnState {
             BlueCluing | BlueGuessing(_,_) | BlueCluingEnd(_,_) | BlueGuessingEnd(_) => Team::Blue,            
         }
     }
-}
-/*
-    fn is_guessing(&self) -> bool {
+
+    pub fn proposed_guess(&self) -> Option<(usize, usize)> {
+        use TurnState::*;
         match self {
-            Self::RedGuessing(_,_) | Self::BlueGuessing(_,_) => true,
-            _ => false,
+            RedGuessing(_, guess) => *guess,
+            BlueGuessing(_, guess) => *guess,
+            _ => None,
         }
-    }
-
-    /*
-    fn accept_guess(clue: &mut Clue, guess: &mut Option<(usize, usize)>)
-                    -> Option<(usize, usize)> {
-        clue.num -= 1;
-        if clue.num == 0 {
-            *self = RedGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
-        }
-        
-    }*/
-        
-
-
+    } 
 }
 
-*/
 //        ======================== HealthState =======================        //
 #[derive(Debug)]
 pub struct HealthState {

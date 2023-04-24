@@ -441,6 +441,10 @@ impl Graphical {
         Ok(())
     }
 
+    fn draw_selection(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
+        Ok(())
+    }
+
 //        =================== Graphical Helpers ======================        //
     fn get_word_mesh(&mut self, word: &str) -> &mut TextElem {
         if ! self.word_meshes.contains_key(word) {
