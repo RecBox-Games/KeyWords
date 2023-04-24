@@ -1,40 +1,28 @@
-
-
-import { drawablesAdd} from "../controller_lib/draw.js";
+import { drawablesAdd } from "../controller_lib/draw.js";
 import { get_context } from "../controller_lib/init.js";
-import { DrawableRect } from "../controller_lib/types/drawables.js";
 import { get_board } from "./init.js";
-import { BOARD_H, BOARD_W} from "./interfaces.js";
-import { Board } from "./main/init.js";
+import { BOARD_H, BOARD_W } from "./interfaces.js";
 import { parse_message } from "./utils.js";
-
-
 export const main_loop = () => {
-    const board:Board = get_board();
+    const board = get_board();
     const ctx = get_context();
-
-    if (ctx.wsMessage)
-    {
+    if (ctx.wsMessage) {
         parse_message(ctx.wsMessage);
         ctx.wsMessage = null;
     }
-
     for (let i = 0; i < BOARD_H; i += 1)
-        for (let j = 0; j < BOARD_W; j += 1)
-        {
+        for (let j = 0; j < BOARD_W; j += 1) {
             drawablesAdd(board.chests[i][j].sprite);
-            drawablesAdd(board.chests[i][j].text)
+            drawablesAdd(board.chests[i][j].text);
         }
     drawablesAdd(board.topbar.text);
-    if (board.guessedWord)
-    {
+    if (board.guessedWord) {
         drawablesAdd(board.topbar.accept);
         drawablesAdd(board.topbar.deny);
     }
     else
         drawablesAdd(board.topbar.subText);
-    if (board.showOverlay)
-    {
+    if (board.showOverlay) {
         if (board.overlay.shadow)
             drawablesAdd(board.overlay.shadow);
         drawablesAdd(board.overlay.box);
@@ -44,4 +32,4 @@ export const main_loop = () => {
         drawablesAdd(board.overlay.subtext);
         drawablesAdd(board.overlay.item);
     }
-}
+};
