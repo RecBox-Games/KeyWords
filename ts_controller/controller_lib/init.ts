@@ -25,7 +25,7 @@ export const init_context = () => {
 		ctx: canvas.getContext("2d") as CanvasRenderingContext2D,
 		dimensions: {x:  canvas.width, y:  canvas.width},
 		ws: ws,
-		subid:subid as string,
+		subid:parseInt(subid as string),
 		box_ip: box_ip,
         wsState: 0,
         wsMessage: null
@@ -53,8 +53,8 @@ export const init_context = () => {
 	context.ws.onopen = (event) => {
 		console.log("openned websocket")
 
-	        byte_array = new UInt8Array(1);
-                byte_array[0] = subid;
+        let byte_array:Uint8Array = new Uint8Array(1);
+		byte_array[0] = context.subid;
 		context.ws.send(byte_array);
 
 		context.ws.addEventListener('message', (event) => {

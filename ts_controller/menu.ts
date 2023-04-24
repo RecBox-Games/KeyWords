@@ -5,8 +5,6 @@ import { Context } from "./controller_lib/types/context.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "./controller_lib/types/drawables.js";
 import { Rectangle } from "./controller_lib/types/shapes.js";
 import { Button } from "./controller_lib/types/triggerable.js";
-import { scale_and_center } from "./controller_lib/utils.js";
-import { switch_to_game } from "./main.js";
 
 interface Team {
     name:DrawableText,

@@ -1,0 +1,14 @@
+To compile the controller:
+
+- Make sure these packages are installed wherever the server is :
+    - esm
+    - express
+
+- Run npm install in ts_controller/
+
+```
+cd ts_controller
+tsc
+```
+
+the controller/ directory should have the upadated js files
