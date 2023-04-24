@@ -38,7 +38,7 @@ const HEARTS_SPACING_X: f32 = 80.0;
 const HEARTS_START_Y: f32 = 2.0;
 const HEARTS_DROP_HEIGHT: f32 = -70.0;
 // Chest Opening
-const CHEST_LIFT_OFFSET: Point = Point{x: 0.0, y:-200.0};
+const CHEST_LIFT_OFFSET: Point = Point{x: 0.0, y:-500.0};
 const CENTER_CHEST_SCALE: Point = Point{x: 3.0, y:3.0};
 const CONTENTS_X: f32 = SCREEN_WIDTH/2.0;
 const CONTENTS_Y: f32 = 370.0;
@@ -327,6 +327,7 @@ impl Graphical {
             x: (SCREEN_WIDTH - self.chest.width()*CENTER_CHEST_SCALE.x)/2.0,
             y: (SCREEN_HEIGHT - self.chest.height()*CENTER_CHEST_SCALE.y)/2.0,
         };
+        let pop_up_point = point.plus(CHEST_LIFT_OFFSET);
         let word = &chest_state.word;
         // chest
         match &chest_state.opening_state {
@@ -335,8 +336,8 @@ impl Graphical {
                                        COLOR_WORDS, 0.0)?;
             }
             OpeningState::Growing(prg) => {
-                let p = interpolate(point, center_chest_point,
-                                    Interpolation::Linear, prg.as_decimal());
+                let p = interpolate2(point, pop_up_point, center_chest_point,
+                                    Interpolation::Damp, prg.as_decimal());
                 let s = interpolate(Point{x:1.0, y:1.0}, CENTER_CHEST_SCALE,
                                     Interpolation::RoundEnd, prg.as_decimal());
                 self.draw_chest_scaled(ctx, p, s, word, COLOR_WORDS, 0.0)?; 
