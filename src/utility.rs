@@ -169,10 +169,10 @@ impl Role {
         use Role::*;
         match s {
             // TODO no brackets
-            "{redguesser}" => Ok(RedGuesser),
-            "{blueguesser}" => Ok(BlueGuesser),
-            "{redcluer}" => Ok(RedCluer),
-            "{bluecluer}" => Ok(BlueCluer),
+            "redguesser" => Ok(RedGuesser),
+            "blueguesser" => Ok(BlueGuesser),
+            "redcluer" => Ok(RedCluer),
+            "bluecluer" => Ok(BlueCluer),
             _ => Err("unknown role".into()),
         }
     }

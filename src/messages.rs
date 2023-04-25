@@ -182,7 +182,6 @@ impl ClientManager {
         let state_string = format!("state:{}:{}", self.role_string(handle),
                                    state_suffix);
         let result = controlpads::send_message(handle, &state_string);
-        println!("sent state");
         if let Err(e) = result {
             println!("Warning: failed to send state to {}: {}", handle, e);
         }
