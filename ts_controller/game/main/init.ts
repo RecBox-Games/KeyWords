@@ -47,7 +47,7 @@ const fill_board_data = (role:number, team:number, data:any[]) => {
             }
             else if (role == GIVER)
             {
-                board.buttons[y][x]._hoverCallback = chest_clicked_giver;
+                board.buttons[y][x]._touchStartCallback = chest_clicked_giver;
                 board.buttons[y][x]._touchEndCallback = () => {get_board().showOverlay = false;};
                 board.buttons[y][x]._active = true;
             }
@@ -68,7 +68,6 @@ const construct_board_row = (row:number, boundingBox:Rectangle): [Chest[], Butto
         let newButton:Button = new Button( {...boundingBox}, undefined, undefined, undefined);
 
         newButton.data = newChest;
-        buttons_add(newButton);
 
         chest_Arr.push(newChest);
         button_Arr.push(newButton);

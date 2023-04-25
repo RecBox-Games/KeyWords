@@ -9,8 +9,10 @@ export interface Team {
     name:DrawableText,
     guesserBtn: Button,
     giverBtn:Button,
-    guesserSprite: DrawableText,
-    giverSprite: DrawableText,
+    // guesserSprite: DrawableText,
+    // giverSprite: DrawableText,
+    guesserSprite: DrawableRect,
+    giverSprite: DrawableRect,
     giverRect:DrawableRect
 }
 
@@ -35,7 +37,6 @@ const init_team = (box:Rectangle, team:Team, ctx:Context) => {
     box.y += box.h * 0.2;
     team.giverSprite.boundingBox = {...box, x: box.x + box.w * 0.25, w: box.w * 0.5, h:  box.h * 0.3}
     team.giverBtn._boundingBox =  team.giverSprite.boundingBox;
-
     box.y += box.h * 0.35;
 
     team.guesserSprite.boundingBox = {...box,x: box.x + box.w * 0.25, w: box.w * 0.5, h:  box.h * 0.3}
@@ -78,15 +79,19 @@ export const init_menu = () => {
             guesserBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,blueguesser')}),
             giverBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,bluecluer')}),
             giverRect: DEFAULT_DRAWABLE_RECT,
-            guesserSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Guesser"},
-            giverSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Clue giver"}
+            guesserSprite: {...DEFAULT_DRAWABLE_RECT, color:'#0000FF'},
+            giverSprite: {...DEFAULT_DRAWABLE_RECT, color:'#0000FF'}
+            // guesserSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Guesser"},
+            // giverSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Clue giver"}
         },
         redTeam: {
             name: {...DEFAULT_DRAWABLE_TEXT, text: "Red team", color: "#C81718"},
             guesserBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,redguesser')}),
             giverBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,{redcluer}')}),
-            guesserSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Guesser"},
-            giverSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Clue giver"},
+            // guesserSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Guesser"},
+            // giverSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Clue giver"},
+            guesserSprite: {...DEFAULT_DRAWABLE_RECT, color:'#FF00FF'},
+            giverSprite: {...DEFAULT_DRAWABLE_RECT, color:'#FF00FF'},
             giverRect: DEFAULT_DRAWABLE_RECT,
         },
         text: {...DEFAULT_DRAWABLE_TEXT, text:"Choose your team !", font: '40px serif'}

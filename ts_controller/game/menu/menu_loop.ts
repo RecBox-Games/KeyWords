@@ -15,6 +15,8 @@ export const set_menu_state = (team:number, role:number) => {
 
     menu.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
     console.log("set menu state", team, role, menu.bg)
+
+    console.log("???", menu.blueTeam.guesserBtn, menu.blueTeam.guesserSprite);
     if (role == -1 && team == -1)
     {
         buttons_add(menu.blueTeam.giverBtn);
@@ -38,8 +40,8 @@ export const set_menu_state = (team:number, role:number) => {
         y: menu.container.boundingBox.y + menu.container.boundingBox.h * 2
     };
 
-    ctx.ctx.font = menu.blueTeam.name.text = "Blue team " + (menu.role == GUESSER ? "guesser" : "clue giver");
-    ctx.ctx.font = menu.redTeam.name.text = "Red team " + (menu.role == GIVER ? "guesser" : "clue giver");
+    menu.blueTeam.name.text = "Blue team " + (menu.role == GUESSER ? "guesser" : "clue giver");
+    menu.redTeam.name.text = "Red team " + (menu.role == GIVER ? "guesser" : "clue giver");
 }
 
 export const menu_loop = () => {

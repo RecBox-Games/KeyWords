@@ -23,7 +23,7 @@ export const chest_clicked_giver = (self:Button) =>
 {
     const board:Board = get_board();
 
-    console.log("this is I")
+    board.overlay.shadow = undefined;
     board.overlay.box.boundingBox = {
         x: self._boundingBox.x + (self._boundingBox as Rectangle).w,
         y: self._boundingBox.y - (self._boundingBox as Rectangle).h,
@@ -42,7 +42,7 @@ export const chest_clicked_giver = (self:Button) =>
         w: board.overlay.box.boundingBox.w * 0.5,
         h: board.overlay.box.boundingBox.h * 0.5,
     }
-
+    console.log("this is I", self, board.overlay);
     board.showOverlay = true;
 }
 

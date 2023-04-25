@@ -12,7 +12,7 @@ let state = 0;
 export const get_state = () => state;
 export const set_state = (val:number) => {
     state = val
-    // buttons_flush();
+    buttons_flush();
     };
 
 const loops:Function[] = [loading_loop, tutorial_loop, menu_loop, main_loop]

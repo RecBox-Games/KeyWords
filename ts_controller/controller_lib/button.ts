@@ -14,7 +14,6 @@ export const buttons_add = (button:Button) => {
 }
 
 export const buttons_update = (touch:Point, touchType:number) =>{
-    // console.log("updating buttons", _buttons);
 	for (let item of _buttons){
         if (item._active)
         {
@@ -22,7 +21,6 @@ export const buttons_update = (touch:Point, touchType:number) =>{
             {
                 return ;
             }
-
         }
 	}
 }
