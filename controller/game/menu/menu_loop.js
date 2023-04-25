@@ -7,6 +7,7 @@ import { get_menu } from "./init.js";
 export const set_menu_state = (team, role) => {
     const ctx = get_context();
     const menu = get_menu();
+    console.log("set menu state", team, role);
     if (role == -1 && team == -1) {
         buttons_add(menu.blueTeam.giverBtn);
         buttons_add(menu.blueTeam.guesserBtn);

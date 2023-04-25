@@ -10,7 +10,9 @@ let board;
 export const get_board = () => { return board; };
 // const construct_chestGiver = (x:number, y: number, box:Rectangle) => {
 // }
-const fill_board_data = (role, data) => {
+const fill_board_data = (role, team, data) => {
+    board.team = team;
+    board.role = role;
     for (let y = 0; y < BOARD_H; y += 1) {
         for (let x = 0; x < BOARD_W; x += 1) {
             fill_chest(board.chests[y][x], data[x + BOARD_W * y]);
@@ -83,12 +85,16 @@ export const init_main_screen = () => {
         currentGuesses: 2,
         showOverlay: false,
         clue: undefined,
-        state: 0,
+        team: -1,
+        role: -1
     };
     construct_Board();
 };
-export const fill_board = (role, data) => {
+export const fill_board = (role, team, data) => {
+    if (!board)
+        init_main_screen();
+    console.log("chests", data);
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
-    fill_board_data(role, data);
+    fill_board_data(role, team, data);
 };

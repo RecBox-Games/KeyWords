@@ -11,6 +11,7 @@ export const set_menu_state = (team:number, role:number) => {
     const ctx:Context = get_context();
     const menu:Menu = get_menu();
 
+    console.log("set menu state", team, role)
     if (role == -1 && team == -1)
     {
         buttons_add(menu.blueTeam.giverBtn);

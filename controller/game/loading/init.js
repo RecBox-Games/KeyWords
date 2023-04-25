@@ -5,7 +5,8 @@ const loading = {
     barBG: { ...DEFAULT_DRAWABLE_RECT },
     bar: { ...DEFAULT_DRAWABLE_RECT },
     sent: false,
-    BG: { ...DEFAULT_DRAWABLE_RECT }
+    BG: { ...DEFAULT_DRAWABLE_RECT },
+    progress: 0.0
 };
 export const get_loading = () => loading;
 export const init_loading = () => {
@@ -25,5 +26,6 @@ export const init_loading = () => {
     loading.BG.boundingBox.w = ctx.dimensions.x;
     loading.BG.boundingBox.h = ctx.dimensions.y;
     loading.BG.color = '#AAAAAA';
+    // Promise.allSettled()
     // console.log("socket", ctx.ws, ctx.wsState)
 };

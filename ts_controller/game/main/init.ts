@@ -18,7 +18,8 @@ export interface Board {
     overlay:Overlay;
     showOverlay:boolean;
     clue:string | undefined;
-    state:number;
+    team:number,
+    role:number
 }
 
 let board:Board;
@@ -29,8 +30,9 @@ export const get_board = ():Board => {return board};
 
 // }
 
-const fill_board_data = (role:number, data:any[]) => {
-
+const fill_board_data = (role:number, team:number, data:any[]) => {
+    board.team = team;
+    board.role = role;
     for (let y = 0; y < BOARD_H; y += 1)
     {
         for (let x = 0; x < BOARD_W; x += 1)
@@ -121,13 +123,17 @@ export const init_main_screen = () =>
         currentGuesses:2,
         showOverlay: false,
         clue: undefined,
-        state: 0,
+        team: -1,
+        role: -1
     };
     construct_Board();
 }
 
-export const fill_board = (role:number, data:any[]) => {
+export const fill_board = (role:number, team:number, data:any[]) => {
+    if (!board)
+        init_main_screen();
+    console.log("chests", data);
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
-    fill_board_data(role, data);
+    fill_board_data(role, team, data);
 }
