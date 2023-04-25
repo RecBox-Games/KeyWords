@@ -21,9 +21,11 @@ export const fill_topbar = (topbar:TopBar ,role:number) => {
     {
         topbar.acceptButton._touchEndCallback = confirm_guess;
         topbar.denyButton._touchEndCallback = deny_guess;
+        buttons_add(topbar.denyButton)
     }
     else
         topbar.acceptButton._touchEndCallback = confirm_clue;
+    buttons_add(topbar.acceptButton)
 }
 
 export const construct_topbar = ():TopBar =>
@@ -54,6 +56,8 @@ export const construct_topbar = ():TopBar =>
     topBar.acceptButton._active = false;
     topBar.denyButton._active = false;
 
+    buttons_add(topBar.denyButton)
+    buttons_add(topBar.acceptButton)
     topBar.acceptButton._boundingBox = topBar.accept.boundingBox;
     topBar.denyButton._boundingBox = topBar.deny.boundingBox;
 

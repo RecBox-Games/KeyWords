@@ -5,7 +5,7 @@ import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableTex
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { close_overlay } from "../../utils/utils.js";
-import { GIVER, GUESSER } from "../interfaces.js";
+import { BOARD_H, GIVER, GUESSER } from "../interfaces.js";
 
 
 
@@ -44,7 +44,6 @@ export const fill_overlay = (overlay:Overlay ,role:number) => {
 
         (overlay.exit._boundingBox as Rectangle) = {x: ctx.dimensions.x *0.25 + 10, y:ctx.dimensions.y *0.25 + 10, w:50, h: 50}
         overlay.exit._touchEndCallback = close_overlay;
-        overlay.exit._active = false;
 
         overlay.exitSprite = {...DEFAULT_DRAWABLE_RECT};
         overlay.exitSprite.boundingBox = ((overlay.exit as Button)._boundingBox as Rectangle);
@@ -58,7 +57,8 @@ export const fill_overlay = (overlay:Overlay ,role:number) => {
             y: overlay.box.boundingBox.y + overlay.box.boundingBox.h - (overlay.box.boundingBox.h * .45)
         };
     }
-
+    overlay.exit._active = false;
+    buttons_add(overlay.exit);
 }
 
 
@@ -70,6 +70,7 @@ export const construct_overlay = () :Overlay => {
         text: {...DEFAULT_DRAWABLE_TEXT},
         subtext: {...DEFAULT_DRAWABLE_TEXT},
     };
-
+    new_Overlay.exit._active = false;
+    buttons_add(new_Overlay.exit);
     return new_Overlay;
 }

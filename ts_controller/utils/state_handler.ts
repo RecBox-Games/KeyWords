@@ -1,3 +1,4 @@
+import { buttons_log } from "../controller_lib/button.js";
 import { get_context, init_context } from "../controller_lib/init.js";
 import { BLUE, GAME, GIVER, GUESSER, MENU, RED, TUTORIAL } from "../game/interfaces.js";
 import { init_loading } from "../game/loading/init.js";
@@ -46,16 +47,20 @@ const parse_rolestate = (msg:string):[number, number] => {
 const parse_turnstate = (msg:string):[number, number, string, number, boolean] => {
     let role = -1;
     let team = -1;
-    let clue = "", guessCount = 0, guessState = false;
+    const state = msg.split(',')
+    const clue = state[1];
+    const guessCount = parseInt(state[2]);
+    const guessState = state[3] == 'true';
 
-    if (msg.includes('red'))
+    if (state[0].includes('red'))
         team = RED;
-    else if (msg.includes('blue'))
+    else if (state[0].includes('blue'))
         team = BLUE;
-    if (msg.includes('guessing'))
+    if (state[0].includes('guessing'))
         role = GUESSER;
-    else if (msg.includes('cluing'))
+    else if (state[0].includes('cluing'))
         role = GIVER;
+    console.log("turn state",role, team, clue, guessCount, guessState )
     return [role, team, clue, guessCount, guessState];
 }
 
@@ -72,7 +77,7 @@ const parse_cheststate = (msg:string):any[]=> {
         const words:string[] = obj.split(',')
         arr.push({
             text: words[0],
-            state: words[1],
+            state: words[1] == 'open',
             contents: 1
         })
     }

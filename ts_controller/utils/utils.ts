@@ -5,18 +5,20 @@ import { Button } from "../controller_lib/types/triggerable.js";
 import { Board, get_board } from "../game/main/init.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
-import { buttons_add } from "../controller_lib/button.js";
+import { buttons_add, buttons_len, buttons_log } from "../controller_lib/button.js";
 
 
 export const set_chests_status = (status:boolean) =>
 {
     const board:Board = get_board();
+    console.log("sets status", status, buttons_len())
     for (let i = 0; i < BOARD_W; i += 1)
         for (let j = 0; j < BOARD_W; j += 1)
         {
             if (!board.chests[i][j].open)
                 board.buttons[i][j]._active = status;
         }
+    buttons_log();
 }
 
 export const chest_clicked_giver = (self:Button) =>
@@ -93,7 +95,7 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number, gue
             }
             else
             {
-                board.topbar.text.text = "Your clue is {{insert_clue}}";
+                board.topbar.text.text = "Your clue is \"" + clue + "\"";
                 board.topbar.subText.text = "Remaining Guesses " + board.currentGuesses.toString();
                 board.topbar.acceptButton._active = false;
                 board.topbar.denyButton._active = false;
@@ -154,14 +156,12 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number, gue
                 console.log(val);
             }
         }
-        buttons_add(board.topbar.acceptButton);
     }
-    set_chests_status(true);
-}
-
-export const parse_message = (message:string) =>
-{
-    console.log("received", message);
+    if (!get_board().showOverlay)
+    {
+        console.log("No overlay")
+        set_chests_status(true);
+    }
 }
 
 export const end_turn = () =>
@@ -208,6 +208,7 @@ export const open_overlay_guesser = (guess:string) =>{
 export const close_overlay = () =>{
     const board:Board = get_board();
 
+    console.log("close overlay");
     board.showOverlay = false;
     (board.overlay.exit as Button)._active = false;
     set_chests_status(true);
@@ -218,17 +219,17 @@ export const confirm_guess = () => {
     const board:Board = get_board();
     const ctx = get_context();
 
-    ctx.ws.send('input:secpnd,support');
+    ctx.ws.send('input:second,support');
     board.topbar.text.text = "Your clue is {{insert_clue}}";
     board.currentGuesses += 1;
     board.topbar.subText.text = "Remaining Guesses " + board.currentGuesses.toString();
     board.topbar.acceptButton._active = false;
     board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
-    board.showOverlay = true;
+    // board.showOverlay = true;
     set_chests_status(false);
-    (board.overlay.exit as Button)._active = true;
-    console.log("confirm")
+    // (board.overlay.exit as Button)._active = true;
+    console.log("confirm",board.overlay.exit)
 }
 
 export const deny_guess = () => {
