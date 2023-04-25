@@ -104,6 +104,9 @@ pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32)
         Accelerate => {
             prg.powf(2.0)
         }
+        Damp => {
+            prg.powf(0.5)
+        }
         _ => {panic!("not yet implemented");}
 
     };
@@ -113,8 +116,8 @@ pub fn interpolate(p1: Point, p2: Point, func: Interpolation, prg: f32)
 pub fn interpolate2(p1: Point, p2: Point, p3: Point, func: Interpolation, prg: f32)
                    -> Point {
     use Interpolation::*;
-    let p1_2 = interpolate(p1, p2, RoundEnd, prg);
-    let p2_3 = interpolate(p2, p3, RoundStart, prg);
+    let p1_2 = interpolate(p1, p2, Linear, prg);
+    let p2_3 = interpolate(p2, p3, RoundEnd, prg);
     let p1_2_3 = interpolate(p1_2, p2_3, func, prg);
     p1_2_3
 }
