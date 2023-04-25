@@ -268,6 +268,30 @@ fn parse_input_message(parts: Vec<&str>) -> Result<InputMessage> {
             return Err("wrong number of arguments for role".into());
         }
         Ok(InputMessage::Role(Role::from_str(parts[1])?))
+    } else if parts[0] == "clue" {
+        if parts.len() != 3 {
+            return Err("wrong number of arguments for clue".into());
+        }
+        let clue_given = parts[1].to_string();
+        let num = parts[2].parse::<usize>()?;
+        Ok(InputMessage::Clue(Clue::new(clue_given, num)))
+    } else if parts[0] == "guess" {
+        if parts.len() != 3 {
+            return Err("wrong number of arguments for guess".into());
+        }
+        let row = parts[1].parse::<usize>()?;
+        let col = parts[2].parse::<usize>()?;
+        Ok(InputMessage::Guess(row, col))
+    } else if parts[0] == "second" {
+        if parts.len() != 2 {
+            return Err("wrong number of arguments for second".into());
+        }
+        let support = match parts[1] {
+            "support" => true,
+            "dissent" => false,
+            _ => return Err("second must be support or dissent".into()),
+        };
+        Ok(InputMessage::Second(support))
     } else {
         Err(format!("{} is unrecognized or not yet implemented", parts[0]).into())
     }
