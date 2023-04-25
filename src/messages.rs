@@ -34,6 +34,8 @@ pub enum InputMessage {
 }
 
 //============================== MessageManager ==============================//
+// TODO: refactor: the division of labor between MessageManager and
+// ClientManager doesn't really make sense
 pub struct MessageManager {
     simulated_messages: Vec<InputMessage>,
     client_manager: ClientManager,
@@ -132,8 +134,12 @@ impl MessageManager {
 
     pub fn send_state(&mut self, state: &StateManager) {
         for handle in std::mem::take(&mut self.clients_needing_state) {
-            self.client_manager.send_state(handle, state.to_string());
+            self.client_manager.send_state(&handle, &state.to_string());
         }
+    }
+
+    pub fn send_state_to_all(&mut self, state: &StateManager) {
+        self.client_manager.send_state_to_all(&state.to_string());
     }
 }
 
@@ -172,16 +178,31 @@ impl ClientManager {
         Ok(all_messages)
     }
 
-    fn send_state(&self, handle: Handle, state_suffix: String) {
-        let state_string = format!("state:{}:{}", self.role_string(&handle),
+    fn send_state(&self, handle: &Handle, state_suffix: &String) {
+        let state_string = format!("state:{}:{}", self.role_string(handle),
                                    state_suffix);
-        let result = controlpads::send_message(&handle, &state_string);
+        let result = controlpads::send_message(handle, &state_string);
         println!("sent state");
         if let Err(e) = result {
-            println!("Warning: failed to send state to {}: {}", &handle, e);
+            println!("Warning: failed to send state to {}: {}", handle, e);
         }
     }
 
+    fn send_state_to_all(&self, state_suffix: &String) {
+        if let Some(h) = self.red_cluegiver.as_ref() {
+            self.send_state(h, state_suffix);
+        }
+        if let Some(h) = self.blue_cluegiver.as_ref() {
+            self.send_state(h, state_suffix);
+        }
+        for h in &self.red_guessers {
+            self.send_state(h, state_suffix);
+        }
+        for h in &self.blue_guessers {
+            self.send_state(h, state_suffix);
+        }
+    }
+    
     fn role_string(&self, handle: &Handle) -> String {
         if let Some(h) = self.red_cluegiver.as_ref() {
             if h == handle {
