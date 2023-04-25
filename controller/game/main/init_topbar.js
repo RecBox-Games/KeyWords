@@ -1,3 +1,4 @@
+import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
@@ -7,9 +8,11 @@ export const fill_topbar = (topbar, role) => {
     if (role == GUESSER) {
         topbar.acceptButton._touchEndCallback = confirm_guess;
         topbar.denyButton._touchEndCallback = deny_guess;
+        buttons_add(topbar.denyButton);
     }
     else
         topbar.acceptButton._touchEndCallback = confirm_clue;
+    buttons_add(topbar.acceptButton);
 };
 export const construct_topbar = () => {
     const topBar = {
@@ -32,6 +35,8 @@ export const construct_topbar = () => {
     topBar.deny.boundingBox = { ...boundingBox, x: ctx.dimensions.x * 0.5 + (boundingBox.w * 0.5) };
     topBar.acceptButton._active = false;
     topBar.denyButton._active = false;
+    buttons_add(topBar.denyButton);
+    buttons_add(topBar.acceptButton);
     topBar.acceptButton._boundingBox = topBar.accept.boundingBox;
     topBar.denyButton._boundingBox = topBar.deny.boundingBox;
     return topBar;

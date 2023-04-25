@@ -1,4 +1,4 @@
-import { buttons_add } from "../../controller_lib/button.js";
+import { buttons_add, buttons_log } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
@@ -22,9 +22,8 @@ const fill_board_data = (role, team, data) => {
                 board.buttons[y][x]._touchEndCallback = chest_clicked_guessser;
             }
             else if (role == GIVER) {
-                board.buttons[y][x]._hoverCallback = chest_clicked_giver;
+                board.buttons[y][x]._touchStartCallback = chest_clicked_giver;
                 board.buttons[y][x]._touchEndCallback = () => { get_board().showOverlay = false; };
-                board.buttons[y][x]._active = true;
             }
             buttons_add(board.buttons[y][x]);
         }
@@ -38,6 +37,7 @@ const construct_board_row = (row, boundingBox) => {
         let newChest = construct_chest(x + (BOARD_W * row), boundingBox);
         let newButton = new Button({ ...boundingBox }, undefined, undefined, undefined);
         newButton.data = newChest;
+        newButton._active = false;
         buttons_add(newButton);
         chest_Arr.push(newChest);
         button_Arr.push(newButton);
@@ -93,11 +93,14 @@ export const init_main_screen = () => {
     construct_Board();
 };
 export const fill_board = (role, team, data) => {
+    // buttons_flush();
     if (!board)
         init_main_screen();
+    console.log("filling board");
+    buttons_log();
     board.bg = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), };
-    console.log("chests", data);
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
     fill_board_data(role, team, data);
+    // buttons_log();
 };
