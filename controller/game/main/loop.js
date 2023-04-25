@@ -3,6 +3,8 @@ import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { get_board } from "./init.js";
 export const main_loop = () => {
     const board = get_board();
+    if (board.bg)
+        drawablesAdd(board.bg);
     for (let i = 0; i < BOARD_H; i += 1)
         for (let j = 0; j < BOARD_W; j += 1) {
             drawablesAdd(board.chests[i][j].sprite);

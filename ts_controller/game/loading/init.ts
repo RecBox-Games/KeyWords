@@ -1,5 +1,6 @@
 import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
+import { assetCount, load_assets } from "../../utils/assets.js";
 
 export interface Loading {
     bar:DrawableRect;
@@ -8,6 +9,8 @@ export interface Loading {
     sent:boolean;
     BG:DrawableRect;
     progress:number;
+    barProgress:number;
+    done:boolean;
 }
 
 const loading:Loading = {
@@ -16,12 +19,14 @@ const loading:Loading = {
     bar:{...DEFAULT_DRAWABLE_RECT},
     sent:false,
     BG: {...DEFAULT_DRAWABLE_RECT},
-    progress: 0.0
+    progress: 0.0,
+    barProgress: 0.0,
+    done: false
 }
 
 export const get_loading = () => loading;
 
-export const init_loading =  () => {
+export const init_loading = async() => {
     const ctx = get_context();
     const box = {
         x: ctx.dimensions.x * 0.15,
@@ -31,7 +36,8 @@ export const init_loading =  () => {
     }
 
     loading.barBG.boundingBox = box;
-    loading.bar.boundingBox = box;
+    loading.bar.boundingBox = {...box, w:0};
+    loading.bar.color = '#FFFFFF'
 
     loading.text.boundingBox = {...box, y: box.y - (box.h * 2)};
     loading.text.text = 'Loading';
@@ -42,6 +48,13 @@ export const init_loading =  () => {
     loading.BG.boundingBox.h = ctx.dimensions.y;
     loading.BG.color = '#AAAAAA'
 
-    // Promise.allSettled()
+    Promise.allSettled(
+        load_assets(
+            loading,
+            () => {loading.progress += (1 / assetCount()); console.log("progress",loading.progress)},
+            (err) => console.log("Error",err)
+        )
+    )
+    .then(() => {console.log("loaded"); loading.done = true})
     // console.log("socket", ctx.ws, ctx.wsState)
 }

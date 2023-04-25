@@ -8,6 +8,8 @@ import { Board, get_board } from "./init.js";
 export const main_loop = () => {
     const board:Board = get_board();
 
+    if (board.bg)
+        drawablesAdd(board.bg);
     for (let i = 0; i < BOARD_H; i += 1)
         for (let j = 0; j < BOARD_W; j += 1)
         {

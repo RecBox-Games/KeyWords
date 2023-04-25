@@ -1,13 +1,16 @@
 import { buttons_add } from "../../controller_lib/button.js";
 import { drawablesAdd } from "../../controller_lib/draw.js";
 import { get_context } from "../../controller_lib/init.js";
+import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
+import { get_asset } from "../../utils/assets.js";
 import { BLUE, GIVER, GUESSER, RED } from "../interfaces.js";
 import { get_menu } from "./init.js";
 // TODO set button bounding box to be a bit bigge than text
 export const set_menu_state = (team, role) => {
     const ctx = get_context();
     const menu = get_menu();
-    console.log("set menu state", team, role);
+    menu.bg = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), };
+    console.log("set menu state", team, role, menu.bg);
     if (role == -1 && team == -1) {
         buttons_add(menu.blueTeam.giverBtn);
         buttons_add(menu.blueTeam.guesserBtn);
@@ -33,7 +36,9 @@ export const set_menu_state = (team, role) => {
 };
 export const menu_loop = () => {
     const menu = get_menu();
-    drawablesAdd(menu.container);
+    if (menu.bg)
+        drawablesAdd(menu.bg);
+    // drawablesAdd(menu.container);
     drawablesAdd(menu.text);
     if (menu.team != RED)
         drawablesAdd(menu.blueTeam.name);

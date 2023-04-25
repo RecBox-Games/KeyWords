@@ -2,6 +2,8 @@ import { buttons_add } from "../../controller_lib/button.js";
 import { drawablesAdd } from "../../controller_lib/draw.js";
 import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
+import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
+import { get_asset } from "../../utils/assets.js";
 import { BLUE, GIVER, GUESSER, RED } from "../interfaces.js";
 import { Menu, get_menu } from "./init.js";
 
@@ -11,7 +13,8 @@ export const set_menu_state = (team:number, role:number) => {
     const ctx:Context = get_context();
     const menu:Menu = get_menu();
 
-    console.log("set menu state", team, role)
+    menu.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
+    console.log("set menu state", team, role, menu.bg)
     if (role == -1 && team == -1)
     {
         buttons_add(menu.blueTeam.giverBtn);
@@ -42,7 +45,9 @@ export const set_menu_state = (team:number, role:number) => {
 export const menu_loop = () => {
     const menu:Menu = get_menu();
 
-    drawablesAdd(menu.container);
+    if (menu.bg)
+        drawablesAdd(menu.bg);
+    // drawablesAdd(menu.container);
     drawablesAdd(menu.text);
     if (menu.team != RED)
         drawablesAdd(menu.blueTeam.name);

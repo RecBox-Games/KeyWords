@@ -1,7 +1,7 @@
 import { buttons_add } from "../../controller_lib/button.js";
 import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
-import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
+import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 
@@ -15,6 +15,7 @@ export interface Team {
 }
 
 export interface Menu {
+    bg?:DrawableImage,
     team:number,
     role:number,
     container:DrawableRect,

@@ -1,7 +1,9 @@
 import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
+import { DEFAULT_DRAWABLE_IMG, DrawableImage } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
+import { get_asset } from "../../utils/assets.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest } from "./init_chest.js";
@@ -19,7 +21,8 @@ export interface Board {
     showOverlay:boolean;
     clue:string | undefined;
     team:number,
-    role:number
+    role:number,
+    bg?: DrawableImage
 }
 
 let board:Board;
@@ -132,6 +135,7 @@ export const init_main_screen = () =>
 export const fill_board = (role:number, team:number, data:any[]) => {
     if (!board)
         init_main_screen();
+    board.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
     console.log("chests", data);
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
