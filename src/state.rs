@@ -67,6 +67,9 @@ impl StateManager {
             InputMessage::Ack => {
                 self.handle_ack();
             }
+            InputMessage::Role(_role) => {
+                println!("Error: role handling not yet implemented");
+            }
             InputMessage::Clue(clue) => {
                 self.handle_clue(clue);
             }

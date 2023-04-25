@@ -155,4 +155,26 @@ impl Team {
     }
 }
 
+//=================================== Role ===================================//
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Role {
+    RedGuesser,
+    BlueGuesser,
+    RedCluer,
+    BlueCluer,
+}
+
+impl Role {
+    pub fn from_str(s: &str) -> Result<Self> {
+        use Role::*;
+        match s {
+            "redguesser" => Ok(RedGuesser),
+            "blueguesser" => Ok(BlueGuesser),
+            "redcluer" => Ok(RedCluer),
+            "bluecluer" => Ok(BlueCluer),
+            _ => Err("unknown role".into()),
+        }
+    }
+}
+
 //==================================<===|===>=================================//

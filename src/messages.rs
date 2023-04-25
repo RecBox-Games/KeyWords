@@ -27,6 +27,7 @@ pub enum InputMessage {
     
     //
     Ack,
+    Role(Role),
     Clue(Clue),
     Guess(usize, usize),
     Second(bool), // true for support, false for dissent
@@ -207,7 +208,7 @@ fn parse_message(message: String) -> Option<InMessage> {
             return Some(StateRequest);
         }
         "input" => {
-            let q: Vec<_> = parts[1..].iter().collect();
+            let q: Vec<_> = parts[1..].into_iter().collect();
             match parse_input_message(q) {
                 Ok(input_message) => {
                     return Some(Input(input_message));
@@ -233,10 +234,21 @@ fn parse_message(message: String) -> Option<InMessage> {
 }
 
 fn parse_input_message(parts: Vec<&&str>) -> Result<InputMessage> {
-    if parts.len() == 1 && *parts[0] == "ack" {
+    if parts.len() == 0 {
+        return Err("input message specified but no content".into());
+    }
+    if *parts[0] == "ack" {
+        if parts.len() != 1 {
+            return Err("wrong number of arguments for ack".into());
+        }
         Ok(InputMessage::Ack)
+    } else if *parts[0] == "role" {
+        if parts.len() != 2 {
+            return Err("wrong number of arguments for role".into());
+        }
+        Ok(InputMessage::Role(Role::from_str(*parts[1])?))
     } else {
-        Err("Not an ack".into())
+        Err(format!("{} is unrecognized or not yet implemented", parts[0]).into())
     }
 }
 
