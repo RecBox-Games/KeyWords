@@ -34,6 +34,8 @@ pub enum InputMessage {
 }
 
 //============================== MessageManager ==============================//
+// TODO: refactor: the division of labor between MessageManager and
+// ClientManager doesn't really make sense
 pub struct MessageManager {
     simulated_messages: Vec<InputMessage>,
     client_manager: ClientManager,
@@ -132,8 +134,12 @@ impl MessageManager {
 
     pub fn send_state(&mut self, state: &StateManager) {
         for handle in std::mem::take(&mut self.clients_needing_state) {
-            self.client_manager.send_state(handle, state.to_string());
+            self.client_manager.send_state(&handle, &state.to_string());
         }
+    }
+
+    pub fn send_state_to_all(&mut self, state: &StateManager) {
+        self.client_manager.send_state_to_all(&state.to_string());
     }
 }
 
@@ -172,16 +178,31 @@ impl ClientManager {
         Ok(all_messages)
     }
 
-    fn send_state(&self, handle: Handle, state_suffix: String) {
-        let state_string = format!("state:{}:{}", self.role_string(&handle),
+    fn send_state(&self, handle: &Handle, state_suffix: &String) {
+        let state_string = format!("state:{}:{}", self.role_string(handle),
                                    state_suffix);
-        let result = controlpads::send_message(&handle, &state_string);
+        let result = controlpads::send_message(handle, &state_string);
         println!("sent state");
         if let Err(e) = result {
-            println!("Warning: failed to send state to {}: {}", &handle, e);
+            println!("Warning: failed to send state to {}: {}", handle, e);
         }
     }
 
+    fn send_state_to_all(&self, state_suffix: &String) {
+        if let Some(h) = self.red_cluegiver.as_ref() {
+            self.send_state(h, state_suffix);
+        }
+        if let Some(h) = self.blue_cluegiver.as_ref() {
+            self.send_state(h, state_suffix);
+        }
+        for h in &self.red_guessers {
+            self.send_state(h, state_suffix);
+        }
+        for h in &self.blue_guessers {
+            self.send_state(h, state_suffix);
+        }
+    }
+    
     fn role_string(&self, handle: &Handle) -> String {
         if let Some(h) = self.red_cluegiver.as_ref() {
             if h == handle {
@@ -268,6 +289,30 @@ fn parse_input_message(parts: Vec<&str>) -> Result<InputMessage> {
             return Err("wrong number of arguments for role".into());
         }
         Ok(InputMessage::Role(Role::from_str(parts[1])?))
+    } else if parts[0] == "clue" {
+        if parts.len() != 3 {
+            return Err("wrong number of arguments for clue".into());
+        }
+        let clue_given = parts[1].to_string();
+        let num = parts[2].parse::<usize>()?;
+        Ok(InputMessage::Clue(Clue::new(clue_given, num)))
+    } else if parts[0] == "guess" {
+        if parts.len() != 3 {
+            return Err("wrong number of arguments for guess".into());
+        }
+        let row = parts[1].parse::<usize>()?;
+        let col = parts[2].parse::<usize>()?;
+        Ok(InputMessage::Guess(row, col))
+    } else if parts[0] == "second" {
+        if parts.len() != 2 {
+            return Err("wrong number of arguments for second".into());
+        }
+        let support = match parts[1] {
+            "support" => true,
+            "dissent" => false,
+            _ => return Err("second must be support or dissent".into()),
+        };
+        Ok(InputMessage::Second(support))
     } else {
         Err(format!("{} is unrecognized or not yet implemented", parts[0]).into())
     }

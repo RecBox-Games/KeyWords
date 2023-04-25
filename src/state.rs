@@ -27,6 +27,7 @@ pub const MAX_HEALTH_BLUE: usize = 12;
 pub struct StateManager {
     pub game_state: GameState,
     pub chest_states: Vec<Vec<ChestState>>,
+    pub state_update: bool,
 }
 
 impl StateManager {
@@ -34,6 +35,7 @@ impl StateManager {
         StateManager {
             game_state: GameState::new(),
             chest_states: new_chest_states(),
+            state_update: false,
         }
     }
 
@@ -46,9 +48,11 @@ impl StateManager {
                     let tick_event = self.chest_states[j][i].tick();
                     if let TickEvent::ProjectileHit(projectile) = tick_event { // TODO refactor
                         playing_state.handle_projectile_hit(projectile);
+                        self.state_update = true;
                     }
                     if let TickEvent::DoneOpening = tick_event {
                         playing_state.handle_done_opening();
+                        self.state_update = true;
                     }
                 }
             }
@@ -64,20 +68,24 @@ impl StateManager {
             InputMessage::PrintChests => {
                 self.handle_print_chests();
             }
+            //
             InputMessage::Ack => {
                 self.handle_ack();
             }
             InputMessage::Role(_role) => {
-                println!("Error: role handling not yet implemented");
+                println!("Warning: role not meant to be handled by state");
             }
             InputMessage::Clue(clue) => {
                 self.handle_clue(clue);
+                self.state_update = true;
             }
             InputMessage::Guess(row, col) => {
                 self.handle_guess(row, col);
+                self.state_update = true;
             }
             InputMessage::Second(support) => {
                 self.handle_second(support);
+                self.state_update = true;
             }
         }
     }
