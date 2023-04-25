@@ -5,13 +5,13 @@ import { close_overlay } from "../../utils/utils.js";
 import { GIVER, GUESSER } from "../interfaces.js";
 export const fill_overlay = (overlay, role) => {
     const ctx = get_context();
-    if (role == GUESSER) {
+    if (role == GIVER) {
         overlay.box.boundingBox = { x: 0, y: 0, w: ctx.dimensions.x / 16, h: ctx.dimensions.y * 0.1 };
         overlay.box.stroke = 0;
         overlay.box.color = 'FFFFFF';
         overlay.subtext.font = '24px serif';
     }
-    else if (role == GIVER) {
+    else if (role == GUESSER) {
         overlay.text.text = 'The chest opens';
         overlay.subtext.font = '30px serif';
         overlay.shadow.boundingBox = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y };

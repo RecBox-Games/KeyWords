@@ -7,6 +7,7 @@ export interface Loading {
     text:DrawableText;
     sent:boolean;
     BG:DrawableRect;
+    progress:number;
 }
 
 const loading:Loading = {
@@ -14,7 +15,8 @@ const loading:Loading = {
     barBG:{...DEFAULT_DRAWABLE_RECT},
     bar:{...DEFAULT_DRAWABLE_RECT},
     sent:false,
-    BG: {...DEFAULT_DRAWABLE_RECT}
+    BG: {...DEFAULT_DRAWABLE_RECT},
+    progress: 0.0
 }
 
 export const get_loading = () => loading;
@@ -40,5 +42,6 @@ export const init_loading =  () => {
     loading.BG.boundingBox.h = ctx.dimensions.y;
     loading.BG.color = '#AAAAAA'
 
+    // Promise.allSettled()
     // console.log("socket", ctx.ws, ctx.wsState)
 }
