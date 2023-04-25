@@ -8,3 +8,8 @@ export const BLUE:number = 0;
 export const RED:number = 1;
 export const GUESSER:number = 0;
 export const GIVER:number = 1;
+
+export const LOADING:number = 0;
+export const TUTORIAL:number = 1;
+export const MENU:number = 2;
+export const GAME:number = 3;

@@ -91,8 +91,5 @@ export const init_menu = () => {
         text: {...DEFAULT_DRAWABLE_TEXT, text:"Choose your team !", font: '40px serif'}
     }
     init_UI();
-    buttons_add(menu.blueTeam.giverBtn);
-    buttons_add(menu.blueTeam.guesserBtn);
-    buttons_add(menu.redTeam.giverBtn);
-    buttons_add(menu.redTeam.guesserBtn);
+
 }

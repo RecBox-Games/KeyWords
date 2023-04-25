@@ -4,3 +4,7 @@ export const BLUE = 0;
 export const RED = 1;
 export const GUESSER = 0;
 export const GIVER = 1;
+export const LOADING = 0;
+export const TUTORIAL = 1;
+export const MENU = 2;
+export const GAME = 3;

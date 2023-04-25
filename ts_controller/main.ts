@@ -1,3 +1,4 @@
+import { buttons_flush } from "./controller_lib/button.js";
 import { drawablesRenderAll } from "./controller_lib/draw.js";
 import { get_context } from "./controller_lib/init.js";
 import { loading_loop } from "./game/loading/loop.js";
@@ -9,7 +10,10 @@ import { load_app, state_handler } from "./utils/state_handler.js";
 let state = 0;
 
 export const get_state = () => state;
-export const set_state = (val:number) => state = val;
+export const set_state = (val:number) => {
+    state = val
+    // buttons_flush();
+    };
 
 const loops:Function[] = [loading_loop, tutorial_loop, menu_loop, main_loop]
 

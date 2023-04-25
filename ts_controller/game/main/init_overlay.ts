@@ -5,55 +5,69 @@ import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableTex
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { close_overlay } from "../../utils/utils.js";
+import { GIVER, GUESSER } from "../interfaces.js";
 
 
 
 export interface Overlay {
-    shadow?: DrawableRect;
-    exit?: Button;
-    exitSprite?: DrawableRect;
+    shadow: DrawableRect;
+    exit: Button;
+    exitSprite: DrawableRect;
     box:DrawableRect;
     text:DrawableText;
     subtext:DrawableText;
     item:DrawableRect;
 }
 
-
-export const construct_overlay_giver = () :Overlay => {
+export const fill_overlay = (overlay:Overlay ,role:number) => {
     const ctx:Context = get_context();
-    const new_Overlay:Overlay = {
-        box: {boundingBox:{x:0, y:0, w: ctx.dimensions.x / 16, h : ctx.dimensions.y * 0.1}, color : '#FFFFFF', stroke : 0},
-        item:{...DEFAULT_DRAWABLE_RECT},
-        text: {...DEFAULT_DRAWABLE_TEXT, text:"Contents:"},
-        subtext: {...DEFAULT_DRAWABLE_TEXT, text:"Knife, deals 2 adamage", font : '24px serif'},
-    };
+    if (role == GUESSER)
+    {
+        overlay.box .boundingBox = {x:0, y:0, w: ctx.dimensions.x / 16, h : ctx.dimensions.y * 0.1};
+        overlay.box.stroke = 0;
+        overlay.box.color = 'FFFFFF';
+        overlay.subtext.font = '24px serif';
+    }
+    else if (role == GIVER)
+    {
+        overlay.text.text = 'The chest opens';
+        overlay.subtext.font = '30px serif';
+        overlay.shadow.boundingBox = {x: 0, y: 0, w : ctx.dimensions.x, h : ctx.dimensions.y};
+        overlay.shadow.color = "rgba(50, 50, 50, 0.3)";
+        overlay.shadow.stroke = 0;
 
+        overlay.box.boundingBox = {x: ctx.dimensions.x *0.25, y: ctx.dimensions.y *0.25, w : ctx.dimensions.x *0.5, h : ctx.dimensions.y*0.5};
+        overlay.box.color = '#FF0000';
+        overlay.box.stroke = 0;
 
-    return new_Overlay;
+        (overlay.exit._boundingBox as Rectangle) = {x: ctx.dimensions.x *0.25 + 10, y:ctx.dimensions.y *0.25 + 10, w:50, h: 50}
+        overlay.exit._touchEndCallback = close_overlay;
+        overlay.exit._active = false;
+        overlay.exitSprite.boundingBox = ((overlay.exit as Button)._boundingBox as Rectangle);
+
+        overlay.text.boundingBox = {...overlay.box.boundingBox, h: overlay.box.boundingBox.h * 0.2};
+        overlay.subtext.boundingBox = {...overlay.box.boundingBox, h: overlay.box.boundingBox.h * 0.4, y: overlay.box.boundingBox.y + overlay.box.boundingBox.h * 0.2};
+        overlay.item.boundingBox = {
+            w: overlay.box.boundingBox.w * .30,
+            h: overlay.box.boundingBox.h *.4,
+            x: overlay.box.boundingBox.x + (overlay.box.boundingBox.w * .35),
+            y: overlay.box.boundingBox.y + overlay.box.boundingBox.h - (overlay.box.boundingBox.h * .45)
+        };
+    }
+
 }
 
-export const construct_overlay_guesser = () :Overlay => {
-    const ctx:Context = get_context();
-    const new_Overlay:Overlay = {
-        shadow:{boundingBox:{x: 0, y: 0, w : ctx.dimensions.x, h : ctx.dimensions.y}, color : "rgba(50, 50, 50, 0.3)", stroke : 0},
-        box: {boundingBox:{x: ctx.dimensions.x *0.25, y: ctx.dimensions.y *0.25, w : ctx.dimensions.x *0.5, h : ctx.dimensions.y*0.5}, color : '#FF0000', stroke : 0},
-        exit: new Button({x: ctx.dimensions.x *0.25 + 10, y:ctx.dimensions.y *0.25 + 10, w:50, h: 50}, undefined, undefined, close_overlay),
-        exitSprite:{...DEFAULT_DRAWABLE_RECT},
-        item:{...DEFAULT_DRAWABLE_RECT},
-        text: {...DEFAULT_DRAWABLE_TEXT, text:"The chest opens..."},
-        subtext: {...DEFAULT_DRAWABLE_TEXT, font : '30px serif'},
-    };
-    (new_Overlay.exit as Button)._active = false;
-    (new_Overlay.exitSprite as DrawableRect).boundingBox = ((new_Overlay.exit as Button)._boundingBox as Rectangle);
-    new_Overlay.text.boundingBox = {...new_Overlay.box.boundingBox, h: new_Overlay.box.boundingBox.h * 0.2};
-    new_Overlay.subtext.boundingBox = {...new_Overlay.box.boundingBox, h: new_Overlay.box.boundingBox.h * 0.4, y: new_Overlay.box.boundingBox.y + new_Overlay.box.boundingBox.h * 0.2};
-    new_Overlay.item.boundingBox = {
-        w: new_Overlay.box.boundingBox.w * .30,
-        h: new_Overlay.box.boundingBox.h *.4,
-        x: new_Overlay.box.boundingBox.x + ( new_Overlay.box.boundingBox.w * .35),
-        y: new_Overlay.box.boundingBox.y +new_Overlay.box.boundingBox.h - ( new_Overlay.box.boundingBox.h * .45)
-        }
 
-    buttons_add((new_Overlay.exit as Button));
+export const construct_overlay = () :Overlay => {
+    const new_Overlay:Overlay = {
+        shadow: {...DEFAULT_DRAWABLE_RECT},
+        box:  {...DEFAULT_DRAWABLE_RECT},
+        exit: new Button({x:0, y:0, w:0, h: 0}, undefined, undefined, undefined),
+        exitSprite:{...DEFAULT_DRAWABLE_RECT},
+        item: {...DEFAULT_DRAWABLE_RECT},
+        text: {...DEFAULT_DRAWABLE_TEXT},
+        subtext: {...DEFAULT_DRAWABLE_TEXT},
+    };
+
     return new_Overlay;
 }

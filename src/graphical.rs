@@ -38,11 +38,15 @@ const HEARTS_SPACING_X: f32 = 80.0;
 const HEARTS_START_Y: f32 = 2.0;
 const HEARTS_DROP_HEIGHT: f32 = -70.0;
 // Chest Opening
+const CHEST_LIFT_OFFSET: Point = Point{x: 0.0, y:-200.0};
 const CENTER_CHEST_SCALE: Point = Point{x: 3.0, y:3.0};
 const CONTENTS_X: f32 = SCREEN_WIDTH/2.0;
 const CONTENTS_Y: f32 = 370.0;
 const CONTENTS_SPACING_X: f32 = 100.0;
-
+// Select
+const SELECTION_OFFSET_Y: f32 = 20.0;
+const SELECTION_OFFSET_X: f32 = 4.0;
+//
 
 type GR = GameResult<()>;
 type Ctx<'a> = &'a mut Context;
@@ -66,6 +70,9 @@ pub struct Graphical {
     sword: SpriteElem,
     bomb: SpriteElem,
     heal: SpriteElem,
+    // select
+    select_red: SpriteElem,
+    select_blue: SpriteElem,
 }
 
 impl Graphical {
@@ -83,6 +90,8 @@ impl Graphical {
             sword: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/sword.png"),
             bomb: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/bomb.png"),
             heal: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/heal.png"),
+            select_red: SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y, "/select_red.png"),
+            select_blue: SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y, "/select_blue.png"),
         }
     }
 
@@ -251,12 +260,13 @@ impl Graphical {
     fn draw_playing(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
                     playing_state: &PlayingState) -> GR {
         self.draw_static_chests(ctx, chest_states)?;
+        self.draw_selection(ctx, &playing_state.turn_state)?;
         self.draw_opening_chests(ctx, chest_states)?;
-        self.draw_health(ctx, &playing_state.red_health_state, &playing_state.blue_health_state )?;
         if let Some(deploying_state) = get_deploying_state(chest_states) {
             self.draw_deploying(ctx, deploying_state, playing_state.current_team(),
                                 playing_state.red_health(), playing_state.blue_health())?;
         }
+        self.draw_health(ctx, &playing_state.red_health_state, &playing_state.blue_health_state )?;
         Ok(())
     }
 
@@ -442,6 +452,22 @@ impl Graphical {
     }
 
     fn draw_selection(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
+        if let Some((row, col)) = turn_state.proposed_guess() {
+            let p = Point {
+                x: SELECTION_OFFSET_X + CHESTS_START_X + CHESTS_SPACING_X*(col as f32),
+                y: SELECTION_OFFSET_Y + CHESTS_START_Y +
+                    CHESTS_SPACING_Y*(row as f32) +
+                    CHESTS_VERTICAL_OFFSET_FACTOR*(row as f32),
+            };
+            match turn_state.current_team() {
+                Team::Red => {
+                    self.select_red.draw(ctx, p)?;
+                }
+                Team::Blue => {
+                    self.select_blue.draw(ctx, p)?;
+                }
+            }
+        }
         Ok(())
     }
 

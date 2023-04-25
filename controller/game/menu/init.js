@@ -1,4 +1,3 @@
-import { buttons_add } from "../../controller_lib/button.js";
 import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
@@ -55,8 +54,4 @@ export const init_menu = () => {
         text: { ...DEFAULT_DRAWABLE_TEXT, text: "Choose your team !", font: '40px serif' }
     };
     init_UI();
-    buttons_add(menu.blueTeam.giverBtn);
-    buttons_add(menu.blueTeam.guesserBtn);
-    buttons_add(menu.redTeam.giverBtn);
-    buttons_add(menu.redTeam.guesserBtn);
 };

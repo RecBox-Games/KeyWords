@@ -1,17 +1,24 @@
-import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
 import { GUESSER } from "../interfaces.js";
-export const construct_topbar = (role) => {
+export const fill_topbar = (topbar, role) => {
+    if (role == GUESSER) {
+        topbar.acceptButton._touchEndCallback = confirm_guess;
+        topbar.denyButton._touchEndCallback = deny_guess;
+    }
+    else
+        topbar.acceptButton._touchEndCallback = confirm_clue;
+};
+export const construct_topbar = () => {
     const topBar = {
         text: { ...DEFAULT_DRAWABLE_TEXT, text: "" },
         subText: { ...DEFAULT_DRAWABLE_TEXT, text: "" },
         accept: { ...DEFAULT_DRAWABLE_RECT, color: "#00FF00" },
         deny: { ...DEFAULT_DRAWABLE_RECT, color: "#FF0000" },
-        acceptButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, (role == GUESSER ? confirm_guess : confirm_clue)),
-        denyButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, deny_guess),
+        acceptButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, undefined),
+        denyButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, undefined),
     };
     const ctx = get_context();
     const boundingBox = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.1 };
@@ -27,7 +34,5 @@ export const construct_topbar = (role) => {
     topBar.denyButton._active = false;
     topBar.acceptButton._boundingBox = topBar.accept.boundingBox;
     topBar.denyButton._boundingBox = topBar.deny.boundingBox;
-    buttons_add(topBar.acceptButton);
-    buttons_add(topBar.denyButton);
     return topBar;
 };
