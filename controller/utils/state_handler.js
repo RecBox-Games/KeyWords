@@ -37,15 +37,19 @@ const parse_rolestate = (msg) => {
 const parse_turnstate = (msg) => {
     let role = -1;
     let team = -1;
-    let clue = "", guessCount = 0, guessState = false;
-    if (msg.includes('red'))
+    const state = msg.split(',');
+    const clue = state[1];
+    const guessCount = parseInt(state[2]);
+    const guessState = state[3] == 'true';
+    if (state[0].includes('red'))
         team = RED;
-    else if (msg.includes('blue'))
+    else if (state[0].includes('blue'))
         team = BLUE;
-    if (msg.includes('guessing'))
+    if (state[0].includes('guessing'))
         role = GUESSER;
-    else if (msg.includes('cluing'))
+    else if (state[0].includes('cluing'))
         role = GIVER;
+    console.log("turn state", role, team, clue, guessCount, guessState);
     return [role, team, clue, guessCount, guessState];
 };
 // const parse_healthstate = (msg:string):[number, number] => {
@@ -57,7 +61,7 @@ const parse_cheststate = (msg) => {
         const words = obj.split(',');
         arr.push({
             text: words[0],
-            state: words[1],
+            state: words[1] == 'open',
             contents: 1
         });
     }

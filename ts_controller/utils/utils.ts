@@ -51,7 +51,7 @@ export const chest_clicked_giver = (self:Button) =>
 export const chest_clicked_guessser = (self:Button) =>
 {
     const board:Board = get_board();
-
+    const ctx = get_context();
     if (!board.clue)
     {
         console.log("No clue");
@@ -65,10 +65,11 @@ export const chest_clicked_guessser = (self:Button) =>
     }
 
     console.log("Guessing ", (self.data as Chest).text.text);
-    board.topbar.acceptButton._active = true;
-    board.topbar.denyButton._active = true;
-    board.topbar.text.text = "Team's guess : \"" + (self.data as Chest).text.text + "\"";
-    board.guessedWord = (self.data as Chest).text.text;
+    // board.topbar.acceptButton._active = true;
+    // board.topbar.denyButton._active = true;
+    // board.topbar.text.text = "Team's guess : \"" + (self.data as Chest).text.text + "\"";
+    // board.guessedWord = (self.data as Chest).text.text;
+    ctx.ws.send('input:guess' + ',' + (((self.data as Chest).id / BOARD_W) | 0).toString() +  ',' +  (((self.data as Chest).id % BOARD_W) | 0).toString())
 }
 
 export const start_turn = (turnRole:number, clue:string, guessRemain:number, guess:string, guessState:boolean) =>
@@ -81,18 +82,20 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number, gue
             board.clue = clue;
             board.currentGuesses = guessRemain;
             board.guessedWord = guess;
-            if (guess)
-            {
-                if (!guessState)
+            // if (guess)
+            // {
+                if (guessState)
                 {
                     board.topbar.acceptButton._active = true;
                     board.topbar.denyButton._active = true;
-                    board.topbar.text.text = "Team's guess : \"" + guess + "\"";
+                    board.topbar.subText.text = "";
+                    // board.topbar.text.text = "Team's guess : \"" + guess + "\"";
+                    board.topbar.text.text = "Validate guess ?";
                 }
-                else {
-                    open_overlay_guesser(guess);
-                }
-            }
+                // else {
+                //     open_overlay_guesser(guess);
+                // }
+            // }
             else
             {
                 board.topbar.text.text = "Your clue is \"" + clue + "\"";
@@ -113,47 +116,58 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number, gue
     else if (board.role == GIVER) {
         const input = document.getElementById("clue_input");
         const number = document.getElementById("clue_number");
-
-        // board.topbar.acceptButton._active = true;
-        if (input)
+        if (turnRole == board.role)
         {
-            input.style.display = "flex";
-            input.style.position = "absolute";
-            input.style.top = "4%";
-            input.style.left = "33%";
-            input.style.width = "15%";
-            input.style.fontSize = "20px";
-            input.style.background = "transparent";
-            input.style.border = "none";
-            input.style.borderBottom = "1px solid";
+        // board.topbar.acceptButton._active = true;
+            if (input)
+            {
+                input.style.display = "flex";
+                input.style.position = "absolute";
+                input.style.top = "4%";
+                input.style.left = "33%";
+                input.style.width = "15%";
+                input.style.fontSize = "20px";
+                input.style.background = "transparent";
+                input.style.border = "none";
+                input.style.borderBottom = "1px solid";
 
-            (input as HTMLInputElement).value = "";
-            input.onchange = (e) => {
-                get_board().clue = (e.target as HTMLInputElement).value;
-                if ((e.target as HTMLInputElement).value != "")
-                {
-                    get_board().topbar.acceptButton._active = true;
+                (input as HTMLInputElement).value = "";
+                input.onchange = (e) => {
+                    get_board().clue = (e.target as HTMLInputElement).value;
+                    if ((e.target as HTMLInputElement).value != "")
+                    {
+                        get_board().topbar.acceptButton._active = true;
+                    }
+                    else
+                        get_board().topbar.acceptButton._active = false;
+                    console.log((e.target as HTMLInputElement).value);
                 }
-                else
-                    get_board().topbar.acceptButton._active = false;
-                console.log((e.target as HTMLInputElement).value);
+            }
+            if (number) {
+                number.style.display = "flex";
+                number.style.position = "absolute";
+                number.style.top = "4%";
+                number.style.left = "55%";
+                number.style.width = "5%";
+                number.style.fontSize = "20px";
+                number.style.background = "transparent";
+                number.style.border = "none";
+                number.style.borderBottom = "1px solid";
+                (number as HTMLInputElement).value = (1).toString();
+                number.onchange = (e) => {
+                    const val = parseInt((e.target as HTMLInputElement).value);
+                    get_board().totalGuesses = Math.min(Math.max(1, val), 5);
+                    console.log(val);
+                }
             }
         }
-        if (number) {
-            number.style.display = "flex";
-            number.style.position = "absolute";
-            number.style.top = "4%";
-            number.style.left = "55%";
-            number.style.width = "5%";
-            number.style.fontSize = "20px";
-            number.style.background = "transparent";
-            number.style.border = "none";
-            number.style.borderBottom = "1px solid";
-            (number as HTMLInputElement).value = (1).toString();
-            number.onchange = (e) => {
-                const val = parseInt((e.target as HTMLInputElement).value);
-                get_board().totalGuesses = Math.min(Math.max(1, val), 5);
-                console.log(val);
+        else {
+             if (input)
+            {
+                input.style.display = "none";
+            }
+            if (number) {
+                number.style.display = "none";
             }
         }
     }
