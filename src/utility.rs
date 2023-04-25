@@ -168,10 +168,11 @@ impl Role {
     pub fn from_str(s: &str) -> Result<Self> {
         use Role::*;
         match s {
-            "redguesser" => Ok(RedGuesser),
-            "blueguesser" => Ok(BlueGuesser),
-            "redcluer" => Ok(RedCluer),
-            "bluecluer" => Ok(BlueCluer),
+            // TODO no brackets
+            "{redguesser}" => Ok(RedGuesser),
+            "{blueguesser}" => Ok(BlueGuesser),
+            "{redcluer}" => Ok(RedCluer),
+            "{bluecluer}" => Ok(BlueCluer),
             _ => Err("unknown role".into()),
         }
     }

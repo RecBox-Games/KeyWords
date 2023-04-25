@@ -55,7 +55,10 @@ impl MessageManager {
             Ok(raw_messages) => {
                 for (handle, msg) in raw_messages {
                     let pm = parse_message(msg);
-                    if let Some(InMessage::Input(input_message)) = pm {
+                    if let Some(InMessage::Input(InputMessage::Role(role))) = pm {
+                        self.client_manager.assign_role(handle.clone(), role);
+                        self.clients_needing_state.push(handle);
+                    } else if let Some(InMessage::Input(input_message)) = pm {
                         // add this input message to the vec to be returned
                         input_messages.push(input_message);
                     } else if let Some(InMessage::StateRequest) = pm {
@@ -173,6 +176,7 @@ impl ClientManager {
         let state_string = format!("state:{}:{}", self.role_string(&handle),
                                    state_suffix);
         let result = controlpads::send_message(&handle, &state_string);
+        println!("sent state");
         if let Err(e) = result {
             println!("Warning: failed to send state to {}: {}", &handle, e);
         }
@@ -197,6 +201,23 @@ impl ClientManager {
         }
         return "choosing".to_string();
     }
+
+    fn assign_role(&mut self, handle: Handle, role: Role) {
+        match role {
+            Role::RedCluer => {
+                self.red_cluegiver = Some(handle);
+            }
+            Role::BlueCluer => {
+                self.blue_cluegiver = Some(handle);
+            }
+            Role::RedGuesser => {
+                self.red_guessers.push(handle);
+            }
+            Role::BlueGuesser => {
+                self.blue_guessers.push(handle);
+            }
+        }
+    }
 }
 
 //================================== Helpers =================================//
@@ -208,13 +229,13 @@ fn parse_message(message: String) -> Option<InMessage> {
             return Some(StateRequest);
         }
         "input" => {
-            let q: Vec<_> = parts[1..].into_iter().collect();
+            let q: Vec<_> = parts[1].split(",").collect();
             match parse_input_message(q) {
                 Ok(input_message) => {
                     return Some(Input(input_message));
                 }
                 Err(e) => {
-                    println!("Warning: error while parsing {}: {}", &message, e);
+                    println!("Warning: error while parsing '{}': {}", &message, e);
                 }
                 
             }
@@ -233,20 +254,20 @@ fn parse_message(message: String) -> Option<InMessage> {
     None
 }
 
-fn parse_input_message(parts: Vec<&&str>) -> Result<InputMessage> {
+fn parse_input_message(parts: Vec<&str>) -> Result<InputMessage> {
     if parts.len() == 0 {
         return Err("input message specified but no content".into());
     }
-    if *parts[0] == "ack" {
+    if parts[0] == "ack" {
         if parts.len() != 1 {
             return Err("wrong number of arguments for ack".into());
         }
         Ok(InputMessage::Ack)
-    } else if *parts[0] == "role" {
+    } else if parts[0] == "role" {
         if parts.len() != 2 {
             return Err("wrong number of arguments for role".into());
         }
-        Ok(InputMessage::Role(Role::from_str(*parts[1])?))
+        Ok(InputMessage::Role(Role::from_str(parts[1])?))
     } else {
         Err(format!("{} is unrecognized or not yet implemented", parts[0]).into())
     }
