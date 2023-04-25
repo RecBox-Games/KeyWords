@@ -87,7 +87,7 @@ export const init_menu = () => {
         redTeam: {
             name: {...DEFAULT_DRAWABLE_TEXT, text: "Red team", color: "#C81718"},
             guesserBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,redguesser')}),
-            giverBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,{redcluer}')}),
+            giverBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,redcluer')}),
             // guesserSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Guesser"},
             // giverSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Clue giver"},
             guesserSprite: {...DEFAULT_DRAWABLE_RECT, color:'#FF00FF'},
