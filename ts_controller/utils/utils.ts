@@ -6,6 +6,7 @@ import { Board, get_board } from "../game/main/init.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { buttons_add, buttons_len, buttons_log } from "../controller_lib/button.js";
+import { assetsDic, get_asset } from "./assets.js";
 
 
 export const set_chests_status = (status:boolean) =>
@@ -32,13 +33,21 @@ export const chest_clicked_giver = (self:Button) =>
         w: (self._boundingBox as Rectangle).w * 1,
         h: (self._boundingBox as Rectangle).h * 1.3,
     }
+
+    if ((self.data as Chest).contents == 'empty'){
+        board.overlay.subtext.text = 'There is nothing here :) '
+         board.overlay.item.image = null;
+    }
+    else {
+        board.overlay.item.image = get_asset((self.data as Chest).contents.slice(0, -1));
+        board.overlay.subtext.text = (self.data as Chest).contents.at(-1) + assetsDic[(self.data as Chest).contents.slice(0, -1)];
+    }
     board.overlay.text.boundingBox = {... board.overlay.box.boundingBox, h:  board.overlay.box.boundingBox.h * 0.2};
-    board.overlay.text.text = "This chest contains :";
+    board.overlay.text.text = "This chest contains :" ;
     board.overlay.text.font = `15px serif`
-    board.overlay.subtext.text = "{{insert effect}}";
     board.overlay.subtext.font = `15px serif`
     board.overlay.subtext.boundingBox = {...board.overlay.box.boundingBox, y:  board.overlay.box.boundingBox.y + board.overlay.box.boundingBox.h * 0.7, h:  board.overlay.box.boundingBox.h * 0.3};
-    board.overlay.item.boundingBox = {
+    board.overlay.item.dst = {
         x: board.overlay.box.boundingBox.x + board.overlay.box.boundingBox.w * 0.25,
         y: board.overlay.box.boundingBox.y + board.overlay.box.boundingBox.h * 0.25,
         w: board.overlay.box.boundingBox.w * 0.5,

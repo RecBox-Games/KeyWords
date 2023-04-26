@@ -62,7 +62,7 @@ const parse_cheststate = (msg) => {
         arr.push({
             text: words[0],
             state: words[1] == 'open',
-            contents: 1
+            contents: words[2]
         });
     }
     return arr;

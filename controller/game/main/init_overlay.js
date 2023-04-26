@@ -1,6 +1,6 @@
 import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
-import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
+import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { close_overlay } from "../../utils/utils.js";
 import { GIVER, GUESSER } from "../interfaces.js";
@@ -28,7 +28,7 @@ export const fill_overlay = (overlay, role) => {
         overlay.exitSprite.boundingBox = overlay.exit._boundingBox;
         overlay.text.boundingBox = { ...overlay.box.boundingBox, h: overlay.box.boundingBox.h * 0.2 };
         overlay.subtext.boundingBox = { ...overlay.box.boundingBox, h: overlay.box.boundingBox.h * 0.4, y: overlay.box.boundingBox.y + overlay.box.boundingBox.h * 0.2 };
-        overlay.item.boundingBox = {
+        overlay.item.dst = {
             w: overlay.box.boundingBox.w * .30,
             h: overlay.box.boundingBox.h * .4,
             x: overlay.box.boundingBox.x + (overlay.box.boundingBox.w * .35),
@@ -42,7 +42,7 @@ export const construct_overlay = () => {
     const new_Overlay = {
         box: { ...DEFAULT_DRAWABLE_RECT },
         exit: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, undefined),
-        item: { ...DEFAULT_DRAWABLE_RECT },
+        item: { ...DEFAULT_DRAWABLE_IMG },
         text: { ...DEFAULT_DRAWABLE_TEXT },
         subtext: { ...DEFAULT_DRAWABLE_TEXT },
     };

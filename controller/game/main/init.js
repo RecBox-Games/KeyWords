@@ -32,7 +32,7 @@ const fill_board_data = (role, team, data) => {
 const construct_board_row = (row, boundingBox) => {
     const chest_Arr = [];
     const button_Arr = [];
-    const gapx = get_context().dimensions.x / 16;
+    const gapx = get_context().dimensions.x / 40;
     for (let x = 0; x < BOARD_W; x += 1) {
         let newChest = construct_chest(x + (BOARD_W * row), boundingBox);
         let newButton = new Button({ ...boundingBox }, undefined, undefined, undefined);
@@ -56,13 +56,13 @@ const construct_Board = () => {
     let y;
     const chests_arr = [];
     const buttons_arr = [];
-    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.05;
-    const gapx = (ctx.dimensions.x / 16);
+    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.01;
+    const gapx = (ctx.dimensions.x / 40);
     const boundingBox = {
         x: gapx,
-        y: (ctx.dimensions.y * 0.2),
-        h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 8,
-        w: ctx.dimensions.x / 8
+        y: (ctx.dimensions.y * 0.1),
+        h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 4.5,
+        w: ctx.dimensions.x / 6
     };
     for (y = 0; y < BOARD_H; y += 1) {
         const [chests, buttons] = construct_board_row(y, boundingBox);

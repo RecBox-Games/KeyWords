@@ -60,7 +60,7 @@ const fill_board_data = (role:number, team:number, data:any[]) => {
 const construct_board_row = (row:number, boundingBox:Rectangle): [Chest[], Button[]]  => {
     const chest_Arr: (Chest)[] = [];
     const button_Arr: Button[] = [];
-    const gapx = get_context().dimensions.x / 16;
+    const gapx = get_context().dimensions.x / 40;
 
     for (let x = 0; x < BOARD_W; x += 1)
     {
@@ -90,13 +90,13 @@ const construct_Board = () => {
 
     const chests_arr : (Chest [])[] = [];
     const buttons_arr: (Button[])[] = [];
-    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.05;
-    const gapx = (ctx.dimensions.x / 16);
+    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.01;
+    const gapx = (ctx.dimensions.x / 40);
     const boundingBox:Rectangle = {
             x: gapx,
-            y: (ctx.dimensions.y * 0.2),
-            h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 8,
-            w: ctx.dimensions.x / 8
+            y: (ctx.dimensions.y * 0.1),
+            h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 4.5,
+            w: ctx.dimensions.x / 6
         };
 
     for (y = 0; y < BOARD_H; y += 1)

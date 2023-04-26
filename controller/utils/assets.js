@@ -1,5 +1,11 @@
-const assetsSrc = ['keywords_background.png', 'chest_sprites.png'];
+const assetsSrc = ['keywords_background.png', 'chest_sprites.png', 'bomb.png', 'sword.png', 'heal.png'];
 const assets = {};
+export const assetsDic = {
+    'bomb': ' damage to your team',
+    'sword': ' damage to the enemy team',
+    'empty': 'There is nothing here :)',
+    'heal': ' hearts for your team'
+};
 export const assetCount = () => assetsSrc.length;
 export const get_asset = (name) => assets[name];
 const loadAsset = (loading, src, res, rej) => {

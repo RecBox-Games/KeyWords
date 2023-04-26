@@ -1,8 +1,15 @@
 import { DrawableRect, DrawableText } from "../controller_lib/types/drawables.js";
 import { Loading } from "../game/loading/init.js";
 
-const assetsSrc = ['keywords_background.png', 'chest_sprites.png'];
+const assetsSrc = ['keywords_background.png', 'chest_sprites.png', 'bomb.png', 'sword.png', 'heal.png'];
 const assets:any = {};
+
+export const assetsDic = {
+    'bomb': ' damage to your team',
+    'sword': ' damage to the enemy team',
+    'empty': 'There is nothing here :)',
+    'heal': ' hearts for your team'
+}
 
 export const assetCount = () => assetsSrc.length;
 

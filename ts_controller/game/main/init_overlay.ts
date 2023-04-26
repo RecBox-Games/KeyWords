@@ -1,7 +1,7 @@
 import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
-import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
+import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { close_overlay } from "../../utils/utils.js";
@@ -16,7 +16,7 @@ export interface Overlay {
     box:DrawableRect;
     text:DrawableText;
     subtext:DrawableText;
-    item:DrawableRect;
+    item:DrawableImage;
 }
 
 export const fill_overlay = (overlay:Overlay ,role:number) => {
@@ -50,7 +50,7 @@ export const fill_overlay = (overlay:Overlay ,role:number) => {
 
         overlay.text.boundingBox = {...overlay.box.boundingBox, h: overlay.box.boundingBox.h * 0.2};
         overlay.subtext.boundingBox = {...overlay.box.boundingBox, h: overlay.box.boundingBox.h * 0.4, y: overlay.box.boundingBox.y + overlay.box.boundingBox.h * 0.2};
-        overlay.item.boundingBox = {
+        overlay.item.dst = {
             w: overlay.box.boundingBox.w * .30,
             h: overlay.box.boundingBox.h *.4,
             x: overlay.box.boundingBox.x + (overlay.box.boundingBox.w * .35),
@@ -66,7 +66,7 @@ export const construct_overlay = () :Overlay => {
     const new_Overlay:Overlay = {
         box:  {...DEFAULT_DRAWABLE_RECT},
         exit: new Button({x:0, y:0, w:0, h: 0}, undefined, undefined, undefined),
-        item: {...DEFAULT_DRAWABLE_RECT},
+        item: {...DEFAULT_DRAWABLE_IMG},
         text: {...DEFAULT_DRAWABLE_TEXT},
         subtext: {...DEFAULT_DRAWABLE_TEXT},
     };
