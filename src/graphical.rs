@@ -261,6 +261,7 @@ impl Graphical {
             self.draw_deploying(ctx, deploying_state, playing_state.current_team(),
                                 playing_state.red_health(), playing_state.blue_health())?;
         }
+        self.draw_debug_turn(ctx, &playing_state.turn_state)?;
         Ok(())
     }
 
@@ -454,6 +455,15 @@ impl Graphical {
                 }
             }
         }
+        Ok(())
+    }
+
+    fn draw_debug_turn(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
+        let s = format!("{:?}", turn_state);
+        let te = TextElem::new(&s, 40.0, 1.0, 1.0);
+        let p = Point{x: 10.0, y: SCREEN_HEIGHT-50.0};
+        te.draw(ctx, (0.0, 0.0, 0.0, 1.0).into(), p)?;
+        //
         Ok(())
     }
 
