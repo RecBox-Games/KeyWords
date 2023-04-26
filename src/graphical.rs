@@ -528,14 +528,14 @@ fn new_sparkle(ctx: Ctx) -> SpriteElem {
 
 fn new_chest(ctx: Ctx) -> SpriteElem {
     let mut chest = SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y,
-                                    "/chest_sprites.png");
+                                    "/chest.png");
     chest.set_animation(
 	vec![
-            Rect::new(0.0*0.0909, 0.0, 0.0909, 1.0),
-            Rect::new(1.0*0.0909, 0.0, 0.0909, 1.0),
-            Rect::new(2.0*0.0909, 0.0, 0.0909, 1.0),            
-            Rect::new(3.0*0.0909, 0.0, 0.0909, 1.0),            
-            Rect::new(4.0*0.0909, 0.0, 0.0909, 1.0),            
+            Rect::new(0.0*0.2, 0.0, 0.2, 1.0),
+            Rect::new(1.0*0.2, 0.0, 0.2, 1.0),
+            Rect::new(2.0*0.2, 0.0, 0.2, 1.0),            
+            Rect::new(3.0*0.2, 0.0, 0.2, 1.0),            
+            Rect::new(4.0*0.2, 0.0, 0.2, 1.0),            
         ],
     );
     chest
