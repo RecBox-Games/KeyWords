@@ -8,8 +8,8 @@ use std::mem::take;
 
 //================================= Constants ==================================
 // Ticks
-pub const TICKS_TITLE: usize = 10;//180;
-pub const TICKS_CHESTFALL: usize = 30;//320;
+pub const TICKS_TITLE: usize = 180;
+pub const TICKS_CHESTFALL: usize = 320;
 pub const TICKS_TURN_TRANSITION: usize = 40;
 pub const TICKS_CHEST_GROW: usize = 150;
 pub const TICKS_CHEST_OPEN: usize = 60;
