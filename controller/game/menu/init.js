@@ -40,19 +40,19 @@ export const init_menu = () => {
             guesserBtn: new Button({ x: 0, y: 0, h: 0, w: 0 }, undefined, undefined, (self) => { get_context().ws.send('input:role,blueguesser'); }),
             giverBtn: new Button({ x: 0, y: 0, h: 0, w: 0 }, undefined, undefined, (self) => { get_context().ws.send('input:role,bluecluer'); }),
             giverRect: DEFAULT_DRAWABLE_RECT,
-            guesserSprite: { ...DEFAULT_DRAWABLE_RECT, color: '#0000FF' },
-            giverSprite: { ...DEFAULT_DRAWABLE_RECT, color: '#0000FF' }
-            // guesserSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Guesser"},
-            // giverSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Clue giver"}
+            // guesserSprite: {...DEFAULT_DRAWABLE_RECT, color:'#0000FF'},
+            // giverSprite: {...DEFAULT_DRAWABLE_RECT, color:'#0000FF'}
+            guesserSprite: { ...DEFAULT_DRAWABLE_TEXT, text: "Guesser" },
+            giverSprite: { ...DEFAULT_DRAWABLE_TEXT, text: "Clue giver" }
         },
         redTeam: {
             name: { ...DEFAULT_DRAWABLE_TEXT, text: "Red team", color: "#C81718" },
             guesserBtn: new Button({ x: 0, y: 0, h: 0, w: 0 }, undefined, undefined, (self) => { get_context().ws.send('input:role,redguesser'); }),
             giverBtn: new Button({ x: 0, y: 0, h: 0, w: 0 }, undefined, undefined, (self) => { get_context().ws.send('input:role,redcluer'); }),
-            // guesserSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Guesser"},
-            // giverSprite: {...DEFAULT_DRAWABLE_TEXT, text:"Clue giver"},
-            guesserSprite: { ...DEFAULT_DRAWABLE_RECT, color: '#FF00FF' },
-            giverSprite: { ...DEFAULT_DRAWABLE_RECT, color: '#FF00FF' },
+            guesserSprite: { ...DEFAULT_DRAWABLE_TEXT, text: "Guesser" },
+            giverSprite: { ...DEFAULT_DRAWABLE_TEXT, text: "Clue giver" },
+            // guesserSprite: {...DEFAULT_DRAWABLE_RECT, color:'#FF00FF'},
+            // giverSprite: {...DEFAULT_DRAWABLE_RECT, color:'#FF00FF'},
             giverRect: DEFAULT_DRAWABLE_RECT,
         },
         text: { ...DEFAULT_DRAWABLE_TEXT, text: "Choose your team !", font: '40px serif' }

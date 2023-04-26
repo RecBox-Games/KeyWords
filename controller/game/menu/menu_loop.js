@@ -11,6 +11,8 @@ export const set_menu_state = (team, role) => {
     const menu = get_menu();
     menu.bg = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), };
     console.log("set menu state", team, role, menu.bg);
+    menu.team = team;
+    menu.role = role;
     console.log("???", menu.blueTeam.guesserBtn, menu.blueTeam.guesserSprite);
     if (role == -1 && team == -1) {
         buttons_add(menu.blueTeam.giverBtn);
@@ -19,8 +21,6 @@ export const set_menu_state = (team, role) => {
         buttons_add(menu.redTeam.guesserBtn);
         return;
     }
-    menu.team = team;
-    menu.role = role;
     menu.text.text = "Waiting for game to start...";
     menu.blueTeam.name.font = '50px serif';
     menu.redTeam.name.font = '50px serif';
@@ -45,7 +45,7 @@ export const menu_loop = () => {
         drawablesAdd(menu.blueTeam.name);
     if (menu.team != BLUE)
         drawablesAdd(menu.redTeam.name);
-    if (!menu.team) {
+    if (menu.team == -1) {
         drawablesAdd(menu.blueTeam.giverSprite);
         drawablesAdd(menu.blueTeam.guesserSprite);
         drawablesAdd(menu.redTeam.giverSprite);
