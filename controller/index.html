@@ -3,17 +3,18 @@
   <head>
     <title>RecBox Control Pad</title>
     <style>
-      body {
-        margin: 0;
-        width:100vw;
-        height:100vh;
-      }
+      #fullscreen {
+            z-index:42;
+            position:absolute;
+        }
       @media (orientation: landscape) {
 		#canvas {
-                display: flex;
+                /* display: flex; */
+                top:0px;
+                right:0px;
+                position:absolute;
                 width: 100%;
                 height: 100%;
-                user-select: none;
             }
 		#restrict_view {display: none}
 	}
@@ -35,10 +36,9 @@
     </style>
   </head>
   <body>
-    <div id="restrict_view"> Please turn your phone sideways </div>
-    <input type="text" placeholder="Input your clue" id="clue_input">
-    <input type="number" min="1" max="5" placeholder="Max guess" id="clue_number">
     <canvas id="canvas"  oncontextmenu="return false;"></canvas>
     <script type="module" src="main.js"></script>
+     <button id="fullscreen" onclick="document.getElementById('canvas').requestFullscreen()"> Click to fullscreen</button>
 </body>
 </html>
+

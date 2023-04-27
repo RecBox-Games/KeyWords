@@ -23,14 +23,14 @@ export const fill_chest = (chest:Chest, data:any) => {
     chest.sprite.image = get_asset('chest_sprites')
 }
 
-export const construct_chest = (id:number, box:Rectangle) : Chest => {
+export const construct_chest = (id:number) : Chest => {
     //fetch content from assets.ts
     const newChest: Chest = {
         open: false,
         id: id,
         contents: "",
-        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF", boundingBox:{...box}},
-        sprite: {...DEFAULT_DRAWABLE_IMG, dst: {...box}, src: {x:0, y:0, w:44, h:32}}// {..box} or else it will assign as reference
+        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF"},
+        sprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}}// {..box} or else it will assign as reference
         // sprite: {...DEFAULT_DRAWABLE_RECT, boundingBox: {...box}}// {..box} or else it will assign as reference
     }
 

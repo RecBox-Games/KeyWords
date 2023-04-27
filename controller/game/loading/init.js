@@ -12,7 +12,7 @@ const loading = {
     done: false
 };
 export const get_loading = () => loading;
-export const init_loading = async () => {
+export const size_loading = () => {
     const ctx = get_context();
     const box = {
         x: ctx.dimensions.x * 0.15,
@@ -20,15 +20,18 @@ export const init_loading = async () => {
         w: ctx.dimensions.x * 0.70,
         h: ctx.dimensions.y * 0.1
     };
+    loading.BG.boundingBox.w = ctx.dimensions.x;
+    loading.BG.boundingBox.h = ctx.dimensions.y;
+    loading.text.boundingBox = { ...box, y: box.y - (box.h * 2) };
     loading.barBG.boundingBox = box;
     loading.bar.boundingBox = { ...box, w: 0 };
+};
+export const init_loading = async () => {
+    size_loading();
     loading.bar.color = '#FFFFFF';
-    loading.text.boundingBox = { ...box, y: box.y - (box.h * 2) };
     loading.text.text = 'Loading';
     loading.text.font = '80px serif';
     loading.text.color = '#FF0000';
-    loading.BG.boundingBox.w = ctx.dimensions.x;
-    loading.BG.boundingBox.h = ctx.dimensions.y;
     loading.BG.color = '#AAAAAA';
     Promise.allSettled(load_assets(loading, () => { loading.progress += (1 / assetCount()); console.log("progress", loading.progress); }, (err) => console.log("Error", err)))
         .then(() => { console.log("loaded"); loading.done = true; });

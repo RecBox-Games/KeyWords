@@ -12,7 +12,7 @@ const init_team = (box, team, ctx) => {
     team.guesserSprite.boundingBox = { ...box, x: box.x + box.w * 0.25, w: box.w * 0.5, h: box.h * 0.3 };
     team.guesserBtn._boundingBox = team.guesserSprite.boundingBox;
 };
-const init_UI = () => {
+export const size_menu = () => {
     const ctx = get_context();
     ctx.ctx.font = menu.text.font;
     menu.container.boundingBox.w = ctx.dimensions.x * 0.8;
@@ -57,5 +57,5 @@ export const init_menu = () => {
         },
         text: { ...DEFAULT_DRAWABLE_TEXT, text: "Choose your team !", font: '40px serif' }
     };
-    init_UI();
+    size_menu();
 };

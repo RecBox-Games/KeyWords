@@ -4,26 +4,16 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } fr
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { close_overlay } from "../../utils/utils.js";
 import { GIVER, GUESSER } from "../interfaces.js";
-export const fill_overlay = (overlay, role) => {
+export const size_overlay = (overlay, role) => {
     const ctx = get_context();
     if (role == GIVER) {
         overlay.box.boundingBox = { x: 0, y: 0, w: ctx.dimensions.x / 16, h: ctx.dimensions.y * 0.1 };
-        overlay.box.stroke = 0;
-        overlay.box.color = '#FFFFFF';
-        overlay.subtext.font = '24px serif';
     }
     else if (role == GUESSER) {
-        overlay.text.text = 'The chest opens';
-        overlay.subtext.font = '30px serif';
         overlay.shadow = { ...DEFAULT_DRAWABLE_RECT };
         overlay.shadow.boundingBox = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y };
-        overlay.shadow.color = "rgba(50, 50, 50, 0.3)";
-        overlay.shadow.stroke = 0;
         overlay.box.boundingBox = { x: ctx.dimensions.x * 0.25, y: ctx.dimensions.y * 0.25, w: ctx.dimensions.x * 0.5, h: ctx.dimensions.y * 0.5 };
-        overlay.box.color = '#FF0000';
-        overlay.box.stroke = 0;
         overlay.exit._boundingBox = { x: ctx.dimensions.x * 0.25 + 10, y: ctx.dimensions.y * 0.25 + 10, w: 50, h: 50 };
-        overlay.exit._touchEndCallback = close_overlay;
         overlay.exitSprite = { ...DEFAULT_DRAWABLE_RECT };
         overlay.exitSprite.boundingBox = overlay.exit._boundingBox;
         overlay.text.boundingBox = { ...overlay.box.boundingBox, h: overlay.box.boundingBox.h * 0.2 };
@@ -34,6 +24,26 @@ export const fill_overlay = (overlay, role) => {
             x: overlay.box.boundingBox.x + (overlay.box.boundingBox.w * .35),
             y: overlay.box.boundingBox.y + overlay.box.boundingBox.h - (overlay.box.boundingBox.h * .45)
         };
+    }
+};
+export const fill_overlay = (overlay, role) => {
+    const ctx = get_context();
+    size_overlay(overlay, role);
+    if (role == GIVER) {
+        overlay.box.color = '#FFFFFF';
+        overlay.subtext.font = '24px serif';
+        overlay.box.stroke = 0;
+    }
+    else if (role == GUESSER) {
+        overlay.text.text = 'The chest opens';
+        overlay.subtext.font = '30px serif';
+        if (overlay.shadow) {
+            overlay.shadow.color = "rgba(50, 50, 50, 0.3)";
+            overlay.shadow.stroke = 0;
+        }
+        overlay.box.color = '#FF0000';
+        overlay.box.stroke = 0;
+        overlay.exit._touchEndCallback = close_overlay;
     }
     overlay.exit._active = false;
     buttons_add(overlay.exit);

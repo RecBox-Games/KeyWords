@@ -9,14 +9,18 @@ const tutorial = {
     text: { ...DEFAULT_DRAWABLE_TEXT }
 };
 export const get_tutorial = () => tutorial;
-export const init_tutorial = () => {
+export const size_tutorial = () => {
     const ctx = get_context();
     const box = { x: ctx.dimensions.x * 0.3, y: ctx.dimensions.y * 0.45, w: ctx.dimensions.x * 0.4, h: ctx.dimensions.y * 0.1 };
     tutorial.box.boundingBox = box;
     tutorial.text.boundingBox = box;
-    tutorial.text.text = "I have read the tutorial";
+    if (tutorial.button)
+        tutorial.button._boundingBox = box;
+};
+export const init_tutorial = () => {
+    tutorial.text.text = "Everyone has read the tutorial";
     tutorial.text.color = '#FFFFFF';
-    tutorial.button = new Button(box, undefined, undefined, () => {
+    tutorial.button = new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, () => {
         get_context().ws.send('input:ack');
         set_state(MENU);
         set_menu_state(-1, -1);

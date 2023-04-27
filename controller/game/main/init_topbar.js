@@ -4,6 +4,22 @@ import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_l
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
 import { GUESSER } from "../interfaces.js";
+export const size_topbar = (topBar) => {
+    const ctx = get_context();
+    const boundingBox = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.1 };
+    topBar.text.boundingBox = { ...boundingBox };
+    boundingBox.y += boundingBox.h;
+    boundingBox.h = ctx.dimensions.y * 0.05;
+    topBar.subText.boundingBox = { ...boundingBox };
+    boundingBox.w = boundingBox.w * 0.1;
+    boundingBox.x = ctx.dimensions.x * 0.5 - (boundingBox.w + boundingBox.w * 0.5);
+    topBar.accept.boundingBox = { ...boundingBox };
+    topBar.deny.boundingBox = { ...boundingBox, x: ctx.dimensions.x * 0.5 + (boundingBox.w * 0.5) };
+    topBar.acceptButton._active = false;
+    topBar.denyButton._active = false;
+    topBar.acceptButton._boundingBox = topBar.accept.boundingBox;
+    topBar.denyButton._boundingBox = topBar.deny.boundingBox;
+};
 export const fill_topbar = (topbar, role) => {
     if (role == GUESSER) {
         topbar.acceptButton._touchEndCallback = confirm_guess;
@@ -23,21 +39,8 @@ export const construct_topbar = () => {
         acceptButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, undefined),
         denyButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, undefined),
     };
-    const ctx = get_context();
-    const boundingBox = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.1 };
-    topBar.text.boundingBox = { ...boundingBox };
-    boundingBox.y += boundingBox.h;
-    boundingBox.h = ctx.dimensions.y * 0.05;
-    topBar.subText.boundingBox = { ...boundingBox };
-    boundingBox.w = boundingBox.w * 0.1;
-    boundingBox.x = ctx.dimensions.x * 0.5 - (boundingBox.w + boundingBox.w * 0.5);
-    topBar.accept.boundingBox = { ...boundingBox };
-    topBar.deny.boundingBox = { ...boundingBox, x: ctx.dimensions.x * 0.5 + (boundingBox.w * 0.5) };
-    topBar.acceptButton._active = false;
-    topBar.denyButton._active = false;
-    buttons_add(topBar.denyButton);
-    buttons_add(topBar.acceptButton);
-    topBar.acceptButton._boundingBox = topBar.accept.boundingBox;
-    topBar.denyButton._boundingBox = topBar.deny.boundingBox;
+    size_topbar(topBar);
+    // buttons_add(topBar.denyButton);
+    // buttons_add(topBar.acceptButton);
     return topBar;
 };
