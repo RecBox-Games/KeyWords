@@ -20,6 +20,7 @@ export interface Chest {
 
 export const fill_chest = (chest:Chest, data:any, role:number) => {
     chest.text.text = data['text'];
+    chest.text.boundingBox = {...chest.text.boundingBox, y: chest.text.boundingBox.y + 10};
     chest.open = data['state'];
     chest.contents = data['contents']
     if (role == GIVER)
@@ -30,7 +31,7 @@ export const fill_chest = (chest:Chest, data:any, role:number) => {
         const img =  {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}};
         const dst = chest.sprite.dst as Rectangle;
         img.image = get_asset(chest.contents.slice(0, -1));
-        img.dst = {x: dst.x, y: dst.y + dst.h * 0.05, w: dst.h * 0.75, h: dst.h * 0.75};
+        img.dst = {x: dst.x, y: dst.y + dst.h * 0.05, w: dst.h , h: dst.h };
 
         // let start = (img.dst.w + 10) * count;
         const contentTotalWidth =  20 * count;
@@ -72,7 +73,7 @@ export const construct_chest = (id:number) : Chest => {
         open: false,
         id: id,
         contents: "",
-        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF"},
+        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF", font:'18px serif'},
         contentimg: [],
         sprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}}// {..box} or else it will assign as reference
         // sprite: {...DEFAULT_DRAWABLE_RECT, boundingBox: {...box}}// {..box} or else it will assign as reference
