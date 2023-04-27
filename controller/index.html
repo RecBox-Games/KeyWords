@@ -49,11 +49,12 @@
     <script type="module" src="main.js"></script>
      <button id="fullscreen" onclick=
      "
-        document.getElementById('canvas').requestFullscreen()
-      || document.getElementById('canvas').requestFullscreen()
-      || document.getElementById('canvas').webkitRequestFullscreen()
-      || document.getElementById('canvas').mozRequestFullScreen()
-      || document.getElementById('canvas').msRequestFullscreen()
+        console.log( document.getElementById('canvas'));
+        if (document.getElementById('canvas').requestFullscreen) {
+            document.getElementById('canvas').requestFullscreen();
+        } else if (document.getElementById('canvas').webkitRequestFullscreen) { /* Safari */
+            document.getElementById('canvas').webkitRequestFullscreen();
+        }
      ">
       Click to fullscreen</button>
 </body>
