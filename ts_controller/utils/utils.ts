@@ -128,6 +128,8 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number, gue
         if (turnRole == board.role)
         {
         // board.topbar.acceptButton._active = true;
+            board.topbar.text.text = "";
+            board.topbar.subText.text = "";
             if (input)
             {
                 input.style.display = "flex";

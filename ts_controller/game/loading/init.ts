@@ -1,6 +1,7 @@
 import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
 import { assetCount, load_assets } from "../../utils/assets.js";
+import { prepare_grass } from "../../utils/render_utils.js";
 
 export interface Loading {
     bar:DrawableRect;
@@ -58,6 +59,10 @@ export const init_loading = async() => {
             (err) => console.log("Error",err)
         )
     )
-    .then(() => {console.log("loaded"); loading.done = true})
+    .then(() => {
+        console.log("loaded");
+          prepare_grass();
+        loading.done = true}
+        )
     // console.log("socket", ctx.ws, ctx.wsState)
 }
