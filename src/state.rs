@@ -364,8 +364,8 @@ impl OpeningState {
             Shrinking(prg) => {
                 if prg.tick().is_done() {
                     *self = Open;
+                    return TickEvent::DoneOpening;
                 }
-                return TickEvent::DoneOpening;
             }
             _ => ()
         }
