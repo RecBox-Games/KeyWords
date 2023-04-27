@@ -51,12 +51,14 @@ class Button extends Triggerable {
     _touchEndCallback;
     drawable;
     constructor(boundingBox, hoverCallback, touchStartCallback, touchEndCallback) {
+        let fn;
         if (isRect(boundingBox))
-            super(checkRectTriggered, handleButtonTriggered);
+            fn = checkRectTriggered;
         else if (isCircle(boundingBox))
-            super(checkCircleTriggered, handleButtonTriggered);
+            fn = checkCircleTriggered;
         else
             throw "Making a button from unknown type (not rectangle or Circle)";
+        super(fn, handleButtonTriggered);
         this._boundingBox = boundingBox;
         this._hoverCallback = hoverCallback;
         this._touchStartCallback = touchStartCallback;
