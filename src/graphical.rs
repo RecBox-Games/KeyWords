@@ -36,7 +36,7 @@ const SIMULTANEOUS_FALLS: usize = 6;
 const HEARTS_START_X: f32 = 6.0;
 const HEARTS_SPACING_X: f32 = 80.0;
 const HEARTS_START_Y: f32 = 2.0;
-const HEARTS_DROP_HEIGHT: f32 = -70.0;
+const HEARTS_DROP_HEIGHT: f32 = 70.0;
 // Chest Opening
 const CHEST_LIFT_OFFSET: Point = Point{x: 0.0, y:-500.0};
 const CENTER_CHEST_SCALE: Point = Point{x: 3.0, y:3.0};
