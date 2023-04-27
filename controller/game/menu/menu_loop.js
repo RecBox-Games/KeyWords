@@ -39,6 +39,8 @@ export const menu_loop = () => {
     const menu = get_menu();
     if (menu.bg)
         drawablesAdd(menu.bg);
+    // animate_grass();
+    // render_grass();
     // drawablesAdd(menu.container);
     drawablesAdd(menu.text);
     if (menu.team != RED)

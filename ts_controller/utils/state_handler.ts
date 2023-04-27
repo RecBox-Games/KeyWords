@@ -8,6 +8,7 @@ import { set_menu_state } from "../game/menu/menu_loop.js";
 import { init_tutorial } from "../game/tutorial/tutorial_init.js";
 import { set_tutorial_state } from "../game/tutorial/tutorial_loop.js";
 import { set_state } from "../main.js";
+import { prepare_grass } from "./render_utils.js";
 import { end_turn, start_turn } from "./utils.js";
 
 
@@ -17,6 +18,7 @@ export const load_app = () => {
     init_tutorial();
     init_menu();
     init_main_screen();
+
 
 
     // Init context

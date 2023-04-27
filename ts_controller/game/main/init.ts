@@ -7,8 +7,8 @@ import { get_asset } from "../../utils/assets.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest } from "./init_chest.js";
-import { Overlay, construct_overlay, fill_overlay } from "./init_overlay.js";
-import { TopBar, construct_topbar, fill_topbar } from "./init_topbar.js";
+import { Overlay, construct_overlay, fill_overlay, size_overlay } from "./init_overlay.js";
+import { TopBar, construct_topbar, fill_topbar, size_topbar } from "./init_topbar.js";
 
 export interface Board {
     chests:((Chest)[])[];
@@ -40,7 +40,7 @@ const fill_board_data = (role:number, team:number, data:any[]) => {
     {
         for (let x = 0; x < BOARD_W; x += 1)
         {
-            fill_chest(board.chests[y][x], data[x + BOARD_W * y]);
+            fill_chest(board.chests[y][x], data[x + BOARD_W * y], role);
             if (role == GUESSER)
             {
                 board.buttons[y][x]._touchEndCallback = chest_clicked_guessser;
@@ -56,23 +56,45 @@ const fill_board_data = (role:number, team:number, data:any[]) => {
     }
 }
 
+const size_board = () => {
+    const ctx = get_context();
+    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.013;
+    const gapx = (ctx.dimensions.x / 40);
+    const boundingBox:Rectangle = {
+            x: gapx,
+            y: (ctx.dimensions.y * 0.13),
+            h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 5.4,
+            w: ctx.dimensions.x / 6
+        };
+    for (let y = 0; y < BOARD_H; y += 1)
+    {
+        for (let x = 0; x < BOARD_W; x += 1)
+        {
+            board.chests[y][x].sprite.dst = {...boundingBox}
+            board.chests[y][x].text.boundingBox = {...boundingBox}
+            board.buttons[y][x]._boundingBox = {...boundingBox}
+            boundingBox.x += gapx + boundingBox.w;
+        }
+        boundingBox.x = gapx;
+        boundingBox.y += gapy + boundingBox.h;
+    }
+}
 
-const construct_board_row = (row:number, boundingBox:Rectangle): [Chest[], Button[]]  => {
+
+const construct_board_row = (row:number): [Chest[], Button[]]  => {
     const chest_Arr: (Chest)[] = [];
     const button_Arr: Button[] = [];
-    const gapx = get_context().dimensions.x / 40;
 
     for (let x = 0; x < BOARD_W; x += 1)
     {
-        let newChest:Chest = construct_chest(x + (BOARD_W * row), boundingBox) ;
-        let newButton:Button = new Button( {...boundingBox}, undefined, undefined, undefined);
+        let newChest:Chest = construct_chest(x + (BOARD_W * row)) ;
+        let newButton:Button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
 
         newButton.data = newChest;
         newButton._active = false;
         buttons_add(newButton);
         chest_Arr.push(newChest);
         button_Arr.push(newButton);
-        boundingBox.x += gapx + boundingBox.w;
     }
     return [chest_Arr, button_Arr]
 }
@@ -84,31 +106,15 @@ const construct_board_row = (row:number, boundingBox:Rectangle): [Chest[], Butto
 // }
 const construct_Board = () => {
     const ctx = get_context();
-
-    let x: number;
-    let y: number;
-
     const chests_arr : (Chest [])[] = [];
     const buttons_arr: (Button[])[] = [];
-    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.01;
-    const gapx = (ctx.dimensions.x / 40);
-    const boundingBox:Rectangle = {
-            x: gapx,
-            y: (ctx.dimensions.y * 0.1),
-            h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 4.5,
-            w: ctx.dimensions.x / 6
-        };
 
-    for (y = 0; y < BOARD_H; y += 1)
+    for (let y = 0; y < BOARD_H; y += 1)
     {
-        const [chests, buttons] = construct_board_row(y, boundingBox);
+        const [chests, buttons] = construct_board_row(y);
 
         chests_arr.push(chests);
         buttons_arr.push(buttons);
-
-        boundingBox.x = gapx;
-        boundingBox.y += gapy + boundingBox.h;
-        // arr.length = 10;
     };
     board.buttons = buttons_arr;
     board.chests = chests_arr;
@@ -130,6 +136,13 @@ export const init_main_screen = () =>
         role: -1
     };
     construct_Board();
+    size_main();
+}
+
+export const size_main = () => {
+    size_topbar(board.topbar);
+    size_overlay(board.overlay, board.role);
+    size_board();
 }
 
 export const fill_board = (role:number, team:number, data:any[]) => {
@@ -145,5 +158,7 @@ export const fill_board = (role:number, team:number, data:any[]) => {
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
     fill_board_data(role, team, data);
+
+
     // buttons_log();
 }

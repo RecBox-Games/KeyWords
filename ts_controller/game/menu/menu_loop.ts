@@ -4,6 +4,7 @@ import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
 import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
 import { get_asset } from "../../utils/assets.js";
+import { animate_grass, render_grass } from "../../utils/render_utils.js";
 import { BLUE, GIVER, GUESSER, RED } from "../interfaces.js";
 import { Menu, get_menu } from "./init.js";
 
@@ -49,6 +50,8 @@ export const menu_loop = () => {
 
     if (menu.bg)
         drawablesAdd(menu.bg);
+    // animate_grass();
+    // render_grass();
     // drawablesAdd(menu.container);
     drawablesAdd(menu.text);
     if (menu.team != RED)

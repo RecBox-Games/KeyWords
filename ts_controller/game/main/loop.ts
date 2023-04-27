@@ -1,7 +1,7 @@
 
 
 import { drawablesAdd } from "../../controller_lib/draw.js";
-import { BOARD_H, BOARD_W } from "../interfaces.js";
+import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 
 
@@ -15,6 +15,10 @@ export const main_loop = () => {
         {
             drawablesAdd(board.chests[i][j].sprite);
             drawablesAdd(board.chests[i][j].text)
+            // if (board.role == GIVER)
+            // {
+            //     drawablesAdd(board.chests[i][j].contentimg);
+            // }
         }
     drawablesAdd(board.topbar.text);
     if (!board.guessedWord)

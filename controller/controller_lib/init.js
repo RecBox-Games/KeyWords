@@ -58,9 +58,11 @@ function screenChange() {
     context.canvas.height = Math.min(window.innerWidth, window.innerHeight);
     context.dimensions.x = Math.max(window.innerWidth, window.innerHeight);
     context.dimensions.y = Math.min(window.innerWidth, window.innerHeight);
-    console.log("width", context.dimensions.x, "Height", context.dimensions.y);
     // onFlip(window.innerWidth, window.innerHeight);
 }
+window.addEventListener("resize", (event) => {
+    screenChange();
+});
 window.addEventListener("touchstart", (event) => {
     for (let touch of event.changedTouches) {
         handleTouchStart(touch.identifier, touch.pageX, touch.pageY);

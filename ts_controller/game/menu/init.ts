@@ -30,6 +30,7 @@ let menu:Menu;
 
 export const get_menu = () => menu;
 
+
 const init_team = (box:Rectangle, team:Team, ctx:Context) => {
 
     team.name.boundingBox = {...box, h: box.h *0.2};
@@ -44,7 +45,7 @@ const init_team = (box:Rectangle, team:Team, ctx:Context) => {
 }
 
 
-const init_UI = () => {
+export const size_menu = () => {
 
     const ctx = get_context();
 
@@ -66,7 +67,6 @@ const init_UI = () => {
     box.x +=  menu.container.boundingBox.w * 0.55;
     init_team({...box}, menu.redTeam, ctx);
 }
-
 
 
 export const init_menu = () => {
@@ -96,6 +96,6 @@ export const init_menu = () => {
         },
         text: {...DEFAULT_DRAWABLE_TEXT, text:"Choose your team !", font: '40px serif'}
     }
-    init_UI();
+    size_menu();
 
 }

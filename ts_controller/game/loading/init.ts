@@ -1,6 +1,7 @@
 import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
 import { assetCount, load_assets } from "../../utils/assets.js";
+import { prepare_grass } from "../../utils/render_utils.js";
 
 export interface Loading {
     bar:DrawableRect;
@@ -26,26 +27,29 @@ const loading:Loading = {
 
 export const get_loading = () => loading;
 
-export const init_loading = async() => {
+export const size_loading = () => {
     const ctx = get_context();
+
     const box = {
         x: ctx.dimensions.x * 0.15,
         y: ctx.dimensions.y * 0.65,
         w: ctx.dimensions.x * 0.70,
         h: ctx.dimensions.y * 0.1
     }
-
+    loading.BG.boundingBox.w = ctx.dimensions.x;
+    loading.BG.boundingBox.h = ctx.dimensions.y;
+    loading.text.boundingBox = {...box, y: box.y - (box.h * 2)};
     loading.barBG.boundingBox = box;
     loading.bar.boundingBox = {...box, w:0};
-    loading.bar.color = '#FFFFFF'
+}
 
-    loading.text.boundingBox = {...box, y: box.y - (box.h * 2)};
+export const init_loading = async() => {
+    size_loading();
+
+    loading.bar.color = '#FFFFFF'
     loading.text.text = 'Loading';
     loading.text.font = '80px serif'
     loading.text.color = '#FF0000';
-
-    loading.BG.boundingBox.w = ctx.dimensions.x;
-    loading.BG.boundingBox.h = ctx.dimensions.y;
     loading.BG.color = '#AAAAAA'
 
     Promise.allSettled(
@@ -55,6 +59,10 @@ export const init_loading = async() => {
             (err) => console.log("Error",err)
         )
     )
-    .then(() => {console.log("loaded"); loading.done = true})
+    .then(() => {
+        console.log("loaded");
+          prepare_grass();
+        loading.done = true}
+        )
     // console.log("socket", ctx.ws, ctx.wsState)
 }

@@ -6,8 +6,8 @@ import { get_asset } from "../../utils/assets.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
 import { construct_chest, fill_chest } from "./init_chest.js";
-import { construct_overlay, fill_overlay } from "./init_overlay.js";
-import { construct_topbar, fill_topbar } from "./init_topbar.js";
+import { construct_overlay, fill_overlay, size_overlay } from "./init_overlay.js";
+import { construct_topbar, fill_topbar, size_topbar } from "./init_topbar.js";
 let board;
 export const get_board = () => { return board; };
 // const construct_chestGiver = (x:number, y: number, box:Rectangle) => {
@@ -17,7 +17,7 @@ const fill_board_data = (role, team, data) => {
     board.role = role;
     for (let y = 0; y < BOARD_H; y += 1) {
         for (let x = 0; x < BOARD_W; x += 1) {
-            fill_chest(board.chests[y][x], data[x + BOARD_W * y]);
+            fill_chest(board.chests[y][x], data[x + BOARD_W * y], role);
             if (role == GUESSER) {
                 board.buttons[y][x]._touchEndCallback = chest_clicked_guessser;
             }
@@ -29,19 +29,38 @@ const fill_board_data = (role, team, data) => {
         }
     }
 };
-const construct_board_row = (row, boundingBox) => {
+const size_board = () => {
+    const ctx = get_context();
+    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.013;
+    const gapx = (ctx.dimensions.x / 40);
+    const boundingBox = {
+        x: gapx,
+        y: (ctx.dimensions.y * 0.13),
+        h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 5.4,
+        w: ctx.dimensions.x / 6
+    };
+    for (let y = 0; y < BOARD_H; y += 1) {
+        for (let x = 0; x < BOARD_W; x += 1) {
+            board.chests[y][x].sprite.dst = { ...boundingBox };
+            board.chests[y][x].text.boundingBox = { ...boundingBox };
+            board.buttons[y][x]._boundingBox = { ...boundingBox };
+            boundingBox.x += gapx + boundingBox.w;
+        }
+        boundingBox.x = gapx;
+        boundingBox.y += gapy + boundingBox.h;
+    }
+};
+const construct_board_row = (row) => {
     const chest_Arr = [];
     const button_Arr = [];
-    const gapx = get_context().dimensions.x / 40;
     for (let x = 0; x < BOARD_W; x += 1) {
-        let newChest = construct_chest(x + (BOARD_W * row), boundingBox);
-        let newButton = new Button({ ...boundingBox }, undefined, undefined, undefined);
+        let newChest = construct_chest(x + (BOARD_W * row));
+        let newButton = new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, undefined);
         newButton.data = newChest;
         newButton._active = false;
         buttons_add(newButton);
         chest_Arr.push(newChest);
         button_Arr.push(newButton);
-        boundingBox.x += gapx + boundingBox.w;
     }
     return [chest_Arr, button_Arr];
 };
@@ -52,25 +71,12 @@ const construct_board_row = (row, boundingBox) => {
 // }
 const construct_Board = () => {
     const ctx = get_context();
-    let x;
-    let y;
     const chests_arr = [];
     const buttons_arr = [];
-    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.01;
-    const gapx = (ctx.dimensions.x / 40);
-    const boundingBox = {
-        x: gapx,
-        y: (ctx.dimensions.y * 0.1),
-        h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 4.5,
-        w: ctx.dimensions.x / 6
-    };
-    for (y = 0; y < BOARD_H; y += 1) {
-        const [chests, buttons] = construct_board_row(y, boundingBox);
+    for (let y = 0; y < BOARD_H; y += 1) {
+        const [chests, buttons] = construct_board_row(y);
         chests_arr.push(chests);
         buttons_arr.push(buttons);
-        boundingBox.x = gapx;
-        boundingBox.y += gapy + boundingBox.h;
-        // arr.length = 10;
     }
     ;
     board.buttons = buttons_arr;
@@ -91,6 +97,12 @@ export const init_main_screen = () => {
         role: -1
     };
     construct_Board();
+    size_main();
+};
+export const size_main = () => {
+    size_topbar(board.topbar);
+    size_overlay(board.overlay, board.role);
+    size_board();
 };
 export const fill_board = (role, team, data) => {
     // buttons_flush();
