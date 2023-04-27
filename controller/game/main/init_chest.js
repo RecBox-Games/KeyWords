@@ -1,5 +1,4 @@
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
-import { scale_and_center } from "../../controller_lib/utils.js";
 import { get_asset } from "../../utils/assets.js";
 import { GIVER, GUESSER } from "../interfaces.js";
 // data :
@@ -11,19 +10,25 @@ export const fill_chest = (chest, data, role) => {
     if (role == GIVER) {
         chest.sprite.image = get_asset('silhouette');
         const count = parseInt(chest.contents.at(-1));
-        console.log(chest.contents.at(-1), chest.contents);
         const img = { ...DEFAULT_DRAWABLE_IMG, src: { x: 0, y: 0, w: 44, h: 32 } };
+        const dst = chest.sprite.dst;
         img.image = get_asset(chest.contents.slice(0, -1));
-        img.dst = scale_and_center({ ...chest.sprite.dst }, { ...chest.sprite.dst, h: chest.sprite.dst.h * 0.75 }, 0.5);
-        let start = (img.dst.w + 10) * count;
-        console.log('newbox', img, start);
-        start = (start / 2) + img.dst.x + (img.dst.w / 2);
+        img.dst = { x: dst.x, y: dst.y + dst.h * 0.1, w: dst.h * 0.45, h: dst.h * 0.55 };
+        // let start = (img.dst.w + 10) * count;
+        const contentTotalWidth = 15 * count;
+        let startX = dst.x + (dst.w * 0.5);
+        // console.log('newbox', img.dst)
+        startX -= contentTotalWidth * 0.5;
+        // start =  (start / 2 )+ img.dst.x + (img.dst.w / 2)
+        const dest = img.dst;
         // const newbox = scale_and_center({...img.dst, w:( img.dst.w + 10 )* count}, img.dst, 1);
         for (let x = 0; x < count; x += 1) {
-            img.dst.x = start;
-            chest.contentimg.push({ ...img });
-            start += img.dst.w + 10;
+            dest.x = startX;
+            chest.contentimg.push({ ...img, dst: { ...dest } });
+            // startX += img.dst.w + 10;
+            startX += 10;
         }
+        console.log(chest.contentimg);
         // img.dst.x
     }
     else if (role == GUESSER) {
