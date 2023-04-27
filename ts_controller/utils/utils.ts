@@ -25,10 +25,10 @@ export const set_chests_status = (status:boolean) =>
 export const chest_clicked_giver = (self:Button) =>
 {
     const board:Board = get_board();
-
+    const x = (self.data as Chest).id % BOARD_W;
     board.overlay.shadow = undefined;
     board.overlay.box.boundingBox = {
-        x: self._boundingBox.x + (self._boundingBox as Rectangle).w,
+        x: self._boundingBox.x + (x < BOARD_W / 2 ? (self._boundingBox as Rectangle).w : -(self._boundingBox as Rectangle).w) ,
         y: self._boundingBox.y - (self._boundingBox as Rectangle).h,
         w: (self._boundingBox as Rectangle).w * 1,
         h: (self._boundingBox as Rectangle).h * 1.3,
