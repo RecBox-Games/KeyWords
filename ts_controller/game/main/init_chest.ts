@@ -30,10 +30,10 @@ export const fill_chest = (chest:Chest, data:any, role:number) => {
         const img =  {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}};
         const dst = chest.sprite.dst as Rectangle;
         img.image = get_asset(chest.contents.slice(0, -1));
-        img.dst = {x: dst.x, y: dst.y + dst.h * 0.1, w: dst.h * 0.45, h: dst.h * 0.55};
+        img.dst = {x: dst.x, y: dst.y + dst.h * 0.05, w: dst.h * 0.75, h: dst.h * 0.75};
 
         // let start = (img.dst.w + 10) * count;
-        const contentTotalWidth =  15 * count;
+        const contentTotalWidth =  20 * count;
         let startX = dst.x + (dst.w * 0.5);
         // console.log('newbox', img.dst)
 
