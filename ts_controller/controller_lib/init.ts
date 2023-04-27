@@ -18,8 +18,6 @@ export const init_context = () => {
 	const subid = url_params.get('subid');
 	const box_ip = window.location.href.split('/')[2].split(':')[0];
 
-    canvas.requestFullscreen();
-
 	let ws = new WebSocket("ws://" + box_ip + ":50079");
 	context = {
 		canvas: canvas,
@@ -73,12 +71,10 @@ window.onresize = screenChange;
 window.onorientationchange = screenChange;
 
 function screenChange() {
-    console.log("ONE")
     context.canvas.width = Math.max(window.innerWidth, window.innerHeight);
     context.canvas.height = Math.min(window.innerWidth, window.innerHeight);
     context.dimensions.x = Math.max(window.innerWidth, window.innerHeight);
     context.dimensions.y = Math.min(window.innerWidth, window.innerHeight);
-    console.log("width", context.dimensions.x, "Height", context.dimensions.y)
 
     // onFlip(window.innerWidth, window.innerHeight);
 }
