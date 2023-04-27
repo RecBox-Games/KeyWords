@@ -17,7 +17,7 @@ const fill_board_data = (role, team, data) => {
     board.role = role;
     for (let y = 0; y < BOARD_H; y += 1) {
         for (let x = 0; x < BOARD_W; x += 1) {
-            fill_chest(board.chests[y][x], data[x + BOARD_W * y]);
+            fill_chest(board.chests[y][x], data[x + BOARD_W * y], role);
             if (role == GUESSER) {
                 board.buttons[y][x]._touchEndCallback = chest_clicked_guessser;
             }
