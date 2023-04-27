@@ -30,7 +30,12 @@ const app = () => {
 	window.requestAnimationFrame(app);
 }
 
+window.onerror = (event, source, lineno, colno, error) => {
+    const ctx = get_context();
 
+    if (ctx.ws)
+        ctx.ws.send('warn:' + 'error : ' + error +'at ' + source + ' line:' + lineno);
+}
 
 window.onload = () => {
     console.log("init");
