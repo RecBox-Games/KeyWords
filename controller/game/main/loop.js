@@ -1,5 +1,5 @@
 import { drawablesAdd } from "../../controller_lib/draw.js";
-import { BOARD_H, BOARD_W } from "../interfaces.js";
+import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { get_board } from "./init.js";
 export const main_loop = () => {
     const board = get_board();
@@ -9,10 +9,11 @@ export const main_loop = () => {
         for (let j = 0; j < BOARD_W; j += 1) {
             drawablesAdd(board.chests[i][j].sprite);
             drawablesAdd(board.chests[i][j].text);
-            // if (board.role == GIVER)
-            // {
-            //     drawablesAdd(board.chests[i][j].contentimg);
-            // }
+            if (board.role == GIVER) {
+                for (let obj of board.chests[i][j].contentimg)
+                    drawablesAdd(obj);
+                // drawablesAdd(board.chests[i][j].contentimg);
+            }
         }
     drawablesAdd(board.topbar.text);
     if (!board.guessedWord) {
