@@ -1,6 +1,7 @@
 import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { assetCount, load_assets } from "../../utils/assets.js";
+import { prepare_grass } from "../../utils/render_utils.js";
 const loading = {
     text: { ...DEFAULT_DRAWABLE_TEXT },
     barBG: { ...DEFAULT_DRAWABLE_RECT },
@@ -34,6 +35,10 @@ export const init_loading = async () => {
     loading.text.color = '#FF0000';
     loading.BG.color = '#AAAAAA';
     Promise.allSettled(load_assets(loading, () => { loading.progress += (1 / assetCount()); console.log("progress", loading.progress); }, (err) => console.log("Error", err)))
-        .then(() => { console.log("loaded"); loading.done = true; });
+        .then(() => {
+        console.log("loaded");
+        prepare_grass();
+        loading.done = true;
+    });
     // console.log("socket", ctx.ws, ctx.wsState)
 };

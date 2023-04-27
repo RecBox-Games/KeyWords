@@ -9,6 +9,10 @@ export const main_loop = () => {
         for (let j = 0; j < BOARD_W; j += 1) {
             drawablesAdd(board.chests[i][j].sprite);
             drawablesAdd(board.chests[i][j].text);
+            // if (board.role == GIVER)
+            // {
+            //     drawablesAdd(board.chests[i][j].contentimg);
+            // }
         }
     drawablesAdd(board.topbar.text);
     if (!board.guessedWord) {

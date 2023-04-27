@@ -25,5 +25,6 @@ export const init_tutorial = () => {
         set_state(MENU);
         set_menu_state(-1, -1);
     });
+    size_tutorial();
     return tutorial;
 };

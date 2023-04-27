@@ -28,16 +28,20 @@ export const fill_chest = (chest:Chest, data:any, role:number) => {
 
         const count = parseInt(chest.contents.slice(0, -1));
 
-        chest.contentimg.image = get_asset(chest.contents.slice(0, -1));
-        chest.contentimg.dst = {
-            ...(chest.sprite.dst as Rectangle),
-            h: (chest.sprite.dst as Rectangle).h * 0.5,
-            w: (chest.sprite.dst as Rectangle).h * 0.5,
-            y: (chest.sprite.dst as Rectangle).y + (chest.sprite.dst as Rectangle).h * 0.2,
-            x: (chest.sprite.dst as Rectangle).x + (chest.sprite.dst as Rectangle).h * 0.5,
-            };
-        chest.contentimg.dst = scale_and_center( {...(chest.sprite.dst as Rectangle)},  {...(chest.sprite.dst as Rectangle), h: (chest.sprite.dst as Rectangle).h * 0.75}, 0.5);
-        //  chest.contentimg.dst.x
+        // for (let x = 0; x < count; count += 1)
+        // {
+        //     const img =  {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}};
+        //    img.image = get_asset(chest.contents.slice(0, -1));
+        //    img.dst = {
+        //         ...(chest.sprite.dst as Rectangle),
+        //         h: (chest.sprite.dst as Rectangle).h * 0.5,
+        //         w: (chest.sprite.dst as Rectangle).h * 0.5,
+        //         y: (chest.sprite.dst as Rectangle).y + (chest.sprite.dst as Rectangle).h * 0.2,
+        //         x: (chest.sprite.dst as Rectangle).x + (chest.sprite.dst as Rectangle).h * 0.5,
+        //         };
+        //    img.dst = scale_and_center( {...(chest.sprite.dst as Rectangle)},  {...(chest.sprite.dst as Rectangle), h: (chest.sprite.dst as Rectangle).h * 0.75}, 0.5);
+        // }
+        // img.dst.x
     }
     else if (role == GUESSER)
     {
@@ -61,7 +65,7 @@ export const construct_chest = (id:number) : Chest => {
         id: id,
         contents: "",
         text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF"},
-        contentimg: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}},
+        contentimg: [],
         sprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}}// {..box} or else it will assign as reference
         // sprite: {...DEFAULT_DRAWABLE_RECT, boundingBox: {...box}}// {..box} or else it will assign as reference
     }

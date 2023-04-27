@@ -5,9 +5,12 @@
     <style>
 
       @media (orientation: landscape) {
-        #fullscreen {
-            display:none;
+         #fullscreen {
+            z-index:42;
+            position:absolute;
+            display:flex;
         }
+
 		#canvas {
                 /* display: flex; */
                 top:0px;
@@ -19,10 +22,8 @@
 		#restrict_view {display: none}
 	}
 	  @media (orientation: portrait) {
-        #fullscreen {
-            z-index:42;
-            position:absolute;
-            display:flex;
+         #fullscreen {
+            display:none;
         }
 		#canvas {display: none}
 		#restrict_view {
@@ -46,7 +47,7 @@
     <input type="text" placeholder="Input your clue" id="clue_input">
     <input type="number" min="1" max="5" placeholder="Max guess" id="clue_number">
     <script type="module" src="main.js"></script>
-     <!-- <button id="fullscreen" onclick="document.getElementById('canvas').requestFullscreen()"> Click to fullscreen</button> -->
+     <button id="fullscreen" onclick="document.getElementById('canvas').requestFullscreen()"> Click to fullscreen</button>
 </body>
 </html>
 

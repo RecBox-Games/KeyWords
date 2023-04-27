@@ -102,6 +102,8 @@ export const start_turn = (turnRole, clue, guessRemain, guess, guessState) => {
         const number = document.getElementById("clue_number");
         if (turnRole == board.role) {
             // board.topbar.acceptButton._active = true;
+            board.topbar.text.text = "";
+            board.topbar.subText.text = "";
             if (input) {
                 input.style.display = "flex";
                 input.style.position = "absolute";

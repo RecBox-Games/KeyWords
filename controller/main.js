@@ -1,5 +1,6 @@
 import { buttons_flush } from "./controller_lib/button.js";
 import { drawablesRenderAll } from "./controller_lib/draw.js";
+import { get_context } from "./controller_lib/init.js";
 import { size_loading } from "./game/loading/init.js";
 import { loading_loop } from "./game/loading/loop.js";
 import { size_main } from "./game/main/init.js";
@@ -22,6 +23,11 @@ const app = () => {
     loops[state]();
     drawablesRenderAll();
     window.requestAnimationFrame(app);
+};
+window.onerror = (event, source, lineno, colno, error) => {
+    const ctx = get_context();
+    if (ctx.ws)
+        ctx.ws.send('warn:' + 'error : ' + error + 'at ' + source + ' line:' + lineno);
 };
 window.onload = () => {
     console.log("init");
