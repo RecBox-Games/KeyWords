@@ -1,4 +1,5 @@
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
+import { scale_and_center } from "../../controller_lib/utils.js";
 import { get_asset } from "../../utils/assets.js";
 import { GIVER, GUESSER } from "../interfaces.js";
 // data :
@@ -9,20 +10,20 @@ export const fill_chest = (chest, data, role) => {
     chest.contents = data['contents'];
     if (role == GIVER) {
         chest.sprite.image = get_asset('silhouette');
-        const count = parseInt(chest.contents.slice(0, -1));
-        // for (let x = 0; x < count; count += 1)
-        // {
-        //     const img =  {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}};
-        //    img.image = get_asset(chest.contents.slice(0, -1));
-        //    img.dst = {
-        //         ...(chest.sprite.dst as Rectangle),
-        //         h: (chest.sprite.dst as Rectangle).h * 0.5,
-        //         w: (chest.sprite.dst as Rectangle).h * 0.5,
-        //         y: (chest.sprite.dst as Rectangle).y + (chest.sprite.dst as Rectangle).h * 0.2,
-        //         x: (chest.sprite.dst as Rectangle).x + (chest.sprite.dst as Rectangle).h * 0.5,
-        //         };
-        //    img.dst = scale_and_center( {...(chest.sprite.dst as Rectangle)},  {...(chest.sprite.dst as Rectangle), h: (chest.sprite.dst as Rectangle).h * 0.75}, 0.5);
-        // }
+        const count = parseInt(chest.contents.at(-1));
+        console.log(chest.contents.at(-1), chest.contents);
+        const img = { ...DEFAULT_DRAWABLE_IMG, src: { x: 0, y: 0, w: 44, h: 32 } };
+        img.image = get_asset(chest.contents.slice(0, -1));
+        img.dst = scale_and_center({ ...chest.sprite.dst }, { ...chest.sprite.dst, h: chest.sprite.dst.h * 0.75 }, 0.5);
+        let start = (img.dst.w + 10) * count;
+        console.log('newbox', img, start);
+        start = (start / 2) + img.dst.x + (img.dst.w / 2);
+        // const newbox = scale_and_center({...img.dst, w:( img.dst.w + 10 )* count}, img.dst, 1);
+        for (let x = 0; x < count; x += 1) {
+            img.dst.x = start;
+            chest.contentimg.push({ ...img });
+            start += img.dst.w + 10;
+        }
         // img.dst.x
     }
     else if (role == GUESSER) {
