@@ -67,6 +67,7 @@ pub struct Graphical {
     notify_box: SpriteElem,
     red_win: SpriteElem,
     blue_win: SpriteElem,
+    sudden_death: SpriteElem,
     // chest contents
     sword: SpriteElem,
     bomb: SpriteElem,
@@ -90,6 +91,7 @@ impl Graphical {
             notify_box: new_notify_box(ctx),
             red_win: new_win_box(ctx, true),
             blue_win: new_win_box(ctx, false),
+            sudden_death: new_sudden_death(ctx),
             sword: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/sword.png"),
             bomb: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/bomb.png"),
             heal: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/heal.png"),
@@ -156,20 +158,20 @@ impl Graphical {
         Ok(())
     }
 
-    fn draw_intro_tut_drop(&mut self, ctx: Ctx, tutnotify_state: &TutNotifyState) -> GR {
+    fn draw_intro_tut_drop(&mut self, ctx: Ctx, tutnotify_state: &NotifyState) -> GR {
         let x = 220.0;
         let p1 = Point {x, y: -1000.0};
         let p2 = Point {x, y: 100.0};
         let p3 = Point {x, y: 1100.0};
         match tutnotify_state {
-            TutNotifyState::DropIn(prg) => {
+            NotifyState::DropIn(prg) => {
                 let p = interpolate(p1, p2, Interpolation::RoundEnd, prg.as_decimal());
                 self.notify_box.draw(ctx, p)?;
             }
-            TutNotifyState::In => {
+            NotifyState::In => {
                 self.notify_box.draw(ctx, p2)?;
             }
-            TutNotifyState::DropOut(prg) => {
+            NotifyState::DropOut(prg) => {
                 let p = interpolate(p2, p3, Interpolation::RoundStart, prg.as_decimal());
                 self.notify_box.draw(ctx, p)?;
             }
@@ -270,6 +272,9 @@ impl Graphical {
             self.draw_deploying(ctx, deploying_state, playing_state.current_team(),
                                 playing_state.red_health(), playing_state.blue_health())?;
         }
+        if playing_state.sudden_death && ! playing_state.sudden_death_progress.is_done() {
+            self.draw_sudden_death(ctx, &playing_state.sudden_death_progress)?;
+        }
         //self.draw_debug_turn(ctx, &playing_state.turn_state)?;
         Ok(())
     }
@@ -323,7 +328,6 @@ impl Graphical {
             for i in 0..COLUMNS {
                 let chest_state = &chest_states[j][i];
                 if ! chest_state.is_static() {
-                    
                     let destination = self.get_chest_location(j, i);
                     self.draw_chest(ctx, destination, chest_state)?;
                 }
@@ -491,6 +495,28 @@ impl Graphical {
         Ok(())
     }
 
+    fn draw_sudden_death(&mut self, ctx: Ctx, notify_state: &InformState) -> GR {
+        let x = 220.0;
+        let p1 = Point {x, y: -400.0};
+        let p2 = Point {x, y: 250.0};
+        let p3 = Point {x, y: 1100.0};
+        match notify_state {
+            InformState::DropIn(prg) => {
+                let p = interpolate(p1, p2, Interpolation::RoundEnd, prg.as_decimal());
+                self.sudden_death.draw(ctx, p)?;
+            }
+            InformState::In(_) => {
+                self.sudden_death.draw(ctx, p2)?;
+            }
+            InformState::DropOut(prg) => {
+                let p = interpolate(p2, p3, Interpolation::RoundStart, prg.as_decimal());
+                self.sudden_death.draw(ctx, p)?;
+            }
+        }
+        //
+        Ok(())
+    }
+
     #[allow(dead_code)]
     fn draw_debug_turn(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
         let s = format!("{:?}", turn_state);
@@ -616,15 +642,20 @@ fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
 
 fn new_notify_box(ctx: Ctx) -> SpriteElem {
     let notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
-                                      "/tut_notify.png");
+                                     "/tut_notify.png");
     notify_box
 }
 
 fn new_win_box(ctx: Ctx, red: bool) -> SpriteElem {
     let s = if red { "/red_win.png" } else { "/blue_win.png" };
     let win_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
-                                      s);
+                                  s);
     win_box
+}
+fn new_sudden_death(ctx: Ctx) -> SpriteElem {
+    let notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
+                                     "/sudden_death.png");
+    notify_box
 }
 
 //==================================<===|===>=================================//
