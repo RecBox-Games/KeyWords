@@ -10,7 +10,6 @@ pub enum TickEvent {
     Deploy,
     ProjectileHit(Projectile),
     DoneOpening,
-    SuddenDeath,
     GameOver,
 }
 
