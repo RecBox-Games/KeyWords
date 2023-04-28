@@ -19,8 +19,9 @@ pub const TICKS_TUT_DROP_IN: usize = 80;
 pub const TICKS_TUT_DROP_OUT: usize = 70;
 pub const TICKS_PROJECTILE: usize = 40;
 pub const TICKS_DISPLAY_CONTENTS: usize = 40;
+pub const TICKS_GAME_OVER: usize = 100;
 // Health
-pub const MAX_HEALTH_RED: usize = 10;
+pub const MAX_HEALTH_RED: usize = 1;
 pub const MAX_HEALTH_BLUE: usize = 12;
 
 //=============================== StateManager =================================
@@ -40,7 +41,11 @@ impl StateManager {
     }
 
     pub fn tick(&mut self) {
-        self.game_state.tick();
+        let game_tick_event = self.game_state.tick();
+        if let TickEvent::GameOver = game_tick_event {
+            self.state_update = true;
+        }
+            
         // chests
         if let GameState::Playing(playing_state) = &mut self.game_state {
             for j in 0..ROWS {
@@ -141,7 +146,7 @@ pub enum GameState {
     Intro(IntroState),
     //Joining(JoinState),
     Playing(PlayingState),
-    //Over(OverState),
+    Over(HealthState/*red*/, HealthState/*blue*/, Progress),
 }
 
 impl GameState {
@@ -150,7 +155,7 @@ impl GameState {
         //GameState::Playing(PlayingState::new())
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> TickEvent {
         use GameState::*;
         match self {
             Intro(intro_state) => {
@@ -159,10 +164,21 @@ impl GameState {
                 }
             }
             Playing(playing_state) => {
-                playing_state.tick();
+                if playing_state.tick().is_done() {
+                    *self = Over(playing_state.red_health_state.clone(),
+                                 playing_state.blue_health_state.clone(),
+                                 Progress::new(TICKS_GAME_OVER));
+                    return TickEvent::GameOver;
+                }
+            }
+            Over(_, _, progress) => {
+                if ! progress.is_done() {
+                    progress.tick();
+                }
             }
             //_ => (),
         }
+        TickEvent::None
     }
 }
 
@@ -242,12 +258,17 @@ impl PlayingState {
             
     }
     
-    fn tick(&mut self) {
+    fn tick(&mut self) -> TickEvent {
         // hearts
-        self.red_health_state.tick();
-        self.blue_health_state.tick();
+        if self.red_health_state.tick().is_done() {
+            return TickEvent::Done;
+        }
+        if self.blue_health_state.tick().is_done() {
+            return TickEvent::Done;
+        }
         // turn
         self.turn_state.tick();
+        TickEvent::None
     }
 
     fn handle_projectile_hit(&mut self, projectile: Projectile) {
@@ -574,7 +595,7 @@ impl TurnState {
 }
 
 //        ======================== HealthState =======================        //
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HealthState {
     pub src_amount: usize,
     pub src_fraction: usize,
@@ -590,7 +611,7 @@ impl HealthState {
         }
     }
 
-    fn tick(&mut self) {
+    fn tick(&mut self) -> TickEvent {
         // decreasing if src_amount > dst_amount or src_amount == dst_amount and src_fraction > 0
         // static once src_fraction is 0 and src_amount == dst_amount
         // increasing if src_amount < dst_amount
@@ -600,9 +621,13 @@ impl HealthState {
             if self.src_fraction > 0 {
                 self.tick_health_down();
             }
+            if self.src_amount == 0 && self.src_fraction == 0 {
+                return TickEvent::Done;
+            }
         } else if self.src_amount < self.dst_amount {
             self.tick_health_up();
         }
+        TickEvent::None
     }
 
     fn tick_health_up(&mut self) {
@@ -709,6 +734,8 @@ impl std::fmt::Display for StateManager {
             health_state_string = format!("{},{}",
                                           playing_state.red_health_state.src_amount,
                                           playing_state.blue_health_state.src_amount);
+        } else if let GameState::Over(_, _, _) = &self.game_state {
+            turn_state_string = String::from("over");
         }
         let mut q: Vec<String> = vec![];
         for row in &self.chest_states {

@@ -65,6 +65,8 @@ pub struct Graphical {
     heart_blue: SpriteElem,
     // notification
     notify_box: SpriteElem,
+    red_win: SpriteElem,
+    blue_win: SpriteElem,
     // chest contents
     sword: SpriteElem,
     bomb: SpriteElem,
@@ -86,6 +88,8 @@ impl Graphical {
             heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4], true),
             heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4], false),
             notify_box: new_notify_box(ctx),
+            red_win: new_win_box(ctx, true),
+            blue_win: new_win_box(ctx, false),
             sword: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/sword.png"),
             bomb: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/bomb.png"),
             heal: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/heal.png"),
@@ -109,6 +113,11 @@ impl Graphical {
             }
             GameState::Playing(playing_state) => {
                 self.draw_playing(ctx, &state.chest_states, &playing_state)?;
+            }
+            GameState::Over(red_health_state, blue_health_state, progress) => {
+                self.draw_over(ctx, &state.chest_states,
+                               &red_health_state, &blue_health_state,
+                               progress.as_decimal())?;
             }
             //_ => (),
         }
@@ -396,8 +405,20 @@ impl Graphical {
                 Projectile::Sword => {
                     let p = if i == deploying_state.projectiles.len() - 1 {
                         let heart_index = match team.opposite() {
-                            Team::Red => red_health - 1,
-                            Team::Blue => blue_health - 1,
+                            Team::Red => {
+                                if red_health > 0 {
+                                    red_health - 1
+                                } else {
+                                    0
+                                }
+                            }
+                            Team::Blue => {
+                                if red_health > 0 {
+                                    blue_health - 1
+                                } else {
+                                    0
+                                }
+                            }
                         };
                         let end_p = self.get_heart_location(team.opposite(), heart_index);
                         interpolate(start_p, end_p, Interpolation::Accelerate,
@@ -410,8 +431,20 @@ impl Graphical {
                 Projectile::Bomb => {
                     let p = if i == deploying_state.projectiles.len() - 1 {
                         let heart_index = match team {
-                            Team::Red => red_health - 1,
-                            Team::Blue => blue_health - 1,
+                            Team::Red => {
+                                if red_health > 0 {
+                                    red_health - 1
+                                } else {
+                                    0
+                                }
+                            }
+                            Team::Blue => {
+                                if red_health > 0 {
+                                    blue_health - 1
+                                } else {
+                                    0
+                                }
+                            }
                         };
                         let end_p = self.get_heart_location(team, heart_index);
                         interpolate(start_p, end_p, Interpolation::RoundEnd,
@@ -468,6 +501,30 @@ impl Graphical {
         Ok(())
     }
 
+//        ========================= Draw Over ========================        //
+    fn draw_over(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
+                 red_health_state: &HealthState, blue_health_state: &HealthState,
+                 prg: f32) -> GR {
+        self.draw_static_chests(ctx, chest_states)?;
+        self.draw_health(ctx, red_health_state, blue_health_state)?;
+        let red_won = blue_health_state.src_amount == 0;
+        self.draw_over_dropdown(ctx, red_won, prg)?;
+        Ok(())
+    }
+
+    fn draw_over_dropdown(&mut self, ctx: Ctx, red_won: bool, prg: f32) -> GR {
+        let x = 220.0;
+        let p1 = Point {x, y: -1000.0};
+        let p2 = Point {x, y: 100.0};
+        let p = interpolate(p1, p2, Interpolation::RoundEnd, prg);
+        if red_won {
+            self.red_win.draw(ctx, p)?;
+        } else {
+            self.blue_win.draw(ctx, p)?;
+        }
+        //
+        Ok(())
+    }
 //        =================== Graphical Helpers ======================        //
     fn get_word_mesh(&mut self, word: &str) -> &mut TextElem {
         if ! self.word_meshes.contains_key(word) {
@@ -561,6 +618,13 @@ fn new_notify_box(ctx: Ctx) -> SpriteElem {
     let notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
                                       "/tut_notify.png");
     notify_box
+}
+
+fn new_win_box(ctx: Ctx, red: bool) -> SpriteElem {
+    let s = if red { "/red_win.png" } else { "/blue_win.png" };
+    let win_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
+                                      s);
+    win_box
 }
 
 //==================================<===|===>=================================//

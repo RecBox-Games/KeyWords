@@ -15,10 +15,12 @@ export const main_loop = () => {
         {
             drawablesAdd(board.chests[i][j].sprite);
             drawablesAdd(board.chests[i][j].text)
-            // if (board.role == GIVER)
-            // {
-            //     drawablesAdd(board.chests[i][j].contentimg);
-            // }
+            if (board.role == GIVER)
+            {
+                for (let obj of board.chests[i][j].contentimg)
+                    drawablesAdd(obj);
+                // drawablesAdd(board.chests[i][j].contentimg);
+            }
         }
     drawablesAdd(board.topbar.text);
     if (!board.guessedWord)

@@ -48,8 +48,8 @@ export const set_menu_state = (team:number, role:number) => {
 export const menu_loop = () => {
     const menu:Menu = get_menu();
 
-    if (menu.bg)
-        drawablesAdd(menu.bg);
+    // if (menu.bg)
+    //     drawablesAdd(menu.bg);
     // animate_grass();
     // render_grass();
     // drawablesAdd(menu.container);
