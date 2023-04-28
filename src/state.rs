@@ -20,8 +20,9 @@ pub const TICKS_TUT_DROP_OUT: usize = 70;
 pub const TICKS_PROJECTILE: usize = 40;
 pub const TICKS_DISPLAY_CONTENTS: usize = 40;
 pub const TICKS_GAME_OVER: usize = 100;
+pub const TICKS_SUDDEN_DEATH: usize = 200;
 // Health
-pub const MAX_HEALTH_RED: usize = 1;
+pub const MAX_HEALTH_RED: usize = 10;
 pub const MAX_HEALTH_BLUE: usize = 12;
 
 //=============================== StateManager =================================
@@ -47,6 +48,7 @@ impl StateManager {
         }
             
         // chests
+        let num_sword_chests = self.num_sword_chests();
         if let GameState::Playing(playing_state) = &mut self.game_state {
             for j in 0..ROWS {
                 for i in 0..COLUMNS {
@@ -57,6 +59,9 @@ impl StateManager {
                     }
                     if let TickEvent::DoneOpening = tick_event {
                         playing_state.handle_done_opening();
+                        if num_sword_chests == 0 {
+                            playing_state.start_sudden_death();
+                        }
                         self.state_update = true;
                     }
                 }
@@ -137,6 +142,21 @@ impl StateManager {
         } else {
             println!("Warning: bad second (1)");
         }
+    }
+
+    fn num_sword_chests(&self) -> usize {
+        let mut sword_chests = 0;
+        for j in 0..ROWS {
+            for i in 0..COLUMNS {
+                if let ChestContent::Sword1 = self.chest_states[j][i].contents {
+                    sword_chests += 1;
+                }
+                if let ChestContent::Sword1 = self.chest_states[j][i].contents {
+                    sword_chests += 1;
+                }
+            }
+        }
+        sword_chests
     }
 }
 
@@ -246,6 +266,8 @@ pub struct PlayingState {
     pub red_health_state: HealthState,
     pub blue_health_state: HealthState,
     pub turn_state: TurnState,
+    pub sudden_death: bool,
+    pub sudden_death_progress: Progress,
 }
 
 impl PlayingState {
@@ -254,6 +276,8 @@ impl PlayingState {
             red_health_state: HealthState::new(MAX_HEALTH_RED),
             blue_health_state: HealthState::new(MAX_HEALTH_BLUE),
             turn_state: TurnState::new(),
+            sudden_death: false,
+            sudden_death_progress: Progress::new(TICKS_SUDDEN_DEATH),
         }
             
     }
@@ -268,7 +292,16 @@ impl PlayingState {
         }
         // turn
         self.turn_state.tick();
+        // sudden death
+        if self.sudden_death && ! self.sudden_death_progress.is_done() {
+            self.sudden_death_progress.tick();
+        }
         TickEvent::None
+    }
+
+    fn start_sudden_death(&mut self) {
+        println!("SUDDEN DEATH");
+        self.sudden_death = true;
     }
 
     fn handle_projectile_hit(&mut self, projectile: Projectile) {
