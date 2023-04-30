@@ -6,7 +6,7 @@ import { get_asset } from "../../utils/assets.js";
 import { size_grass } from "../../utils/render_utils.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
-import { construct_chest, fill_chest } from "./init_chest.js";
+import { construct_chest, fill_chest, size_chest } from "./init_chest.js";
 import { construct_overlay, fill_overlay, size_overlay } from "./init_overlay.js";
 import { construct_topbar, fill_topbar, size_topbar } from "./init_topbar.js";
 let board;
@@ -105,6 +105,7 @@ export const size_main = () => {
     size_overlay(board.overlay, board.role);
     size_board();
     size_grass();
+    board.chests.map((arr) => arr.map((e) => size_chest(e)));
 };
 export const fill_board = (role, team, data) => {
     // buttons_flush();

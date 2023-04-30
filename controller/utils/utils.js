@@ -60,11 +60,11 @@ export const chest_clicked_guessser = (self) => {
 };
 export const start_turn = (turnRole, clue, guessRemain, guess, guessState) => {
     const board = get_board();
+    board.currentGuesses = guessRemain;
+    board.clue = clue;
+    board.guessedWord = guess;
     if (board.role == GUESSER) {
         if (turnRole == board.role) {
-            board.clue = clue;
-            board.currentGuesses = guessRemain;
-            board.guessedWord = guess;
             if (guessState) {
                 board.topbar.acceptButton._active = true;
                 board.topbar.denyButton._active = true;
@@ -87,7 +87,7 @@ export const start_turn = (turnRole, clue, guessRemain, guess, guessState) => {
     }
     else if (board.role == GIVER) {
         if (turnRole == board.role) {
-            board.topbar.subText.text = 'Give your team some keys!';
+            board.topbar.text.text = 'Give your team some keys!';
             for (let button of board.topbar.clueCount) {
                 button._active = true;
             }
@@ -114,6 +114,9 @@ export const end_turn = () => {
     board.currentGuesses = 0;
     board.totalGuesses = 0;
     set_chests_status(false);
+    for (let button of board.topbar.clueCount) {
+        button._active = false;
+    }
 };
 export const open_chest = (id) => {
     const board = get_board();
@@ -170,11 +173,12 @@ export const deny_guess = () => {
     board.guessedWord = undefined;
     console.log("deny");
 };
-export const confirm_clue = () => {
+export const confirm_clue = (amount) => {
     const board = get_board();
     const ctx = get_context();
     console.log("confirm clue");
-    board.topbar.text.text = "You gave your team" + board.totalGuesses.toString() + 'keys';
+    board.topbar.text.text = "You gave your team" + amount.toString() + 'keys';
     board.topbar.acceptButton._active = false;
-    ctx.ws.send("input:clue," + 'none' + "," + board.totalGuesses.toString());
+    ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
+    ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
 };
