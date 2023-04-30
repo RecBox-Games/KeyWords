@@ -15,13 +15,23 @@ pub const TICKS_CHEST_GROW: usize = 150;
 pub const TICKS_CHEST_OPEN: usize = 60;
 pub const TICKS_CHEST_SHRINK: usize = 120;
 pub const TICKS_PER_HEALTH: usize = 30;
-pub const TICKS_TUT_DROP_IN: usize = 80;
-pub const TICKS_TUT_DROP_OUT: usize = 70;
+pub const TICKS_DROP_IN: usize = 80;
+pub const TICKS_INFORM: usize = 100;
+pub const TICKS_DROP_OUT: usize = 70;
 pub const TICKS_PROJECTILE: usize = 40;
 pub const TICKS_DISPLAY_CONTENTS: usize = 40;
+pub const TICKS_GAME_OVER: usize = 100;
 // Health
 pub const MAX_HEALTH_RED: usize = 10;
 pub const MAX_HEALTH_BLUE: usize = 12;
+// Contents
+pub const N_SWORD1: usize = 5;
+pub const N_SWORD2: usize = 4;
+pub const N_BOMB1: usize = 5;
+pub const N_BOMB2: usize = 4;
+pub const N_BOMB5: usize = 1;
+pub const N_HEAL3: usize = 1;
+
 
 //=============================== StateManager =================================
 pub struct StateManager {
@@ -40,7 +50,11 @@ impl StateManager {
     }
 
     pub fn tick(&mut self) {
-        self.game_state.tick();
+        let game_tick_event = self.game_state.tick();
+        if let TickEvent::GameOver = game_tick_event {
+            self.state_update = true;
+        }
+            
         // chests
         if let GameState::Playing(playing_state) = &mut self.game_state {
             for j in 0..ROWS {
@@ -57,6 +71,22 @@ impl StateManager {
                 }
             }
         }
+
+        // check for sudden death
+        let num_sword_chests = self.num_sword_chests();
+        if let GameState::Playing(playing_state) = &mut self.game_state {
+            if num_sword_chests == 0 && playing_state.sudden_death == false{
+                for j in 0..ROWS {
+                    for i in 0..COLUMNS {
+                        if ! self.chest_states[j][i].is_open() {
+                            self.chest_states[j][i].sudden_death_convert();
+                        }
+                    }
+                }
+                playing_state.sudden_death = true;
+            }
+        }
+
     }
 
 //        ======================= InputHandling ======================        //
@@ -95,7 +125,14 @@ impl StateManager {
     }
 
     fn handle_print_chests(&self) {
-        println!("{}", self);
+        println!();
+        for j in 0..ROWS {
+            for i in 0..COLUMNS {
+                print!(" {}", self.chest_states[j][i].two_char());
+            }
+            println!();
+        }
+        println!();
     }
     
     fn handle_ack(&mut self) {
@@ -133,6 +170,23 @@ impl StateManager {
             println!("Warning: bad second (1)");
         }
     }
+
+    fn num_sword_chests(&self) -> usize {
+        let mut sword_chests = 0;
+        for j in 0..ROWS {
+            for i in 0..COLUMNS {
+                if ! self.chest_states[j][i].is_open() {
+                    if let ChestContent::Sword1 = self.chest_states[j][i].contents {
+                        sword_chests += 1;
+                    }
+                    if let ChestContent::Sword2 = self.chest_states[j][i].contents {
+                        sword_chests += 1;
+                    }
+                }
+            }
+        }
+        sword_chests
+    }
 }
 
 //        ========================= GameState ========================        //
@@ -141,7 +195,7 @@ pub enum GameState {
     Intro(IntroState),
     //Joining(JoinState),
     Playing(PlayingState),
-    //Over(OverState),
+    Over(HealthState/*red*/, HealthState/*blue*/, Progress),
 }
 
 impl GameState {
@@ -150,7 +204,7 @@ impl GameState {
         //GameState::Playing(PlayingState::new())
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> TickEvent {
         use GameState::*;
         match self {
             Intro(intro_state) => {
@@ -159,10 +213,21 @@ impl GameState {
                 }
             }
             Playing(playing_state) => {
-                playing_state.tick();
+                if playing_state.tick().is_done() {
+                    *self = Over(playing_state.red_health_state.clone(),
+                                 playing_state.blue_health_state.clone(),
+                                 Progress::new(TICKS_GAME_OVER));
+                    return TickEvent::GameOver;
+                }
+            }
+            Over(_, _, progress) => {
+                if ! progress.is_done() {
+                    progress.tick();
+                }
             }
             //_ => (),
         }
+        TickEvent::None
     }
 }
 
@@ -170,7 +235,7 @@ impl GameState {
 #[derive(Debug)]
 pub enum IntroState {
     Title(Progress),
-    TutNotify(TutNotifyState),
+    TutNotify(NotifyState),
     ChestFall(Progress),
 }
 
@@ -179,7 +244,7 @@ impl IntroState {
         use IntroState::*;
         if let Title(p) = self {
             if p.tick().is_done() {
-                *self = TutNotify(TutNotifyState::new());
+                *self = TutNotify(NotifyState::new());
             }
         } else if let TutNotify(tutnotify_state) = self {
             if tutnotify_state.tick().is_done() {
@@ -193,19 +258,19 @@ impl IntroState {
 }
 
 #[derive(Debug)]
-pub enum TutNotifyState {
+pub enum NotifyState {
     DropIn(Progress),
     In,
     DropOut(Progress),
 }
 
-impl TutNotifyState {
+impl NotifyState {
     fn new() -> Self {
-        TutNotifyState::DropIn(Progress::new(TICKS_TUT_DROP_IN))
+        NotifyState::DropIn(Progress::new(TICKS_DROP_IN))
     }
 
     fn tick(&mut self) -> TickEvent {
-        use TutNotifyState::*;
+        use NotifyState::*;
         if let DropIn(p) = self {
             if p.tick().is_done() {
                 *self = In;
@@ -220,7 +285,43 @@ impl TutNotifyState {
     }
 
     fn handle_ack(&mut self) {
-        *self = TutNotifyState::DropOut(Progress::new(TICKS_TUT_DROP_OUT))
+        *self = NotifyState::DropOut(Progress::new(TICKS_DROP_OUT))
+    }
+}
+
+#[derive(Debug)]
+pub enum InformState {
+    DropIn(Progress),
+    In(Progress),
+    DropOut(Progress),
+}
+
+impl InformState {
+    fn new() -> Self {
+        InformState::DropIn(Progress::new(TICKS_DROP_IN))
+    }
+
+    fn tick(&mut self) -> TickEvent {
+        use InformState::*;
+        if let DropIn(p) = self {
+            if p.tick().is_done() {
+                *self = In(Progress::new(TICKS_INFORM));
+            }
+        } else if let In(p) = self {
+            if p.tick().is_done() {
+                *self = DropOut(Progress::new(TICKS_DROP_OUT));
+            }
+        } else if let DropOut(p) = self {
+            return p.tick();
+        }
+        TickEvent::None
+    }
+
+    pub fn is_done(&self) -> bool {
+        if let InformState::DropOut(progress) = self {
+            return progress.is_done();
+        }
+        false
     }
 }
 
@@ -230,6 +331,8 @@ pub struct PlayingState {
     pub red_health_state: HealthState,
     pub blue_health_state: HealthState,
     pub turn_state: TurnState,
+    pub sudden_death: bool,
+    pub sudden_death_progress: InformState,
 }
 
 impl PlayingState {
@@ -238,16 +341,27 @@ impl PlayingState {
             red_health_state: HealthState::new(MAX_HEALTH_RED),
             blue_health_state: HealthState::new(MAX_HEALTH_BLUE),
             turn_state: TurnState::new(),
+            sudden_death: false,
+            sudden_death_progress: InformState::new(),
         }
             
     }
     
-    fn tick(&mut self) {
+    fn tick(&mut self) -> TickEvent {
         // hearts
-        self.red_health_state.tick();
-        self.blue_health_state.tick();
+        if self.red_health_state.tick().is_done() {
+            return TickEvent::Done;
+        }
+        if self.blue_health_state.tick().is_done() {
+            return TickEvent::Done;
+        }
         // turn
         self.turn_state.tick();
+        // sudden death
+        if self.sudden_death && ! self.sudden_death_progress.is_done() {
+            self.sudden_death_progress.tick();
+        }
+        TickEvent::None
     }
 
     fn handle_projectile_hit(&mut self, projectile: Projectile) {
@@ -326,6 +440,43 @@ impl ChestState {
             _ => false,
         }
     }
+
+    fn two_char(&self) -> String {
+        use ChestContent::*;
+        match self.contents {
+            Empty => ".".to_string(),
+            Bomb1 => "b".to_string(),
+            Bomb2 => "B".to_string(),
+            Bomb3 => "8".to_string(),
+            Bomb5 => "&".to_string(),
+            Sword1 => "s".to_string(),
+            Sword2 => "S".to_string(),
+            Heal3 => "H".to_string(),
+        }
+    }
+
+    fn sudden_death_convert(&mut self) {
+        use ChestContent::*;
+        self.contents = match &self.contents {
+            Empty => Bomb3,
+            Bomb1 => Sword1,
+            Bomb2 => Sword2,
+            Bomb3 => Bomb3,
+            Bomb5 => Bomb5,
+            Sword1 => Sword1,
+            Sword2 => Sword2,
+            Heal3 => Heal3,
+        };
+        println!("convert");
+    }
+    
+    fn is_open(&self) -> bool {
+        if let OpeningState::Open = &self.opening_state {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -339,7 +490,6 @@ pub enum OpeningState {
 }
 
 impl OpeningState {
-    
     fn tick(&mut self) -> TickEvent {
         use OpeningState::*;
         match self {
@@ -394,6 +544,7 @@ impl DeployingState {
             Empty => vec![],
             Bomb1 => vec![Bomb],
             Bomb2 => vec![Bomb, Bomb],
+            Bomb3 => vec![Bomb, Bomb, Bomb],
             Bomb5 => vec![Bomb, Bomb, Bomb, Bomb, Bomb],
             Sword1 => vec![Sword],
             Sword2 => vec![Sword, Sword],
@@ -430,6 +581,7 @@ pub enum ChestContent {
     Empty,
     Bomb1,
     Bomb2,
+    Bomb3,
     Bomb5,
     Sword1,
     Sword2,
@@ -574,7 +726,7 @@ impl TurnState {
 }
 
 //        ======================== HealthState =======================        //
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HealthState {
     pub src_amount: usize,
     pub src_fraction: usize,
@@ -590,7 +742,7 @@ impl HealthState {
         }
     }
 
-    fn tick(&mut self) {
+    fn tick(&mut self) -> TickEvent {
         // decreasing if src_amount > dst_amount or src_amount == dst_amount and src_fraction > 0
         // static once src_fraction is 0 and src_amount == dst_amount
         // increasing if src_amount < dst_amount
@@ -600,9 +752,13 @@ impl HealthState {
             if self.src_fraction > 0 {
                 self.tick_health_down();
             }
+            if self.src_amount == 0 && self.src_fraction == 0 {
+                return TickEvent::Done;
+            }
         } else if self.src_amount < self.dst_amount {
             self.tick_health_up();
         }
+        TickEvent::None
     }
 
     fn tick_health_up(&mut self) {
@@ -648,35 +804,36 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
     let all_words = all_words_[..all_words_.len()-1].iter(); // always a newline at the end so last element is empty
     let chosen_words = all_words.choose_multiple(&mut rng, 25);
     // randomly choose chest contents
-    let golds: Vec<usize> = (0..25).collect();
-    let yellows = golds.clone().into_iter()
-	.choose_multiple(&mut rng, 25-4);
-    let grays = yellows.clone().into_iter()
-	.choose_multiple(&mut rng, 25-4-5);
-    let reds = grays.clone().into_iter()
-	.choose_multiple(&mut rng, 25-4-5-5);
-    let crimsons = reds.clone().into_iter()
-	.choose_multiple(&mut rng, 25-4-5-5-5);
-    let deaths = crimsons.clone().into_iter()
-	.choose_multiple(&mut rng, 25-4-5-5-5-4);
-    let heals = deaths.clone().into_iter()
-	.choose_multiple(&mut rng, 25-4-5-5-5-4-1);
+    let n_total = ROWS*COLUMNS;
+    let sword2s: Vec<usize> = (0..n_total).collect();
+    let sword1s = sword2s.clone().into_iter()
+	.choose_multiple(&mut rng, n_total-N_SWORD2);
+    let bomb2s = sword1s.clone().into_iter()
+	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1);
+    let bomb1s = bomb2s.clone().into_iter()
+	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2);
+    let bomb5s = bomb1s.clone().into_iter()
+	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1);
+    let heal3s = bomb5s.clone().into_iter()
+	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB5);
+    let emptys = heal3s.clone().into_iter()
+	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB5-N_HEAL3);
     // initiate chests with chosen words and contents
-    for j in 0..5 {
+    for j in 0..ROWS {
         chest_states.push(vec![]);
-        for i in 0..5 {
+        for i in 0..COLUMNS {
             let i_flat = j*5 + i;
-            let content = if heals.contains(&i_flat) {
-                ChestContent::Heal3
-            } else if deaths.contains(&i_flat) {
-                ChestContent::Bomb5
-            } else if crimsons.contains(&i_flat) {
-                ChestContent::Bomb2
-            } else if reds.contains(&i_flat) {
-                ChestContent::Bomb1
-            } else if grays.contains(&i_flat) {
+            let content = if emptys.contains(&i_flat) {
                 ChestContent::Empty
-            } else if yellows.contains(&i_flat) {
+            } else if heal3s.contains(&i_flat) {
+                ChestContent::Heal3
+            } else if bomb5s.contains(&i_flat) {
+                ChestContent::Bomb5
+            } else if bomb1s.contains(&i_flat) {
+                ChestContent::Bomb1
+            } else if bomb2s.contains(&i_flat) {
+                ChestContent::Bomb2
+            } else if sword1s.contains(&i_flat) {
                 ChestContent::Sword1
             } else {
                 ChestContent::Sword2
@@ -709,6 +866,8 @@ impl std::fmt::Display for StateManager {
             health_state_string = format!("{},{}",
                                           playing_state.red_health_state.src_amount,
                                           playing_state.blue_health_state.src_amount);
+        } else if let GameState::Over(_, _, _) = &self.game_state {
+            turn_state_string = String::from("over");
         }
         let mut q: Vec<String> = vec![];
         for row in &self.chest_states {
@@ -760,6 +919,7 @@ impl std::fmt::Display for ChestContent {
             Empty => "empty",
             Bomb1 => "bomb1",
             Bomb2 => "bomb2",
+            Bomb3 => "bomb2",
             Bomb5 => "bomb5",
             Sword1 => "sword1",
             Sword2 => "sword2",

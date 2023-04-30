@@ -65,6 +65,9 @@ pub struct Graphical {
     heart_blue: SpriteElem,
     // notification
     notify_box: SpriteElem,
+    red_win: SpriteElem,
+    blue_win: SpriteElem,
+    sudden_death: SpriteElem,
     // chest contents
     sword: SpriteElem,
     bomb: SpriteElem,
@@ -86,6 +89,9 @@ impl Graphical {
             heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4], true),
             heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4], false),
             notify_box: new_notify_box(ctx),
+            red_win: new_win_box(ctx, true),
+            blue_win: new_win_box(ctx, false),
+            sudden_death: new_sudden_death(ctx),
             sword: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/sword.png"),
             bomb: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/bomb.png"),
             heal: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/heal.png"),
@@ -109,6 +115,11 @@ impl Graphical {
             }
             GameState::Playing(playing_state) => {
                 self.draw_playing(ctx, &state.chest_states, &playing_state)?;
+            }
+            GameState::Over(red_health_state, blue_health_state, progress) => {
+                self.draw_over(ctx, &state.chest_states,
+                               &red_health_state, &blue_health_state,
+                               progress.as_decimal())?;
             }
             //_ => (),
         }
@@ -147,20 +158,20 @@ impl Graphical {
         Ok(())
     }
 
-    fn draw_intro_tut_drop(&mut self, ctx: Ctx, tutnotify_state: &TutNotifyState) -> GR {
+    fn draw_intro_tut_drop(&mut self, ctx: Ctx, tutnotify_state: &NotifyState) -> GR {
         let x = 220.0;
         let p1 = Point {x, y: -1000.0};
         let p2 = Point {x, y: 100.0};
         let p3 = Point {x, y: 1100.0};
         match tutnotify_state {
-            TutNotifyState::DropIn(prg) => {
+            NotifyState::DropIn(prg) => {
                 let p = interpolate(p1, p2, Interpolation::RoundEnd, prg.as_decimal());
                 self.notify_box.draw(ctx, p)?;
             }
-            TutNotifyState::In => {
+            NotifyState::In => {
                 self.notify_box.draw(ctx, p2)?;
             }
-            TutNotifyState::DropOut(prg) => {
+            NotifyState::DropOut(prg) => {
                 let p = interpolate(p2, p3, Interpolation::RoundStart, prg.as_decimal());
                 self.notify_box.draw(ctx, p)?;
             }
@@ -261,6 +272,9 @@ impl Graphical {
             self.draw_deploying(ctx, deploying_state, playing_state.current_team(),
                                 playing_state.red_health(), playing_state.blue_health())?;
         }
+        if playing_state.sudden_death && ! playing_state.sudden_death_progress.is_done() {
+            self.draw_sudden_death(ctx, &playing_state.sudden_death_progress)?;
+        }
         self.draw_debug_turn(ctx, &playing_state.turn_state)?;
         Ok(())
     }
@@ -314,7 +328,6 @@ impl Graphical {
             for i in 0..COLUMNS {
                 let chest_state = &chest_states[j][i];
                 if ! chest_state.is_static() {
-                    
                     let destination = self.get_chest_location(j, i);
                     self.draw_chest(ctx, destination, chest_state)?;
                 }
@@ -396,8 +409,20 @@ impl Graphical {
                 Projectile::Sword => {
                     let p = if i == deploying_state.projectiles.len() - 1 {
                         let heart_index = match team.opposite() {
-                            Team::Red => red_health - 1,
-                            Team::Blue => blue_health - 1,
+                            Team::Red => {
+                                if red_health > 0 {
+                                    red_health - 1
+                                } else {
+                                    0
+                                }
+                            }
+                            Team::Blue => {
+                                if red_health > 0 {
+                                    blue_health - 1
+                                } else {
+                                    0
+                                }
+                            }
                         };
                         let end_p = self.get_heart_location(team.opposite(), heart_index);
                         interpolate(start_p, end_p, Interpolation::Accelerate,
@@ -410,8 +435,20 @@ impl Graphical {
                 Projectile::Bomb => {
                     let p = if i == deploying_state.projectiles.len() - 1 {
                         let heart_index = match team {
-                            Team::Red => red_health - 1,
-                            Team::Blue => blue_health - 1,
+                            Team::Red => {
+                                if red_health > 0 {
+                                    red_health - 1
+                                } else {
+                                    0
+                                }
+                            }
+                            Team::Blue => {
+                                if red_health > 0 {
+                                    blue_health - 1
+                                } else {
+                                    0
+                                }
+                            }
                         };
                         let end_p = self.get_heart_location(team, heart_index);
                         interpolate(start_p, end_p, Interpolation::RoundEnd,
@@ -458,6 +495,28 @@ impl Graphical {
         Ok(())
     }
 
+    fn draw_sudden_death(&mut self, ctx: Ctx, notify_state: &InformState) -> GR {
+        let x = 220.0;
+        let p1 = Point {x, y: -400.0};
+        let p2 = Point {x, y: 250.0};
+        let p3 = Point {x, y: 1100.0};
+        match notify_state {
+            InformState::DropIn(prg) => {
+                let p = interpolate(p1, p2, Interpolation::RoundEnd, prg.as_decimal());
+                self.sudden_death.draw(ctx, p)?;
+            }
+            InformState::In(_) => {
+                self.sudden_death.draw(ctx, p2)?;
+            }
+            InformState::DropOut(prg) => {
+                let p = interpolate(p2, p3, Interpolation::RoundStart, prg.as_decimal());
+                self.sudden_death.draw(ctx, p)?;
+            }
+        }
+        //
+        Ok(())
+    }
+
     fn draw_debug_turn(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
         let s = format!("{:?}", turn_state);
         let te = TextElem::new(&s, 40.0, 1.0, 1.0);
@@ -467,6 +526,30 @@ impl Graphical {
         Ok(())
     }
 
+//        ========================= Draw Over ========================        //
+    fn draw_over(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
+                 red_health_state: &HealthState, blue_health_state: &HealthState,
+                 prg: f32) -> GR {
+        self.draw_static_chests(ctx, chest_states)?;
+        self.draw_health(ctx, red_health_state, blue_health_state)?;
+        let red_won = blue_health_state.src_amount == 0;
+        self.draw_over_dropdown(ctx, red_won, prg)?;
+        Ok(())
+    }
+
+    fn draw_over_dropdown(&mut self, ctx: Ctx, red_won: bool, prg: f32) -> GR {
+        let x = 220.0;
+        let p1 = Point {x, y: -1000.0};
+        let p2 = Point {x, y: 100.0};
+        let p = interpolate(p1, p2, Interpolation::RoundEnd, prg);
+        if red_won {
+            self.red_win.draw(ctx, p)?;
+        } else {
+            self.blue_win.draw(ctx, p)?;
+        }
+        //
+        Ok(())
+    }
 //        =================== Graphical Helpers ======================        //
     fn get_word_mesh(&mut self, word: &str) -> &mut TextElem {
         if ! self.word_meshes.contains_key(word) {
@@ -558,7 +641,19 @@ fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
 
 fn new_notify_box(ctx: Ctx) -> SpriteElem {
     let notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
-                                      "/tut_notify.png");
+                                     "/tut_notify.png");
+    notify_box
+}
+
+fn new_win_box(ctx: Ctx, red: bool) -> SpriteElem {
+    let s = if red { "/red_win.png" } else { "/blue_win.png" };
+    let win_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
+                                  s);
+    win_box
+}
+fn new_sudden_death(ctx: Ctx) -> SpriteElem {
+    let notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
+                                     "/sudden_death.png");
     notify_box
 }
 
