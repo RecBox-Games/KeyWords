@@ -63,9 +63,9 @@ export const size_menu = () => {
         w: menu.container.boundingBox.w * 0.45,
         h: menu.container.boundingBox.h * 0.7,
         }
-    init_team({...box}, menu.blueTeam, ctx)
-    box.x +=  menu.container.boundingBox.w * 0.55;
     init_team({...box}, menu.redTeam, ctx);
+    box.x +=  menu.container.boundingBox.w * 0.55;
+    init_team({...box}, menu.blueTeam, ctx)
 }
 
 

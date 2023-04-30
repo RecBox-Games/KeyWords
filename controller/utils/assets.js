@@ -1,4 +1,5 @@
-const assetsSrc = ['keywords_background.png', 'chest.png', 'bomb.png', 'sword.png', 'heal.png', `silhouette.png`, 'grass.png'];
+const assetsSrc = ['keywords_background.png', 'chest.png', 'bomb.png', 'sword.png',
+    'heal.png', `silhouette.png`, 'grass.png', 'key.png'];
 const assets = {};
 export const assetsDic = {
     'bomb': ' damage to your team',

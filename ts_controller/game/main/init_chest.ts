@@ -20,44 +20,45 @@ export interface Chest {
 
 export const fill_chest = (chest:Chest, data:any, role:number) => {
     chest.text.text = data['text'];
-    chest.text.boundingBox = {...chest.text.boundingBox, y: chest.text.boundingBox.y + 10};
+    chest.text.boundingBox = {
+        ...chest.text.boundingBox,
+        y: chest.text.boundingBox.y + chest.text.boundingBox.h * 0.7,
+        h: chest.text.boundingBox.h * 0.2};
+
+
     chest.open = data['state'];
     chest.contents = data['contents']
+    chest.sprite.image = get_asset('chest')
     if (role == GIVER)
     {
-        chest.sprite.image = get_asset('silhouette')
 
         const count = parseInt(chest.contents.at(-1) as string);
-        const img =  {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:44, h:32}};
+        const img =  {...DEFAULT_DRAWABLE_IMG};
         const dst = chest.sprite.dst as Rectangle;
+
+        chest.sprite.src = {y:0, w:44, h:32, x: 44 * 17};
         img.image = get_asset(chest.contents.slice(0, -1));
-        img.dst = {x: dst.x, y: dst.y + dst.h * 0.05, w: dst.h , h: dst.h };
-
-        // let start = (img.dst.w + 10) * count;
-        const contentTotalWidth =  20 * count;
-        let startX = dst.x + (dst.w * 0.5);
-        // console.log('newbox', img.dst)
-
-        startX -= contentTotalWidth * 0.5;
-        // start =  (start / 2 )+ img.dst.x + (img.dst.w / 2)
+        img.dst = {x: dst.x, y: dst.y + dst.h * 0.2, w: dst.w * 0.32 , h: dst.w * 0.25};
         const dest = img.dst;
-        // const newbox = scale_and_center({...img.dst, w:( img.dst.w + 10 )* count}, img.dst, 1);
+
+        let startX = dst.x + (dst.w * 0.5) - ((count * ((img.dst.w + dest.w * 0.5) * 0.25)));
+        if ( count > 1)
+            startX += dest.w * 0.25
         for (let x = 0; x < count; x += 1)
         {
             dest.x = startX;
             chest.contentimg.push({...img, dst: {...dest}});
             // startX += img.dst.w + 10;
-            startX += 10;
+            startX += dest.w * 0.5;
         }
         console.log(chest.contentimg)
         // img.dst.x
     }
     else if (role == GUESSER)
     {
-        chest.sprite.image = get_asset('chest');
         if (chest.open)
         {
-            chest.sprite.src = {y:0, w:44, h:32, x: 44 * 4};
+            chest.sprite.src = {y:0, w:44, h:32, x: 44 * 16};
             chest.text.color = '#000000'
         }
         else {

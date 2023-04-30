@@ -1,5 +1,6 @@
 import { buttons_log } from "../controller_lib/button.js";
 import { get_context, init_context } from "../controller_lib/init.js";
+import { Context } from "../controller_lib/types/context.js";
 import { BLUE, GAME, GIVER, GUESSER, MENU, RED, TUTORIAL } from "../game/interfaces.js";
 import { init_loading } from "../game/loading/init.js";
 import { fill_board, init_main_screen } from "../game/main/init.js";
@@ -18,7 +19,6 @@ export const load_app = () => {
     init_tutorial();
     init_menu();
     init_main_screen();
-
 
 
     // Init context

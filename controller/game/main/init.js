@@ -3,6 +3,7 @@ import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
+import { size_grass } from "../../utils/render_utils.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
 import { construct_chest, fill_chest } from "./init_chest.js";
@@ -103,6 +104,7 @@ export const size_main = () => {
     size_topbar(board.topbar);
     size_overlay(board.overlay, board.role);
     size_board();
+    size_grass();
 };
 export const fill_board = (role, team, data) => {
     // buttons_flush();

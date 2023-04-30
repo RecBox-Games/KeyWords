@@ -1,7 +1,8 @@
 import { DrawableRect, DrawableText } from "../controller_lib/types/drawables.js";
 import { Loading } from "../game/loading/init.js";
 
-const assetsSrc = ['keywords_background.png', 'chest.png', 'bomb.png', 'sword.png', 'heal.png', `silhouette.png`, 'grass.png'];
+const assetsSrc = ['keywords_background.png', 'chest.png', 'bomb.png', 'sword.png',
+                    'heal.png', `silhouette.png`, 'grass.png', 'key.png'];
 const assets:any = {};
 
 export const assetsDic = {

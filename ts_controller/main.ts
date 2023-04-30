@@ -9,6 +9,7 @@ import { size_menu } from "./game/menu/init.js";
 import { menu_loop } from "./game/menu/menu_loop.js";
 import { size_tutorial } from "./game/tutorial/tutorial_init.js";
 import { tutorial_loop } from "./game/tutorial/tutorial_loop.js";
+import { prepare_grass } from "./utils/render_utils.js";
 import { load_app, state_handler } from "./utils/state_handler.js";
 
 let state = 0;
@@ -45,6 +46,7 @@ window.onload = () => {
         size_menu();
         size_tutorial();
         size_main();
+        prepare_grass();
     })
     window.requestAnimationFrame(app);
 
