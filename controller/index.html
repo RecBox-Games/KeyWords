@@ -49,8 +49,8 @@
         console.log( document.getElementById('canvas'));
         if (document.getElementById('canvas').requestFullscreen) {
             document.getElementById('canvas').requestFullscreen();
-        } else if (document.getElementById('canvas').webkitRequestFullscreen) { /* Safari */
-            document.getElementById('canvas').webkitRequestFullscreen();
+        } else if (document.getElementById('canvas').webkitEnterFullscreen()) { /* Safari */
+            document.getElementById('canvas').webkitEnterFullscreen();
         }
      ">
       Click to fullscreen</button>

@@ -1,4 +1,4 @@
-import { buttons_add, buttons_log } from "../../controller_lib/button.js";
+import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
@@ -112,7 +112,6 @@ export const fill_board = (role, team, data) => {
     if (!board)
         init_main_screen();
     console.log("filling board");
-    buttons_log();
     board.bg = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), };
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);

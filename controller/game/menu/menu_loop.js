@@ -3,37 +3,32 @@ import { drawablesAdd } from "../../controller_lib/draw.js";
 import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
 import { get_asset } from "../../utils/assets.js";
-import { BLUE, GIVER, GUESSER, RED } from "../interfaces.js";
-import { get_menu } from "./init.js";
+import { get_menu, size_menu } from "./init.js";
 // TODO set button bounding box to be a bit bigge than text
 export const set_menu_state = (team, role) => {
     const ctx = get_context();
     const menu = get_menu();
     menu.bg = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), };
-    console.log("set menu state", team, role, menu.bg);
+    size_menu();
     menu.team = team;
     menu.role = role;
-    console.log("???", menu.blueTeam.guesserBtn, menu.blueTeam.guesserSprite);
+    buttons_add(menu.exitBtn);
     if (role == -1 && team == -1) {
         buttons_add(menu.blueTeam.giverBtn);
         buttons_add(menu.blueTeam.guesserBtn);
         buttons_add(menu.redTeam.giverBtn);
         buttons_add(menu.redTeam.guesserBtn);
+        menu.blueTeam.giverBtn._active = true;
+        menu.blueTeam.guesserBtn._active = true;
+        menu.redTeam.giverBtn._active = true;
+        menu.redTeam.guesserBtn._active = true;
         return;
     }
+    menu.blueTeam.giverBtn._active = false;
+    menu.blueTeam.guesserBtn._active = false;
+    menu.redTeam.giverBtn._active = false;
+    menu.redTeam.guesserBtn._active = false;
     menu.text.text = "Waiting for game to start...";
-    menu.blueTeam.name.font = '50px serif';
-    menu.redTeam.name.font = '50px serif';
-    menu.blueTeam.name.boundingBox = {
-        ...menu.container.boundingBox,
-        y: menu.container.boundingBox.y + menu.container.boundingBox.h * 2
-    };
-    menu.redTeam.name.boundingBox = {
-        ...menu.container.boundingBox,
-        y: menu.container.boundingBox.y + menu.container.boundingBox.h * 2
-    };
-    menu.blueTeam.name.text = "Blue team " + (menu.role == GUESSER ? "guesser" : "clue giver");
-    menu.redTeam.name.text = "Red team " + (menu.role == GIVER ? "guesser" : "clue giver");
 };
 export const menu_loop = () => {
     const menu = get_menu();
@@ -43,10 +38,9 @@ export const menu_loop = () => {
     // render_grass();
     // drawablesAdd(menu.container);
     drawablesAdd(menu.text);
-    if (menu.team != RED)
-        drawablesAdd(menu.blueTeam.name);
-    if (menu.team != BLUE)
-        drawablesAdd(menu.redTeam.name);
+    drawablesAdd(menu.blueTeam.name);
+    drawablesAdd(menu.redTeam.name);
+    drawablesAdd(menu.exit);
     if (menu.team == -1) {
         drawablesAdd(menu.blueTeam.giverSprite);
         drawablesAdd(menu.blueTeam.guesserSprite);

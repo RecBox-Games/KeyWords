@@ -1,4 +1,4 @@
+#!/bin/bash
 (cd ts_controller && tsc)
-cargo build
 tar -cf game controller/ resources/ target/debug/keywords meta.txt
-gcloud storage cp game gs://gamenit-games-testing/keywords
+gsutil cp game gs://gamenite-games-testing/keywords/game

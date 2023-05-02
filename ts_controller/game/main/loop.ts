@@ -12,6 +12,8 @@ export const main_loop = () => {
     if (board.bg)
         drawablesAdd(board.bg);
     // render_grass();
+
+    // drawablesAdd(board.topbar.exit);
     for (let i = 0; i < BOARD_H; i += 1)
         for (let j = 0; j < BOARD_W; j += 1)
         {
@@ -46,8 +48,8 @@ export const main_loop = () => {
         if (board.overlay.shadow)
             drawablesAdd(board.overlay.shadow);
         drawablesAdd(board.overlay.box);
-        if (board.overlay.exitSprite)
-            drawablesAdd(board.overlay.exitSprite);
+        // if (board.overlay.exitSprite)
+        //     drawablesAdd(board.overlay.exitSprite);
         drawablesAdd(board.overlay.text);
         drawablesAdd(board.overlay.subtext);
         drawablesAdd(board.overlay.item);

@@ -154,7 +154,6 @@ export const fill_board = (role:number, team:number, data:any[]) => {
         init_main_screen();
 
     console.log("filling board")
-    buttons_log();
     board.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
 
 

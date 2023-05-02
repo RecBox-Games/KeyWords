@@ -1,7 +1,7 @@
 import { get_context } from "../controller_lib/init.js";
 import { get_board } from "../game/main/init.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../game/interfaces.js";
-import { buttons_len, buttons_log } from "../controller_lib/button.js";
+import { buttons_len } from "../controller_lib/button.js";
 import { assetsDic, get_asset } from "./assets.js";
 export const set_chests_status = (status) => {
     const board = get_board();
@@ -11,7 +11,6 @@ export const set_chests_status = (status) => {
             if (!board.chests[i][j].open)
                 board.buttons[i][j]._active = status;
         }
-    buttons_log();
 };
 export const chest_clicked_giver = (self) => {
     const board = get_board();
@@ -176,9 +175,7 @@ export const deny_guess = () => {
 export const confirm_clue = (amount) => {
     const board = get_board();
     const ctx = get_context();
-    console.log("confirm clue");
     board.topbar.text.text = "You gave your team" + amount.toString() + 'keys';
     board.topbar.acceptButton._active = false;
-    ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
     ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
 };

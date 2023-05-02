@@ -18,6 +18,8 @@ export interface TopBar {
     denyButton:Button;
     clueCount:Button[];
     clueSprites:DrawableImage[];
+    exitBtn: Button;
+    exit: DrawableText;
 }
 
 export const size_topbar= (topBar:TopBar) =>
@@ -67,10 +69,18 @@ export const size_topbar= (topBar:TopBar) =>
         // buttons_add(topBar.clueCount[x])
     }
 
+    topBar.exit.boundingBox = {
+        x: ctx.dimensions.x * 0.002,
+        y: ctx.dimensions.y * 0.002,
+        w: ctx.dimensions.x * 0.1,
+        h: ctx.dimensions.y * 0.05,
+    }
+    // topBar.exitBtn._boundingBox = topBar.exit.boundingBox;
 
 }
 
 export const fill_topbar = (topbar:TopBar ,role:number) => {
+    buttons_add(topbar.exitBtn);
     if (role == GUESSER)
     {
         topbar.acceptButton._touchEndCallback = confirm_guess;
@@ -97,11 +107,13 @@ export const fill_topbar = (topbar:TopBar ,role:number) => {
             topbar.clueCount.push(new Button({...dst}, undefined, undefined, () => {confirm_clue(x + 1)} ));
             topbar.clueCount[x]._active = false;
             dst.x += dst.w + 10;
-            buttons_add(topbar.clueCount[x])
+            console.log('clueee');
         }
         // topbar.acceptButton._touchEndCallback = confirm_clue;
 
     }
+    for (let item of topbar.clueCount)
+        buttons_add(item)
     buttons_add(topbar.acceptButton)
 
 }
@@ -117,6 +129,8 @@ export const construct_topbar = ():TopBar =>
         denyButton: new Button({x:0, y:0, w:0, h: 0}, undefined, undefined, undefined),
         clueCount:[],
         clueSprites:[],
+        exitBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('kill')}),
+        exit: {...DEFAULT_DRAWABLE_TEXT, text:"EXIT GAME", font: '20px serif', color: '#FF1111'},
     };
     size_topbar(topBar);
     // buttons_add(topBar.denyButton);

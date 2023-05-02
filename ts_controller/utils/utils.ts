@@ -19,7 +19,6 @@ export const set_chests_status = (status:boolean) =>
             if (!board.chests[i][j].open)
                 board.buttons[i][j]._active = status;
         }
-    buttons_log();
 }
 
 export const chest_clicked_giver = (self:Button) =>
@@ -223,9 +222,7 @@ export const confirm_clue = (amount:number) => {
     const board:Board = get_board();
     const ctx = get_context();
 
-    console.log("confirm clue");
     board.topbar.text.text = "You gave your team" + amount.toString() + 'keys';
     board.topbar.acceptButton._active = false;
-    ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
     ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
 }
