@@ -54,6 +54,9 @@ impl StateManager {
         if let TickEvent::GameOver = game_tick_event {
             self.state_update = true;
         }
+        if let TickEvent::NeedsUpdate = game_tick_event {
+            self.state_update = true;
+        }
             
         // chests
         if let GameState::Playing(playing_state) = &mut self.game_state {
@@ -222,11 +225,15 @@ impl GameState {
                 }
             }
             Playing(playing_state) => {
-                if playing_state.tick().is_done() {
+                let tick_event = playing_state.tick();
+                if tick_event.is_done() {
                     *self = Over(playing_state.red_health_state.clone(),
                                  playing_state.blue_health_state.clone(),
                                  Progress::new(TICKS_GAME_OVER));
                     return TickEvent::GameOver;
+                }
+                if let TickEvent::NeedsUpdate = tick_event {
+                    return TickEvent::NeedsUpdate;
                 }
             }
             Over(_, _, progress) => {
@@ -365,7 +372,9 @@ impl PlayingState {
             return TickEvent::Done;
         }
         // turn
-        self.turn_state.tick();
+        if let TickEvent::NeedsUpdate = self.turn_state.tick() {
+            return TickEvent::NeedsUpdate;
+        }
         // sudden death
         if self.sudden_death && ! self.sudden_death_progress.is_done() {
             self.sudden_death_progress.tick();
@@ -625,12 +634,13 @@ impl TurnState {
         TurnState::RedCluing
     }
 
-    fn tick(&mut self) {
+    fn tick(&mut self) -> TickEvent {
         use TurnState::*;
         match self {
             RedCluingEnd(prg, clue) => {
                 if prg.tick().is_done() {
                     *self = RedGuessing(take(clue), None);
+                    return TickEvent::NeedsUpdate;
                 }
             }
             RedGuessingEnd(prg) => {
@@ -639,6 +649,7 @@ impl TurnState {
             BlueCluingEnd(prg, clue) => {
                 if prg.tick().is_done() {
                     *self = BlueGuessing(take(clue), None);
+                    return TickEvent::NeedsUpdate;
                 }
             }
             BlueGuessingEnd(prg) => {
@@ -646,6 +657,7 @@ impl TurnState {
             }
             _ => ()
         }
+        TickEvent::None
     }
 
     fn handle_clue(&mut self, clue: Clue) {
@@ -893,20 +905,14 @@ impl std::fmt::Display for TurnState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use TurnState::*;
         let s = match &self {
-            RedCluing | BlueGuessingEnd(_) => String::from("redcluing"),
-            BlueCluing | RedGuessingEnd(_) => String::from("bluecluing"),
-            BlueCluingEnd(_,clue) => {
-                format!("redguessing,{},{},{}",clue.word, clue.num, "false")
-            }
+            RedCluing | RedCluingEnd(_,_) | BlueGuessingEnd(_) => String::from("redcluing"),
+            BlueCluing | BlueCluingEnd(_,_) | RedGuessingEnd(_) => String::from("bluecluing"),
             RedGuessing(clue, proposed_guess) => {
                 let pg_str = match proposed_guess {
                     Some(_) => "true",
                     None => "false",
                 };
                 format!("redguessing,{},{},{}",clue.word, clue.num, pg_str)
-            }
-            RedCluingEnd(_,clue) => {
-                format!("blueguessing,{},{},{}",clue.word, clue.num, "false")
             }
             BlueGuessing(clue, proposed_guess) => {
                 let pg_str = match proposed_guess {
