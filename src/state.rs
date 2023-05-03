@@ -117,7 +117,16 @@ impl StateManager {
                 self.handle_second(support);
                 self.state_update = true;
             }
+            InputMessage::Restart => {
+                self.handle_restart();
+                self.state_update = true;
+            }
         }
+    }
+
+    fn handle_restart(&mut self) {
+        self.game_state = GameState::new();
+        self.chest_states = new_chest_states();
     }
 
     fn handle_print_turn(&self) {
