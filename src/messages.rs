@@ -248,6 +248,9 @@ fn parse_message(message: String) -> Option<InMessage> {
         "staterequest" => {
             return Some(StateRequest);
         }
+        "exit" => {
+            return None;
+        }
         "input" => {
             let q: Vec<_> = parts[1].split(",").collect();
             match parse_input_message(q) {

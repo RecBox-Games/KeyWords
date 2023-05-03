@@ -29,7 +29,7 @@ pub const N_SWORD1: usize = 5;
 pub const N_SWORD2: usize = 4;
 pub const N_BOMB1: usize = 5;
 pub const N_BOMB2: usize = 4;
-pub const N_BOMB5: usize = 1;
+pub const N_BOMB4: usize = 1;
 pub const N_HEAL3: usize = 1;
 
 
@@ -448,7 +448,7 @@ impl ChestState {
             Bomb1 => "b".to_string(),
             Bomb2 => "B".to_string(),
             Bomb3 => "8".to_string(),
-            Bomb5 => "&".to_string(),
+            Bomb4 => "&".to_string(),
             Sword1 => "s".to_string(),
             Sword2 => "S".to_string(),
             Heal3 => "H".to_string(),
@@ -462,7 +462,7 @@ impl ChestState {
             Bomb1 => Sword1,
             Bomb2 => Sword2,
             Bomb3 => Bomb3,
-            Bomb5 => Bomb5,
+            Bomb4 => Bomb4,
             Sword1 => Sword1,
             Sword2 => Sword2,
             Heal3 => Heal3,
@@ -545,7 +545,7 @@ impl DeployingState {
             Bomb1 => vec![Bomb],
             Bomb2 => vec![Bomb, Bomb],
             Bomb3 => vec![Bomb, Bomb, Bomb],
-            Bomb5 => vec![Bomb, Bomb, Bomb, Bomb, Bomb],
+            Bomb4 => vec![Bomb, Bomb, Bomb, Bomb],
             Sword1 => vec![Sword],
             Sword2 => vec![Sword, Sword],
             Heal3 => vec![Heart, Heart, Heart],
@@ -582,7 +582,7 @@ pub enum ChestContent {
     Bomb1,
     Bomb2,
     Bomb3,
-    Bomb5,
+    Bomb4,
     Sword1,
     Sword2,
     Heal3,
@@ -812,12 +812,12 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
 	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1);
     let bomb1s = bomb2s.clone().into_iter()
 	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2);
-    let bomb5s = bomb1s.clone().into_iter()
+    let bomb4s = bomb1s.clone().into_iter()
 	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1);
-    let heal3s = bomb5s.clone().into_iter()
-	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB5);
+    let heal3s = bomb4s.clone().into_iter()
+	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB4);
     let emptys = heal3s.clone().into_iter()
-	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB5-N_HEAL3);
+	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB4-N_HEAL3);
     // initiate chests with chosen words and contents
     for j in 0..ROWS {
         chest_states.push(vec![]);
@@ -827,8 +827,8 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
                 ChestContent::Empty
             } else if heal3s.contains(&i_flat) {
                 ChestContent::Heal3
-            } else if bomb5s.contains(&i_flat) {
-                ChestContent::Bomb5
+            } else if bomb4s.contains(&i_flat) {
+                ChestContent::Bomb4
             } else if bomb1s.contains(&i_flat) {
                 ChestContent::Bomb1
             } else if bomb2s.contains(&i_flat) {
@@ -919,8 +919,8 @@ impl std::fmt::Display for ChestContent {
             Empty => "empty",
             Bomb1 => "bomb1",
             Bomb2 => "bomb2",
-            Bomb3 => "bomb2",
-            Bomb5 => "bomb5",
+            Bomb3 => "bomb3",
+            Bomb4 => "bomb4",
             Sword1 => "sword1",
             Sword2 => "sword2",
             Heal3 => "heal3",
