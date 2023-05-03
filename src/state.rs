@@ -893,14 +893,20 @@ impl std::fmt::Display for TurnState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use TurnState::*;
         let s = match &self {
-            RedCluing | RedCluingEnd(_,_) | BlueGuessingEnd(_) => String::from("redcluing"),
-            BlueCluing | BlueCluingEnd(_,_) | RedGuessingEnd(_) => String::from("bluecluing"),
+            RedCluing | BlueGuessingEnd(_) => String::from("redcluing"),
+            BlueCluing | RedGuessingEnd(_) => String::from("bluecluing"),
+            BlueCluingEnd(_,clue) => {
+                format!("redguessing,{},{},{}",clue.word, clue.num, "false")
+            }
             RedGuessing(clue, proposed_guess) => {
                 let pg_str = match proposed_guess {
                     Some(_) => "true",
                     None => "false",
                 };
                 format!("redguessing,{},{},{}",clue.word, clue.num, pg_str)
+            }
+            RedCluingEnd(_,clue) => {
+                format!("blueguessing,{},{},{}",clue.word, clue.num, "false")
             }
             BlueGuessing(clue, proposed_guess) => {
                 let pg_str = match proposed_guess {
