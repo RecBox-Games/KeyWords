@@ -110,10 +110,22 @@ impl StateManager {
                 self.state_update = true;
             }
             InputMessage::Guess(row, col) => {
+                if ! chests_are_settled(&self.chest_states) {
+                    println!("Warning: attempt to guess before settled");
+                    return;
+                }
+                if let OpeningState::Open = self.chest_states[row][col].opening_state {
+                    println!("Warning: attempt to guess opened chest");
+                    return;
+                }
                 self.handle_guess(row, col);
                 self.state_update = true;
             }
             InputMessage::Second(support) => {
+                if ! chests_are_settled(&self.chest_states) {
+                    println!("Warning: attempt to support before settled");
+                    return;
+                }
                 self.handle_second(support);
                 self.state_update = true;
             }
@@ -667,11 +679,11 @@ impl TurnState {
         use TurnState::*;
         match self {
             RedGuessing(_, current_guess) | BlueGuessing(_, current_guess)  => {
-                if current_guess.is_none() {
-                    *current_guess = Some((row, col));
-                } else {
-                    println!("Warning: bad guess (2)")
+                if current_guess.is_some() {
+                    println!("Warning: bad guess (2)");
+                    return;
                 }
+                *current_guess = Some((row, col));
             }
             _ => {
                 println!("Warning: bad guess (3)")
@@ -865,6 +877,20 @@ pub fn get_deploying_state(chests: &Vec<Vec<ChestState>>) -> Option<&DeployingSt
     None
 }
 
+pub fn chests_are_settled(chests: &Vec<Vec<ChestState>>) -> bool {
+    for row in chests {
+        for chest in row {
+            match &chest.opening_state {
+                OpeningState::Open | OpeningState::Closed => (),
+                _ => {
+                    return false;
+                }
+            }
+        }
+    }
+    true
+}
+
 //        ====================== Pretty Printing =====================        //
 impl std::fmt::Display for StateManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -895,7 +921,7 @@ impl std::fmt::Display for TurnState {
         let s = match &self {
             RedCluing | BlueGuessingEnd(_) => String::from("redcluing"),
             BlueCluing | RedGuessingEnd(_) => String::from("bluecluing"),
-            BlueCluingEnd(_,clue) => {
+            RedCluingEnd(_,clue) => {
                 format!("redguessing,{},{},{}",clue.word, clue.num, "false")
             }
             RedGuessing(clue, proposed_guess) => {
@@ -905,7 +931,7 @@ impl std::fmt::Display for TurnState {
                 };
                 format!("redguessing,{},{},{}",clue.word, clue.num, pg_str)
             }
-            RedCluingEnd(_,clue) => {
+            BlueCluingEnd(_,clue) => {
                 format!("blueguessing,{},{},{}",clue.word, clue.num, "false")
             }
             BlueGuessing(clue, proposed_guess) => {

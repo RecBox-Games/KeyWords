@@ -6,8 +6,6 @@ pub enum TickEvent {
     None,
     Done,
     //
-    NeedsUpdate,
-    //
     Syn,
     Deploy,
     ProjectileHit(Projectile),
