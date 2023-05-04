@@ -228,7 +228,18 @@ impl ClientManager {
         if self.blue_guessers.iter().any(|s| s == handle) {
             return "blueguesser".to_string();
         }
-        return "choosing".to_string();
+        // choosing
+        let red_taken = if let Some(_) = self.red_cluegiver {
+            "true"
+        } else {
+            "false"
+        };
+        let blue_taken = if let Some(_) = self.blue_cluegiver {
+            "true"
+        } else {
+            "false"
+        };
+        return format!("choosing,{},{}", red_taken, blue_taken);
     }
 
     fn assign_role(&mut self, handle: Handle, role: Role) {
