@@ -41,12 +41,14 @@ export const drawableRenderSingle = (ctx, drawable) => {
             ctx.ctx.rotate(img.rotation);
             // !src -> 2 args
             // else 3 args
-            // If !dst, full
+            // If !dst, fullconst ctx:Context = get_context()
             let dst = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y };
+            ctx.ctx.imageSmoothingEnabled = false;
             if (img.dst)
                 dst = img.dst;
-            if (img.src)
+            if (img.src) {
                 ctx.ctx.drawImage(img.image, img.src.x, img.src.y, img.src.w, img.src.h, dst.x, dst.y, dst.w, dst.h);
+            }
             else {
                 ctx.ctx.drawImage(img.image, dst.x, dst.y, dst.w, dst.h);
             }

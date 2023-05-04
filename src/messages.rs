@@ -24,13 +24,12 @@ pub enum InputMessage {
     PrintTurn,
     PrintChests,
     //
-    
-    //
     Ack,
     Role(Role),
     Clue(Clue),
     Guess(usize, usize),
     Second(bool), // true for support, false for dissent
+    Restart,
 }
 
 //============================== MessageManager ==============================//
@@ -60,6 +59,9 @@ impl MessageManager {
                     if let Some(InMessage::Input(InputMessage::Role(role))) = pm {
                         self.client_manager.assign_role(handle.clone(), role);
                         self.clients_needing_state.push(handle);
+                    } else if let Some(InMessage::Input(InputMessage::Restart)) = pm {
+                        println!("restart");
+                        self.client_manager = ClientManager::new();
                     } else if let Some(InMessage::Input(input_message)) = pm {
                         // add this input message to the vec to be returned
                         input_messages.push(input_message);
@@ -88,6 +90,13 @@ impl MessageManager {
             "warn" => {
                 let q = &parts[1..];
                 println!("{}", q.join(" "));
+            }
+            "q" => {
+                std::process::exit(0);
+            }
+            "r" => {
+                self.client_manager = ClientManager::new();
+                self.simulated_messages.push(InputMessage::Restart)
             }
             "t" => {
                 self.simulated_messages.push(InputMessage::PrintTurn)
@@ -248,6 +257,9 @@ fn parse_message(message: String) -> Option<InMessage> {
         "staterequest" => {
             return Some(StateRequest);
         }
+        "kill" => {
+            std::process::exit(0);
+        }
         "input" => {
             let q: Vec<_> = parts[1].split(",").collect();
             match parse_input_message(q) {
@@ -283,6 +295,11 @@ fn parse_input_message(parts: Vec<&str>) -> Result<InputMessage> {
             return Err("wrong number of arguments for ack".into());
         }
         Ok(InputMessage::Ack)
+    } else if parts[0] == "restart" {
+        if parts.len() != 1 {
+            return Err("wrong number of arguments for restart".into());
+        }
+        Ok(InputMessage::Restart)
     } else if parts[0] == "role" {
         if parts.len() != 2 {
             return Err("wrong number of arguments for role".into());

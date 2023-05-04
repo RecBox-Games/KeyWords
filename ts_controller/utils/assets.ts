@@ -1,7 +1,8 @@
 import { DrawableRect, DrawableText } from "../controller_lib/types/drawables.js";
 import { Loading } from "../game/loading/init.js";
 
-const assetsSrc = ['keywords_background.png', 'chest.png', 'bomb.png', 'sword.png', 'heal.png', `silhouette.png`, 'grass.png'];
+const assetsSrc = ['keywords_background.png', 'chestN.png', 'bomb.png', 'sword.png',
+                    'heal.png', 'grass.png', 'key.png', 'banners.png', 'roles.png'];
 const assets:any = {};
 
 export const assetsDic = {
@@ -22,7 +23,6 @@ const loadAsset = (loading:Loading, src:string, res, rej) => {
         img.addEventListener('load', () => {
             loading.progress += 1 / assetCount();
             assets[src.slice(0, -4)] = img;
-            console.log("loaded asset", src, loading.progress);
             res(img);
         });
         img.addEventListener('error', (err) => {console.log("failed", src);rej(err)});

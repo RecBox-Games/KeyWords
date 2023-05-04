@@ -1,6 +1,7 @@
 
 
 import { drawablesAdd } from "../../controller_lib/draw.js";
+import { animate_grass, render_chest_grass, render_grass } from "../../utils/render_utils.js";
 import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 
@@ -10,6 +11,9 @@ export const main_loop = () => {
 
     if (board.bg)
         drawablesAdd(board.bg);
+    // render_grass();
+
+    // drawablesAdd(board.topbar.exit);
     for (let i = 0; i < BOARD_H; i += 1)
         for (let j = 0; j < BOARD_W; j += 1)
         {
@@ -23,6 +27,14 @@ export const main_loop = () => {
             }
         }
     drawablesAdd(board.topbar.text);
+    for (let i in board.topbar.clueCount)
+    {
+        if (board.topbar.clueCount[i]._active)
+        {
+            drawablesAdd(board.topbar.clueSprites[i]);
+            // console.log("ACTIVE",i, board.topbar.clueSprites[i].dst )
+        }
+    }
     if (!board.guessedWord)
     {
         drawablesAdd(board.topbar.subText);
@@ -36,10 +48,12 @@ export const main_loop = () => {
         if (board.overlay.shadow)
             drawablesAdd(board.overlay.shadow);
         drawablesAdd(board.overlay.box);
-        if (board.overlay.exitSprite)
-            drawablesAdd(board.overlay.exitSprite);
+        // if (board.overlay.exitSprite)
+        //     drawablesAdd(board.overlay.exitSprite);
         drawablesAdd(board.overlay.text);
         drawablesAdd(board.overlay.subtext);
         drawablesAdd(board.overlay.item);
     }
+    // render_chest_grass();
+    // animate_grass();
 }
