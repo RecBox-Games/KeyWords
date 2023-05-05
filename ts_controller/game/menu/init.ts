@@ -78,6 +78,7 @@ export const size_menu = () => {
     box.x += box.w + ctx.dimensions.x * 0.25
     size_team(menu.blueTeam, box)
 
+    menu.exit.image = get_asset(`buttons`)
     menu.exit.dst = {
         x: ctx.dimensions.x * 0.002,
         y: ctx.dimensions.y * 0.002,
