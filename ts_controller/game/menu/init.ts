@@ -7,6 +7,7 @@ import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 
 export interface Team {
+    cluegiver: boolean,
     name:DrawableImage,
     guesserBtn: Button,
     giverBtn:Button,
@@ -22,7 +23,7 @@ export interface Menu {
     blueTeam: Team,
     redTeam: Team,
     exitBtn: Button,
-    exit: DrawableText
+    exit: DrawableText,
 }
 
 let menu:Menu;
@@ -94,6 +95,7 @@ export const init_menu = () => {
         team: 0,
         role :0,
         blueTeam: {
+            cluegiver:false,
             name: {...DEFAULT_DRAWABLE_IMG, src: {x:100,y:0,h:154,w:92}},
             guesserBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,blueguesser')}),
             giverBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,bluecluer')}),
@@ -101,6 +103,7 @@ export const init_menu = () => {
             giverSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:44,y:0,h:32,w:44}}
         },
         redTeam: {
+            cluegiver: false,
             name: {...DEFAULT_DRAWABLE_IMG, src: {x:0,y:0,h:154,w:92}},
             guesserBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,redguesser')}),
             giverBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,redcluer')}),

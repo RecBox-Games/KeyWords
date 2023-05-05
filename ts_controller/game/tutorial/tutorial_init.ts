@@ -40,7 +40,7 @@ export const init_tutorial = () => {
         {
             get_context().ws.send('input:ack');
             set_state(MENU);
-            set_menu_state(-1, -1);
+            set_menu_state(-1, -1, false, false);
         });
 
     size_tutorial();

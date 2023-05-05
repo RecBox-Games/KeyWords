@@ -59,19 +59,21 @@ export const fill_topbar = (topbar, role) => {
         const ctx = get_context();
         const key = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('key') };
         const dst = {
-            x: ctx.dimensions.x * 0.5 - (ctx.dimensions.x * 0.1 * 2),
-            y: ctx.dimensions.y * 0.055,
+            x: 0,
+            y: ctx.dimensions.y * 0.05,
             w: ctx.dimensions.x * 0.1,
             h: ctx.dimensions.y * 0.1
         };
         for (let x = 0; x < 4; x += 1) {
             topbar.clueSprites.push({ ...key,
                 src: { x: x * 32, y: 0, w: 32, h: 32 },
-                dst: { ...dst }
+                dst: { ...dst },
+                rotation: -90,
             });
             topbar.clueCount.push(new Button({ ...dst }, undefined, undefined, () => { confirm_clue(x + 1); }));
             topbar.clueCount[x]._active = false;
-            dst.x += dst.w + 10;
+            // dst.x += dst.w + 10;
+            dst.y += dst.w + ctx.dimensions.y * 0.05;
             console.log('clueee');
         }
         // topbar.acceptButton._touchEndCallback = confirm_clue;

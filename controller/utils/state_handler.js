@@ -22,17 +22,29 @@ export const load_app = () => {
 const parse_rolestate = (msg) => {
     let role = -1;
     let team = -1;
-    if (msg.includes('choosing'))
-        return [role, team];
-    if (msg.includes('red'))
-        team = RED;
-    else if (msg.includes('blue'))
-        team = BLUE;
-    if (msg.includes('guesser'))
-        role = GUESSER;
-    else if (msg.includes('cluer'))
-        role = GIVER;
-    return [role, team];
+    let redclue = false;
+    let blueclue = false;
+    const message_str = msg.split(',');
+    if (message_str[0].includes('choosing')) {
+        if (message_str[1].includes('true'))
+            redclue = true;
+        if (message_str[2].includes('true'))
+            blueclue = true;
+        console.log('clues ', redclue, blueclue);
+        return [role, team, redclue, blueclue];
+    }
+    else {
+        console.log('?????');
+        if (message_str[0].includes('red'))
+            team = RED;
+        else if (message_str[0].includes('blue'))
+            team = BLUE;
+        if (message_str[0].includes('guesser'))
+            role = GUESSER;
+        else if (message_str[0].includes('cluer'))
+            role = GIVER;
+        return [role, team, false, false];
+    }
 };
 const parse_turnstate = (msg) => {
     let role = -1;
@@ -81,8 +93,9 @@ export const state_handler = () => {
         if (state_specs[MESSAE_TYPE] == 'notify')
             console.log('Notify' + state_specs[PLAYERSTATE]);
         else if (state_specs[MESSAE_TYPE] == 'state') {
-            const isChoosing = (state_specs[PLAYERSTATE] == 'choosing');
-            const [role, team] = parse_rolestate(state_specs[PLAYERSTATE]);
+            const isChoosing = (state_specs[PLAYERSTATE].includes('choosing'));
+            const [role, team, redclue, blueclue] = parse_rolestate(state_specs[PLAYERSTATE]);
+            console.log('just parsed', redclue, blueclue);
             const [turnRole, turnTeam, clue, guessCount, guessState] = parse_turnstate(state_specs[TURN_STATE]);
             const chestData = parse_cheststate(state_specs[CHEST_STATE]);
             if (isChoosing) {
@@ -92,7 +105,8 @@ export const state_handler = () => {
                 }
                 else {
                     set_state(MENU);
-                    set_menu_state(team, role);
+                    console.log('just sent', redclue, blueclue);
+                    set_menu_state(team, role, redclue, blueclue);
                 }
             }
             else if (!isChoosing) {

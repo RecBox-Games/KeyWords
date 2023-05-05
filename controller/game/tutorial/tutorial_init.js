@@ -23,7 +23,7 @@ export const init_tutorial = () => {
     tutorial.button = new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, () => {
         get_context().ws.send('input:ack');
         set_state(MENU);
-        set_menu_state(-1, -1);
+        set_menu_state(-1, -1, false, false);
     });
     size_tutorial();
     return tutorial;

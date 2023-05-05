@@ -5,18 +5,24 @@ import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
 import { get_asset } from "../../utils/assets.js";
 import { get_menu, size_menu } from "./init.js";
 // TODO set button bounding box to be a bit bigge than text
-export const set_menu_state = (team, role) => {
+export const set_menu_state = (team, role, redclue, blueclue) => {
     const ctx = get_context();
     const menu = get_menu();
+    console.log('n=menu recived clues', redclue, blueclue);
     menu.bg = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), };
     size_menu();
     menu.team = team;
     menu.role = role;
     buttons_add(menu.exitBtn);
+    console.log('n=menu recived clues', redclue, blueclue);
+    menu.redTeam.cluegiver = redclue;
+    menu.blueTeam.cluegiver = blueclue;
     if (role == -1 && team == -1) {
-        buttons_add(menu.blueTeam.giverBtn);
+        if (!blueclue)
+            buttons_add(menu.blueTeam.giverBtn);
         buttons_add(menu.blueTeam.guesserBtn);
-        buttons_add(menu.redTeam.giverBtn);
+        if (!redclue)
+            buttons_add(menu.redTeam.giverBtn);
         buttons_add(menu.redTeam.guesserBtn);
         menu.blueTeam.giverBtn._active = true;
         menu.blueTeam.guesserBtn._active = true;
@@ -42,9 +48,11 @@ export const menu_loop = () => {
     drawablesAdd(menu.redTeam.name);
     drawablesAdd(menu.exit);
     if (menu.team == -1) {
-        drawablesAdd(menu.blueTeam.giverSprite);
+        if (menu.blueTeam.cluegiver == false)
+            drawablesAdd(menu.blueTeam.giverSprite);
         drawablesAdd(menu.blueTeam.guesserSprite);
-        drawablesAdd(menu.redTeam.giverSprite);
+        if (menu.redTeam.cluegiver == false)
+            drawablesAdd(menu.redTeam.giverSprite);
         drawablesAdd(menu.redTeam.guesserSprite);
     }
 };
