@@ -1,6 +1,6 @@
 import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
-import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
+import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
@@ -15,12 +15,12 @@ export const size_topbar = (topBar) => {
     boundingBox.w = boundingBox.w * 0.05;
     boundingBox.h = boundingBox.h * 0.7;
     boundingBox.x = ctx.dimensions.x * 0.6;
-    topBar.accept.boundingBox = { ...boundingBox };
-    topBar.deny.boundingBox = { ...boundingBox, x: boundingBox.x + boundingBox.w * 1.25 };
+    topBar.accept.dst = { ...boundingBox };
+    topBar.deny.dst = { ...boundingBox, x: boundingBox.x + boundingBox.w * 1.25 };
     topBar.acceptButton._active = false;
     topBar.denyButton._active = false;
-    topBar.acceptButton._boundingBox = topBar.accept.boundingBox;
-    topBar.denyButton._boundingBox = topBar.deny.boundingBox;
+    topBar.acceptButton._boundingBox = topBar.accept.dst;
+    topBar.denyButton._boundingBox = topBar.deny.dst;
     const key = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('key') };
     const dst = {
         x: ctx.dimensions.x * 0.5 - (ctx.dimensions.x * 0.1 * 2),
@@ -85,8 +85,8 @@ export const construct_topbar = () => {
     const topBar = {
         text: { ...DEFAULT_DRAWABLE_TEXT, text: "" },
         subText: { ...DEFAULT_DRAWABLE_TEXT, text: "" },
-        accept: { ...DEFAULT_DRAWABLE_RECT, color: "#00FF00" },
-        deny: { ...DEFAULT_DRAWABLE_RECT, color: "#FF0000" },
+        accept: { ...DEFAULT_DRAWABLE_IMG, src: { x: 64 * 2, y: 0, w: 64, h: 32 } },
+        deny: { ...DEFAULT_DRAWABLE_IMG, src: { x: 64, y: 0, w: 64, h: 32 } },
         acceptButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, undefined),
         denyButton: new Button({ x: 0, y: 0, w: 0, h: 0 }, undefined, undefined, undefined),
         clueCount: [],

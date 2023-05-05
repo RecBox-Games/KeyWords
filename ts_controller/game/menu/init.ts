@@ -82,7 +82,7 @@ export const size_menu = () => {
     menu.exit.dst = {
         x: ctx.dimensions.x * 0.002,
         y: ctx.dimensions.y * 0.002,
-        w: ctx.dimensions.x * 0.1,
+        w: ctx.dimensions.y * 0.1,
         h: ctx.dimensions.y * 0.05,
     }
     menu.exitBtn._boundingBox = menu.exit.dst;

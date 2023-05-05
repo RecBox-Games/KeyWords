@@ -28,6 +28,16 @@ export const load_app = () => {
 
 }
 
+const NONE = -1;
+const MESSAE_TYPE = 0;
+const PLAYERSTATE = 1;
+const TURN_STATE = 2;
+const HEALTH_STATE = 3;
+const CHEST_STATE = 4;
+const CHOOSING = -1;
+const PLAYING = 2;
+const OVER = 3;
+
 const parse_rolestate = (msg:string):[number, number, boolean, boolean] => {
     let role = -1;
     let team = -1;
@@ -42,11 +52,9 @@ const parse_rolestate = (msg:string):[number, number, boolean, boolean] => {
             redclue = true;
         if (message_str[2].includes('true'))
             blueclue = true;
-        console.log('clues ', redclue, blueclue)
-        return [role, team, redclue, blueclue];
+        return [CHOOSING, CHOOSING, redclue, blueclue];
     }
     else {
-        console.log('?????')
         if (message_str[0].includes('red'))
             team = RED;
         else if (message_str[0].includes('blue'))
@@ -59,24 +67,39 @@ const parse_rolestate = (msg:string):[number, number, boolean, boolean] => {
     }
 }
 
-const parse_turnstate = (msg:string):[number, number, string, number, boolean] => {
-    let role = -1;
-    let team = -1;
+const parse_turnstate = (msg:string):[number, number, number, string, number, boolean] => {
+    let role = CHOOSING;
+    let team = CHOOSING;
+    let clue = ""
+    let guessCount = 0;
+    let guessState = false;
+    let turnState = PLAYING;
+    // {tutorial,over,redcluing,bluecluing,<guessing_state>}
+    // where <guessing_state> is
+        // {redguessing,blueguessing},<clue>,<guesses_remaining>,<proposed_guess>
+        // where <proposed_guess> is either true or false
     const state = msg.split(',')
-    const clue = state[1];
-    const guessCount = parseInt(state[2]);
-    const guessState = state[3] == 'true';
 
-    if (state[0].includes('red'))
-        team = RED;
-    else if (state[0].includes('blue'))
-        team = BLUE;
-    if (state[0].includes('guessing'))
-        role = GUESSER;
-    else if (state[0].includes('cluing'))
-        role = GIVER;
-    console.log("turn state",role, team, clue, guessCount, guessState )
-    return [role, team, clue, guessCount, guessState];
+    if (state[0] == 'tutorial')
+        turnState = TUTORIAL;
+    else if (state[0] == 'over')
+        turnState == OVER
+
+    if (turnState == PLAYING)
+    {
+        clue = state[1];
+        guessCount = parseInt(state[2]);
+        guessState = (state[3] == 'true');
+        if (state[0].includes('red'))
+            team = RED;
+        else if (state[0].includes('blue'))
+            team = BLUE;
+        if (state[0].includes('guessing'))
+            role = GUESSER;
+        else if (state[0].includes('cluing'))
+            role = GIVER;
+    }
+    return [turnState, role, team, clue, guessCount, guessState];
 }
 
 // const parse_healthstate = (msg:string):[number, number] => {
@@ -99,11 +122,7 @@ const parse_cheststate = (msg:string):any[]=> {
     return arr;
 }
 
-const MESSAE_TYPE = 0;
-const PLAYERSTATE = 1;
-const TURN_STATE = 2;
-const HEALTH_STATE = 3;
-const CHEST_STATE = 4;
+
 
 export const state_handler = () => {
     const ctx = get_context();
@@ -118,27 +137,22 @@ export const state_handler = () => {
             console.log('Notify' +  state_specs[PLAYERSTATE]);
         else if (state_specs[MESSAE_TYPE] == 'state')
         {
-            const isChoosing = (state_specs[PLAYERSTATE].includes('choosing'));
             const [role, team, redclue, blueclue] = parse_rolestate(state_specs[PLAYERSTATE]);
-            console.log('just parsed', redclue, blueclue)
-            const [turnRole, turnTeam, clue, guessCount, guessState] = parse_turnstate(state_specs[TURN_STATE]);
+            const [turnState, turnRole, turnTeam, clue, guessCount, guessState] = parse_turnstate(state_specs[TURN_STATE]);
             const chestData = parse_cheststate(state_specs[CHEST_STATE])
 
-            if (isChoosing)
+            console.log("State",turnState, role, team, redclue, blueclue, turnRole, turnTeam, clue, guessCount, guessState)
+            if (turnState == TUTORIAL)
             {
-                if (role == -1 && team == -1)
-                {
-                    set_state(TUTORIAL)
-                    set_tutorial_state();
-                }
-                else
-                {
-                    set_state(MENU);
-                    console.log('just sent', redclue, blueclue)
-                    set_menu_state(team, role, redclue, blueclue);
-                }
+                set_state(TUTORIAL)
+                set_tutorial_state();
             }
-            else if (!isChoosing) {
+            else if (role == CHOOSING)
+            {
+                set_state(MENU);
+                set_menu_state(team, role, redclue, blueclue);
+            }
+            else if (turnState == PLAYING) {
                 set_state(GAME);
                 fill_board(role, team, chestData);
 
