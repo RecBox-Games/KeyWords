@@ -51,7 +51,8 @@ impl StateManager {
 
     pub fn tick(&mut self) {
         let game_tick_event = self.game_state.tick();
-        if let TickEvent::GameOver = game_tick_event {
+        if let TickEvent::NeedsUpdate = game_tick_event {
+            println!("needsdsdssds");
             self.state_update = true;
         }
             
@@ -229,8 +230,12 @@ impl GameState {
         use GameState::*;
         match self {
             Intro(intro_state) => {
-                if intro_state.tick().is_done() {
+                let tick_event = intro_state.tick();
+                if tick_event.is_done() {
                     *self = Playing(PlayingState::new());
+                }
+                if let TickEvent::NeedsUpdate = tick_event {
+                    return TickEvent::NeedsUpdate;
                 }
             }
             Playing(playing_state) => {
@@ -238,7 +243,7 @@ impl GameState {
                     *self = Over(playing_state.red_health_state.clone(),
                                  playing_state.blue_health_state.clone(),
                                  Progress::new(TICKS_GAME_OVER));
-                    return TickEvent::GameOver;
+                    return TickEvent::NeedsUpdate;
                 }
             }
             Over(_, _, progress) => {
@@ -270,6 +275,7 @@ impl IntroState {
         } else if let TutNotify(tutnotify_state) = self {
             if tutnotify_state.tick().is_done() {
                 *self = ChestFall(Progress::new(TICKS_CHESTFALL));
+                return TickEvent::NeedsUpdate;
             }
         } else if let ChestFall(p) = self {
             return p.tick();
@@ -894,7 +900,10 @@ pub fn chests_are_settled(chests: &Vec<Vec<ChestState>>) -> bool {
 //        ====================== Pretty Printing =====================        //
 impl std::fmt::Display for StateManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut turn_state_string = String::from("none");
+        let mut turn_state_string = String::from("tutorial");
+        if let GameState::Intro(IntroState::ChestFall(_)) = &self.game_state {
+            turn_state_string = String::from("none");
+        }
         let mut health_state_string = String::from("none");
         if let GameState::Playing(playing_state) = &self.game_state {
             turn_state_string = playing_state.turn_state.to_string();

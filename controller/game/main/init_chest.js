@@ -28,11 +28,14 @@ export const fill_chest = (chest, data, role) => {
     chest.text.text = data['text'];
     chest.open = data['state'];
     chest.contents = data['contents'];
-    chest.sprite.image = get_asset('chestN');
+    chest.sprite.image = get_asset('chests');
     if (role == GIVER) {
         const count = parseInt(chest.contents.at(-1));
         const img = { ...DEFAULT_DRAWABLE_IMG };
-        chest.sprite.src = { y: 0, w: 44, h: 32, x: 44 * 17 };
+        if (chest.open)
+            chest.sprite.src = { y: 0, w: 37, h: 29, x: 37 * 14 };
+        else
+            chest.sprite.src = { y: 0, w: 37, h: 29, x: 37 * 13 };
         img.image = get_asset(chest.contents.slice(0, -1));
         if (chest.contentimg.length == 0) {
             for (let x = 0; x < count; x += 1) {
@@ -44,11 +47,11 @@ export const fill_chest = (chest, data, role) => {
     }
     else if (role == GUESSER) {
         if (chest.open) {
-            chest.sprite.src = { y: 0, w: 44, h: 32, x: 44 * 16 };
+            chest.sprite.src = { y: 0, w: 37, h: 29, x: 37 * 16 };
             chest.text.color = '#000000';
         }
         else {
-            chest.sprite.src = { y: 0, w: 44, h: 32, x: 0 };
+            chest.sprite.src = { y: 0, w: 37, h: 29, x: 0 };
             chest.text.color = '#FFFFFF';
         }
     }
@@ -60,9 +63,9 @@ export const construct_chest = (id) => {
         open: false,
         id: id,
         contents: "",
-        text: { ...DEFAULT_DRAWABLE_TEXT, color: "#FFFFFF", font: '17px serif' },
+        text: { ...DEFAULT_DRAWABLE_TEXT, color: "#FFFFFF", font: '19px serif' },
         contentimg: [],
-        sprite: { ...DEFAULT_DRAWABLE_IMG, src: { x: 0, y: 0, w: 44, h: 32 } } // {..box} or else it will assign as reference
+        sprite: { ...DEFAULT_DRAWABLE_IMG, src: { x: 0, y: 0, w: 37, h: 29 } } // {..box} or else it will assign as reference
         // sprite: {...DEFAULT_DRAWABLE_RECT, boundingBox: {...box}}// {..box} or else it will assign as reference
     };
     return newChest;

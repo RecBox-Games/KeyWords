@@ -62,9 +62,9 @@ const size_board = () => {
     const gapy = ctx.dimensions.y * 0.0001;
     const gapx = 0;
     const boundingBox:Rectangle = {
-            x:  ctx.dimensions.y * 0.1,
+            x:  ctx.dimensions.y * 0.15,
             y: (ctx.dimensions.y * 0.05),
-            h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 4.5,
+            h: (ctx.dimensions.y * 0.185),
             w: ctx.dimensions.x / 5.8
         };
     for (let y = 0; y < BOARD_H; y += 1)
@@ -76,8 +76,8 @@ const size_board = () => {
             board.buttons[y][x]._boundingBox = {...boundingBox}
             boundingBox.x += gapx + boundingBox.w;
         }
-        boundingBox.x = ctx.dimensions.y * 0.1;
-        boundingBox.y += gapy + boundingBox.h;
+        boundingBox.x = ctx.dimensions.y * 0.15;
+        boundingBox.y += gapy + boundingBox.h + 2;
     }
 }
 

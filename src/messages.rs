@@ -197,16 +197,7 @@ impl ClientManager {
     }
 
     fn send_state_to_all(&self, state_suffix: &String) {
-        if let Some(h) = self.red_cluegiver.as_ref() {
-            self.send_state(h, state_suffix);
-        }
-        if let Some(h) = self.blue_cluegiver.as_ref() {
-            self.send_state(h, state_suffix);
-        }
-        for h in &self.red_guessers {
-            self.send_state(h, state_suffix);
-        }
-        for h in &self.blue_guessers {
+        for h in &self.clients {
             self.send_state(h, state_suffix);
         }
     }

@@ -19,7 +19,7 @@ export const main_loop = () => {
         {
             drawablesAdd(board.chests[i][j].sprite);
             drawablesAdd(board.chests[i][j].text)
-            if (board.role == GIVER)
+            if (board.role == GIVER && !board.chests[i][j].open)
             {
                 for (let obj of board.chests[i][j].contentimg)
                     drawablesAdd(obj);
