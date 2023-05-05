@@ -14,12 +14,8 @@ export const loading_loop = () => {
     }
     if ( loading.bar.src && loading.bar.dst && loading.barBG.dst && loading.bar.src.w <= 80)
     {
-
-            loading.bar.src.w = loading.barProgress * 80;
-            // loading.bar.src.w = 90;
-            loading.bar.dst.w = loading.barBG.dst.w * loading.barProgress;
-            console.log(loading.bar.dst.w ,  loading.bar.src.w)
-            // loading.bar.dst.w += 0.01 * loading.barBG.dst.w;
+        loading.bar.src.w = loading.barProgress * 80;
+        loading.bar.dst.w = loading.barBG.dst.w * loading.barProgress;
     }
     if (loading.barProgress < loading.progress)
         loading.barProgress += 0.05;

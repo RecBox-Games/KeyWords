@@ -23,7 +23,7 @@ export interface Menu {
     blueTeam: Team,
     redTeam: Team,
     exitBtn: Button,
-    exit: DrawableText,
+    exit: DrawableImage,
 }
 
 let menu:Menu;
@@ -35,21 +35,21 @@ const size_team = (team: Team , box:Rectangle) => {
     const ctx = get_context();
 
    team.name.dst = {...box}
-   team.name.image = get_asset('banners');
+   team.name.image = get_asset('banner');
 
    team.guesserSprite.image = get_asset('roles')
    team.giverSprite.image = get_asset('roles')
    team.guesserSprite.dst = {
-        x: box.x + box.w * 0.4,
-        y: box.y + box.h * 0.5,
-        w: box.w * 0.35,
-        h: box.h * 0.2,
+        x: box.x + box.w * 0.1,
+        y: box.y ,
+        w: box.w * 0.7,
+        h: box.h * 0.4,
     }
    team.giverSprite.dst = {
-        x: box.x + box.w * 0.4,
-        y: box.y + box.h * 0.75,
-        w: box.w * 0.35,
-        h: box.h * 0.2,
+        x: box.x + box.w * 0.1,
+        y: box.y + box.h * 0.5,
+        w: box.w * 0.7,
+        h: box.h * 0.4,
     }
 
     team.guesserBtn._boundingBox = team.guesserSprite.dst;
@@ -78,15 +78,13 @@ export const size_menu = () => {
     box.x += box.w + ctx.dimensions.x * 0.25
     size_team(menu.blueTeam, box)
 
-    menu.exit.boundingBox = {
+    menu.exit.dst = {
         x: ctx.dimensions.x * 0.002,
         y: ctx.dimensions.y * 0.002,
         w: ctx.dimensions.x * 0.1,
         h: ctx.dimensions.y * 0.05,
     }
-    menu.exitBtn._boundingBox = menu.exit.boundingBox;
-
-
+    menu.exitBtn._boundingBox = menu.exit.dst;
 }
 
 
@@ -96,23 +94,23 @@ export const init_menu = () => {
         role :0,
         blueTeam: {
             cluegiver:false,
-            name: {...DEFAULT_DRAWABLE_IMG, src: {x:100,y:0,h:154,w:92}},
-            guesserBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,blueguesser')}),
-            giverBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,bluecluer')}),
-            guesserSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0,y:0,h:32,w:44}},
-            giverSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:44,y:0,h:32,w:44}}
+            name: {...DEFAULT_DRAWABLE_IMG, src: {x:100, y:0, h:154, w:92}},
+            guesserBtn: new Button(<Rectangle>   {x:0,   y:0, h:0,   w:0},  undefined,  undefined,  (self:Button) => {get_context().ws.send('input:role, blueguesser')}),
+            giverBtn: new Button(<Rectangle>     {x:0,   y:0, h:0,   w:0},  undefined, undefined, (self:Button) => {get_context().ws.send('input:role,bluecluer')}),
+            guesserSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, h:49, w:54}},
+            giverSprite: {...DEFAULT_DRAWABLE_IMG, src:   {x:54 * 2 + 0.5,y:0,h:49,w:54}}
         },
         redTeam: {
             cluegiver: false,
             name: {...DEFAULT_DRAWABLE_IMG, src: {x:0,y:0,h:154,w:92}},
             guesserBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,redguesser')}),
             giverBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('input:role,redcluer')}),
-           guesserSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0,y:0,h:32,w:44}},
-            giverSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:44,y:0,h:32,w:44}}
+            guesserSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:54 + 0.5,  y:0, h:49, w:54}},
+            giverSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:54 * 3 + 0.5,y:0, h:49, w:54}}
         },
         text: {...DEFAULT_DRAWABLE_TEXT, text:"Choose your team !", font: '40px serif'},
         exitBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('kill')}),
-        exit: {...DEFAULT_DRAWABLE_TEXT, text:"EXIT GAME", font: '20px serif', color: '#FF1111'},
+        exit: {...DEFAULT_DRAWABLE_IMG, dst: {x:0, y:0, h:0, w:0}, src: {x:0, y:0, h:32, w:64}},
     }
 
     size_menu();

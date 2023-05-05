@@ -50,14 +50,17 @@ export const fill_chest = (chest:Chest, data:any, role:number) => {
     chest.text.text = data['text'];
     chest.open = data['state'];
     chest.contents = data['contents']
-    chest.sprite.image = get_asset('chestN')
+    chest.sprite.image = get_asset('chests')
     if (role == GIVER)
     {
 
         const count = parseInt(chest.contents.at(-1) as string);
         const img =  {...DEFAULT_DRAWABLE_IMG};
 
-        chest.sprite.src = {y:0, w:44, h:32, x: 44 * 17};
+        if (chest.open)
+            chest.sprite.src = {y:0, w:44, h:32, x: 44 * 14};
+        else
+            chest.sprite.src = {y:0, w:44, h:32, x: 44 * 13};
         img.image = get_asset(chest.contents.slice(0, -1));
         if (chest.contentimg.length == 0)
         {

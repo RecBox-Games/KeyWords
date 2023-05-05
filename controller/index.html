@@ -50,8 +50,8 @@
         console.log( document.getElementById('canvas'));
         if (document.getElementById('canvas').requestFullscreen) {
             document.getElementById('canvas').requestFullscreen();
-        } else if (document.getElementById('canvas').webkitEnterFullscreen()) { /* Safari */
-            document.getElementById('canvas').webkitEnterFullscreen();
+        } else if (document.getElementById('canvas').webkitRequestFullscreen()) { /* Safari */
+            consoele.log(`If you can read this, know that Safari is a pain`)
         }
      ">
       Click to fullscreen</button>
