@@ -95,7 +95,7 @@ export const init_menu = () => {
         blueTeam: {
             cluegiver:false,
             name: {...DEFAULT_DRAWABLE_IMG, src: {x:100, y:0, h:154, w:92}},
-            guesserBtn: new Button(<Rectangle>   {x:0,   y:0, h:0,   w:0},  undefined,  undefined,  (self:Button) => {get_context().ws.send('input:role, blueguesser')}),
+            guesserBtn: new Button(<Rectangle>   {x:0,   y:0, h:0,   w:0},  undefined,  undefined,  (self:Button) => {get_context().ws.send('input:role,blueguesser')}),
             giverBtn: new Button(<Rectangle>     {x:0,   y:0, h:0,   w:0},  undefined, undefined, (self:Button) => {get_context().ws.send('input:role,bluecluer')}),
             guesserSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, h:49, w:54}},
             giverSprite: {...DEFAULT_DRAWABLE_IMG, src:   {x:54 * 2 + 0.5,y:0,h:49,w:54}}
