@@ -10,7 +10,7 @@ pub enum TickEvent {
     Deploy,
     ProjectileHit(Projectile),
     DoneOpening,
-    GameOver,
+    NeedsUpdate,
 }
 
 impl TickEvent {
