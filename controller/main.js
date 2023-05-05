@@ -1,6 +1,8 @@
 import { buttons_flush } from "./controller_lib/button.js";
 import { drawablesRenderAll } from "./controller_lib/draw.js";
 import { get_context } from "./controller_lib/init.js";
+import { size_end } from "./game/end/init.js";
+import { end_loop } from "./game/end/loop.js";
 import { size_loading } from "./game/loading/init.js";
 import { loading_loop } from "./game/loading/loop.js";
 import { size_main } from "./game/main/init.js";
@@ -18,7 +20,7 @@ export const set_state = (val) => {
     buttons_flush();
     // buttons_set(false);
 };
-const loops = [loading_loop, tutorial_loop, menu_loop, main_loop];
+const loops = [loading_loop, tutorial_loop, menu_loop, main_loop, end_loop];
 const app = () => {
     state_handler();
     loops[state]();
@@ -38,6 +40,7 @@ window.onload = () => {
         size_menu();
         size_tutorial();
         size_main();
+        size_end();
         prepare_grass();
     });
     window.requestAnimationFrame(app);

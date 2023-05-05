@@ -75,7 +75,7 @@ const parse_turnstate = (msg:string):[number, number, number, string, number, bo
     let clue = ""
     let guessCount = 0;
     let guessState = false;
-    let turnState = PLAYING;
+    let turnState = -1;
     // {tutorial,over,redcluing,bluecluing,<guessing_state>}
     // where <guessing_state> is
         // {redguessing,blueguessing},<clue>,<guesses_remaining>,<proposed_guess>
@@ -85,10 +85,10 @@ const parse_turnstate = (msg:string):[number, number, number, string, number, bo
     if (state[0] == 'tutorial')
         turnState = TUTORIAL;
     else if (state[0] == 'over')
-        turnState == OVER
-
-    if (turnState == PLAYING)
+        turnState = OVER
+    else
     {
+        turnState = PLAYING;
         clue = state[1];
         guessCount = parseInt(state[2]);
         guessState = (state[3] == 'true');
@@ -101,6 +101,7 @@ const parse_turnstate = (msg:string):[number, number, number, string, number, bo
         else if (state[0].includes('cluing'))
             role = GIVER;
     }
+    console.log("state 0", state, state[0], state[0] == 'over', turnState)
     return [turnState, role, team, clue, guessCount, guessState];
 }
 
