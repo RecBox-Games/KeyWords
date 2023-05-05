@@ -68,7 +68,6 @@ export const fill_topbar = (topbar, role) => {
             topbar.clueSprites.push({ ...key,
                 src: { x: x * 32, y: 0, w: 32, h: 32 },
                 dst: { ...dst },
-                rotation: -90,
             });
             topbar.clueCount.push(new Button({ ...dst }, undefined, undefined, () => { confirm_clue(x + 1); }));
             topbar.clueCount[x]._active = false;

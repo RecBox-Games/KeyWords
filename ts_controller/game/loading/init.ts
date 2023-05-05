@@ -1,25 +1,24 @@
 import { get_context } from "../../controller_lib/init.js";
-import { DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
+import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
 import { assetCount, load_assets } from "../../utils/assets.js";
 import { prepare_grass } from "../../utils/render_utils.js";
 
+const SRC_W = 80;
 export interface Loading {
-    bar:DrawableRect;
-    barBG:DrawableRect;
-    text:DrawableText;
+    bar:DrawableImage;
+    barBG:DrawableImage;
     sent:boolean;
-    BG:DrawableRect;
+    title:DrawableImage;
     progress:number;
     barProgress:number;
     done:boolean;
 }
 
 const loading:Loading = {
-    text:{...DEFAULT_DRAWABLE_TEXT},
-    barBG:{...DEFAULT_DRAWABLE_RECT},
-    bar:{...DEFAULT_DRAWABLE_RECT},
+    barBG:{...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w: 80, h: 9}},
+    bar:{...DEFAULT_DRAWABLE_IMG, src: {x:0, y:9, w: 0, h: 9}},
     sent:false,
-    BG: {...DEFAULT_DRAWABLE_RECT},
+    title: {...DEFAULT_DRAWABLE_IMG},
     progress: 0.0,
     barProgress: 0.0,
     done: false
@@ -36,21 +35,31 @@ export const size_loading = () => {
         w: ctx.dimensions.x * 0.70,
         h: ctx.dimensions.y * 0.1
     }
-    loading.BG.boundingBox.w = ctx.dimensions.x;
-    loading.BG.boundingBox.h = ctx.dimensions.y;
-    loading.text.boundingBox = {...box, y: box.y - (box.h * 2)};
-    loading.barBG.boundingBox = box;
-    loading.bar.boundingBox = {...box, w:0};
+    loading.title.dst = {
+        x: ctx.dimensions.x * 0.25,
+        y: ctx.dimensions.y * 0.25,
+        w: ctx.dimensions.x * 0.5,
+        h: ctx.dimensions.y * 0.3
+    };
+    loading.barBG.dst = {...box};
+    loading.bar.dst = {...box};
 }
 
 export const init_loading = async() => {
     size_loading();
 
-    loading.bar.color = '#FFFFFF'
-    loading.text.text = 'Loading';
-    loading.text.font = '80px serif'
-    loading.text.color = '#FF0000';
-    loading.BG.color = '#AAAAAA'
+    const barImg = new Image();
+    const title = new Image();
+    barImg.addEventListener('load', () => {
+            loading.bar.image = barImg;
+            loading.barBG.image = barImg;
+        });
+    title.addEventListener('load', () => {
+            loading.title.image = title
+        });
+
+    barImg.src = `resources/loading.png`;
+    title.src = `resources/title.png`;
 
     Promise.allSettled(
         load_assets(
@@ -61,7 +70,7 @@ export const init_loading = async() => {
     )
     .then(() => {
         console.log("loaded");
-          prepare_grass();
+        prepare_grass();
         loading.done = true}
         )
     // console.log("socket", ctx.ws, ctx.wsState)
