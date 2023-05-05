@@ -160,7 +160,7 @@ export const fill_board = (role:number, team:number, data:any[]) => {
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
     fill_board_data(role, team, data);
-
+    size_main();
 
     // buttons_log();
 }

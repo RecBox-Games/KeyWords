@@ -5,9 +5,10 @@ import { GIVER, GUESSER } from "../interfaces.js";
 // {[..., {state, text, contentId, asset}, ...]
 export const size_chest = (chest) => {
     chest.text.boundingBox = {
-        ...chest.text.boundingBox,
         y: chest.text.boundingBox.y + chest.text.boundingBox.h * 0.7,
-        h: chest.text.boundingBox.h * 0.2
+        h: chest.text.boundingBox.h * 0.2,
+        x: chest.text.boundingBox.x + chest.text.boundingBox.w * 0.07,
+        w: chest.text.boundingBox.w - chest.text.boundingBox.w * 0.07
     };
     const count = parseInt(chest.contents.at(-1));
     const img = { ...DEFAULT_DRAWABLE_IMG };
@@ -47,7 +48,7 @@ export const fill_chest = (chest, data, role) => {
     }
     else if (role == GUESSER) {
         if (chest.open) {
-            chest.sprite.src = { y: 0, w: 37, h: 29, x: 37 * 16 };
+            chest.sprite.src = { y: 0, w: 37, h: 29, x: 37 * 12 };
             chest.text.color = '#000000';
         }
         else {

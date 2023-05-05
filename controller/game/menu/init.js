@@ -13,14 +13,14 @@ const size_team = (team, box) => {
     team.guesserSprite.dst = {
         x: box.x + box.w * 0.1,
         y: box.y,
-        w: box.w * 0.7,
-        h: box.h * 0.4,
+        w: box.h * 0.45,
+        h: box.h * 0.45,
     };
     team.giverSprite.dst = {
         x: box.x + box.w * 0.1,
         y: box.y + box.h * 0.5,
-        w: box.w * 0.7,
-        h: box.h * 0.4,
+        w: box.h * 0.45,
+        h: box.h * 0.45,
     };
     team.guesserBtn._boundingBox = team.guesserSprite.dst;
     team.giverBtn._boundingBox = team.giverSprite.dst;
@@ -39,14 +39,14 @@ export const size_menu = () => {
         h: ctx.dimensions.y * 0.8,
     };
     size_team(menu.redTeam, box);
-    box.x += box.w + ctx.dimensions.x * 0.25;
+    box.x += box.w + ctx.dimensions.x * 0.33;
     size_team(menu.blueTeam, box);
     menu.exit.image = get_asset(`buttons`);
     menu.exit.dst = {
-        x: ctx.dimensions.x * 0.002,
-        y: ctx.dimensions.y * 0.002,
-        w: ctx.dimensions.y * 0.1,
-        h: ctx.dimensions.y * 0.05,
+        x: ctx.dimensions.x * 0.005,
+        y: ctx.dimensions.y * 0.005,
+        w: ctx.dimensions.y * 0.2,
+        h: ctx.dimensions.y * 0.1,
     };
     menu.exitBtn._boundingBox = menu.exit.dst;
 };
@@ -71,7 +71,7 @@ export const init_menu = () => {
             giverSprite: { ...DEFAULT_DRAWABLE_IMG, src: { x: 54 * 3 + 0.5, y: 0, h: 49, w: 54 } }
         },
         text: { ...DEFAULT_DRAWABLE_TEXT, text: "Choose your team !", font: '40px serif' },
-        exitBtn: new Button({ x: 0, y: 0, h: 0, w: 0 }, undefined, undefined, (self) => { get_context().ws.send('kill'); }),
+        exitBtn: new Button({ x: 0, y: 0, h: 0, w: 0 }, undefined, undefined, (self) => { get_context().ws.send('kill'); location.reload(); }),
         exit: { ...DEFAULT_DRAWABLE_IMG, dst: { x: 0, y: 0, h: 0, w: 0 }, src: { x: 0, y: 0, h: 32, w: 64 } },
     };
     size_menu();

@@ -7,37 +7,33 @@ import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
 import { GUESSER } from "../interfaces.js";
 export const size_topbar = (topBar) => {
     const ctx = get_context();
-    const boundingBox = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.07 };
+    const boundingBox = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.04 };
     topBar.text.boundingBox = { ...boundingBox };
-    boundingBox.h = ctx.dimensions.y * 0.08;
     topBar.subText.boundingBox = { ...boundingBox };
-    boundingBox.y = boundingBox.w * 0.03;
-    boundingBox.w = boundingBox.w * 0.05;
-    boundingBox.h = boundingBox.h * 0.7;
+    boundingBox.h = ctx.dimensions.y * 0.08;
+    boundingBox.y = ctx.dimensions.y * 0.013;
+    boundingBox.w = ctx.dimensions.y * 0.14;
+    boundingBox.h = ctx.dimensions.y * 0.07;
     boundingBox.x = ctx.dimensions.x * 0.6;
     topBar.accept.dst = { ...boundingBox };
-    topBar.deny.dst = { ...boundingBox, x: boundingBox.x + boundingBox.w * 1.25 };
+    topBar.deny.dst = { ...boundingBox, x: ctx.dimensions.x * 0.33 };
     topBar.acceptButton._active = false;
     topBar.denyButton._active = false;
     topBar.acceptButton._boundingBox = topBar.accept.dst;
     topBar.denyButton._boundingBox = topBar.deny.dst;
-    const key = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('key') };
     const dst = {
-        x: ctx.dimensions.x * 0.5 - (ctx.dimensions.x * 0.1 * 2),
-        y: ctx.dimensions.y * 0.055,
-        w: ctx.dimensions.x * 0.1,
-        h: ctx.dimensions.y * 0.1
+        x: ctx.dimensions.x * 0.005,
+        y: ctx.dimensions.y * 0.05,
+        w: ctx.dimensions.x * 0.06,
+        h: ctx.dimensions.x * 0.06
     };
     for (let x = 0; x < topBar.clueCount.length; x += 1) {
-        topBar.clueSprites.push({ ...key,
-            src: { x: x * 32, y: 0, w: 32, h: 32 },
-            dst: { ...dst }
-        });
         topBar.clueSprites[x].dst = { ...dst };
+        topBar.clueSprites[x].src = { x: x * 22, y: 0, w: 22, h: 26 };
         topBar.clueCount[x]._boundingBox = { ...dst };
+        dst.y += dst.h + ctx.dimensions.y * 0.01;
         // topBar.clueCount.push(new Button({...dst}, undefined, undefined, () => {confirm_clue(x + 1)} ));
         // topBar.clueCount[x]._active = false;
-        dst.x += dst.w + 10;
         // buttons_add(topBar.clueCount[x])
     }
     topBar.exit.boundingBox = {
@@ -51,29 +47,30 @@ export const size_topbar = (topBar) => {
 export const fill_topbar = (topbar, role) => {
     buttons_add(topbar.exitBtn);
     if (role == GUESSER) {
+        const button = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('buttons') };
+        topbar.accept = { ...button, src: { x: 64 * 2, y: 0, w: 64, h: 32 } };
+        topbar.deny = { ...button, src: { x: 64 * 1, y: 0, w: 64, h: 32 } };
         topbar.acceptButton._touchEndCallback = confirm_guess;
         topbar.denyButton._touchEndCallback = deny_guess;
         buttons_add(topbar.denyButton);
     }
     else if (topbar.clueCount.length == 0) {
         const ctx = get_context();
-        const key = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('key') };
+        const key = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keys') };
         const dst = {
-            x: 0,
+            x: ctx.dimensions.x * 0.005,
             y: ctx.dimensions.y * 0.05,
-            w: ctx.dimensions.x * 0.1,
-            h: ctx.dimensions.y * 0.1
+            w: ctx.dimensions.x * 0.06,
+            h: ctx.dimensions.x * 0.06
         };
+        topbar.clueSprites.length = 0;
         for (let x = 0; x < 4; x += 1) {
             topbar.clueSprites.push({ ...key,
-                src: { x: x * 32, y: 0, w: 32, h: 32 },
-                dst: { ...dst },
             });
             topbar.clueCount.push(new Button({ ...dst }, undefined, undefined, () => { confirm_clue(x + 1); }));
             topbar.clueCount[x]._active = false;
             // dst.x += dst.w + 10;
-            dst.y += dst.w + ctx.dimensions.y * 0.05;
-            console.log('clueee');
+            dst.y += dst.h + ctx.dimensions.y * 0.01;
         }
         // topbar.acceptButton._touchEndCallback = confirm_clue;
     }
@@ -95,7 +92,6 @@ export const construct_topbar = () => {
         exit: { ...DEFAULT_DRAWABLE_TEXT, text: "EXIT GAME", font: '20px serif', color: '#FF1111' },
     };
     size_topbar(topBar);
-    // buttons_add(topBar.denyButton);
     // buttons_add(topBar.acceptButton);
     return topBar;
 };

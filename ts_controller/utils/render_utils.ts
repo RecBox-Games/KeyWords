@@ -117,10 +117,8 @@ export const size_grass = () => {
       const board:Board = get_board();
     for (let obj of drawable_chestgrass)
     {
-        console.log("b4", obj.dst)
         if (obj.dst)
             obj.dst.y += (board.chests[0][0].sprite.dst as Rectangle).h * 0.5
-        console.log('after', obj.dst)
         drawablesAdd(obj)
     }
 }

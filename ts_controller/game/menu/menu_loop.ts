@@ -70,11 +70,9 @@ export const menu_loop = () => {
     drawablesAdd(menu.exit)
     if (menu.team == -1 )
     {
-        if (menu.blueTeam.cluegiver == false)
-            drawablesAdd(menu.blueTeam.giverSprite);
+        drawablesAdd(menu.blueTeam.giverSprite);
         drawablesAdd(menu.blueTeam.guesserSprite);
-        if (menu.redTeam.cluegiver == false)
-            drawablesAdd(menu.redTeam.giverSprite);
+        drawablesAdd(menu.redTeam.giverSprite);
         drawablesAdd(menu.redTeam.guesserSprite);
     }
 }
