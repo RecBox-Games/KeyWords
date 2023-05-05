@@ -58,7 +58,8 @@ impl MessageManager {
                     let pm = parse_message(msg);
                     if let Some(InMessage::Input(InputMessage::Role(role))) = pm {
                         self.client_manager.assign_role(handle.clone(), role);
-                        self.clients_needing_state.push(handle);
+                        //self.clients_needing_state.push(handle);
+                        self.client_manager.all_need_state = true;
                     } else if let Some(InMessage::Input(InputMessage::Restart)) = pm {
                         println!("restart");
                         self.client_manager = ClientManager::new();
@@ -138,10 +139,13 @@ impl MessageManager {
     }
 
     pub fn needs_state(&self) -> bool {
-        self.clients_needing_state.len() > 0
+        self.clients_needing_state.len() > 0 || self.client_manager.all_need_state
     }
 
     pub fn send_state(&mut self, state: &StateManager) {
+        if self.client_manager.all_need_state {
+            self.send_state_to_all(state);
+        }
         for handle in std::mem::take(&mut self.clients_needing_state) {
             self.client_manager.send_state(&handle, &state.to_string());
         }
@@ -160,6 +164,7 @@ struct ClientManager {
     blue_cluegiver: Option<Handle>,
     red_guessers: Vec<Handle>,
     blue_guessers: Vec<Handle>,
+    all_need_state: bool,
 }
 
 impl ClientManager {
@@ -170,6 +175,7 @@ impl ClientManager {
             blue_cluegiver: None,
             red_guessers: vec![],
             blue_guessers: vec![],
+            all_need_state: false,
         }
     }
     
@@ -196,10 +202,11 @@ impl ClientManager {
         }
     }
 
-    fn send_state_to_all(&self, state_suffix: &String) {
+    fn send_state_to_all(&mut self, state_suffix: &String) {
         for h in &self.clients {
             self.send_state(h, state_suffix);
         }
+        self.all_need_state = false;
     }
     
     fn role_string(&self, handle: &Handle) -> String {

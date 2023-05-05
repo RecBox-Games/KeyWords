@@ -52,7 +52,6 @@ impl StateManager {
     pub fn tick(&mut self) {
         let game_tick_event = self.game_state.tick();
         if let TickEvent::NeedsUpdate = game_tick_event {
-            println!("needsdsdssds");
             self.state_update = true;
         }
             

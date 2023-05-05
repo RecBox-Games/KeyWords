@@ -92,7 +92,6 @@ impl EventHandler<ggez::GameError> for MyRunner {
             self.message_manager.send_state(&self.state_manager);
         }
         if self.state_manager.state_update {
-            println!("dunnit");
             self.message_manager.send_state_to_all(&self.state_manager);
             self.state_manager.state_update = false;
         }
