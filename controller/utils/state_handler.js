@@ -1,4 +1,5 @@
 import { get_context, init_context } from "../controller_lib/init.js";
+import { fill_end, init_end } from "../game/end/init.js";
 import { BLUE, GAME, GIVER, GUESSER, MENU, RED, TUTORIAL } from "../game/interfaces.js";
 import { init_loading } from "../game/loading/init.js";
 import { fill_board, init_main_screen } from "../game/main/init.js";
@@ -14,6 +15,7 @@ export const load_app = () => {
     init_tutorial();
     init_menu();
     init_main_screen();
+    init_end();
     // Init context
     // Load assets
     // request state && exec state
@@ -27,7 +29,7 @@ const HEALTH_STATE = 3;
 const CHEST_STATE = 4;
 const CHOOSING = -1;
 const PLAYING = 2;
-const OVER = 3;
+const OVER = 4;
 const parse_rolestate = (msg) => {
     let role = -1;
     let team = -1;
@@ -59,7 +61,7 @@ const parse_turnstate = (msg) => {
     let clue = "";
     let guessCount = 0;
     let guessState = false;
-    let turnState = PLAYING;
+    let turnState = -1;
     // {tutorial,over,redcluing,bluecluing,<guessing_state>}
     // where <guessing_state> is
     // {redguessing,blueguessing},<clue>,<guesses_remaining>,<proposed_guess>
@@ -68,8 +70,9 @@ const parse_turnstate = (msg) => {
     if (state[0] == 'tutorial')
         turnState = TUTORIAL;
     else if (state[0] == 'over')
-        turnState == OVER;
-    if (turnState == PLAYING) {
+        turnState = OVER;
+    else {
+        turnState = PLAYING;
         clue = state[1];
         guessCount = parseInt(state[2]);
         guessState = (state[3] == 'true');
@@ -82,6 +85,7 @@ const parse_turnstate = (msg) => {
         else if (state[0].includes('cluing'))
             role = GIVER;
     }
+    console.log("state 0", state, state[0], state[0] == 'over', turnState);
     return [turnState, role, team, clue, guessCount, guessState];
 };
 // const parse_healthstate = (msg:string):[number, number] => {
@@ -128,6 +132,10 @@ export const state_handler = () => {
                 else {
                     start_turn(turnRole, clue, guessCount, "", guessState);
                 }
+            }
+            else if (turnState == OVER) {
+                set_state(OVER);
+                fill_end();
             }
         }
         ctx.wsMessage = null;
