@@ -266,8 +266,8 @@ impl Graphical {
                     playing_state: &PlayingState) -> GR {
         self.draw_static_chests(ctx, chest_states)?;
         self.draw_selection(ctx, &playing_state.turn_state)?;
-        self.draw_opening_chests(ctx, chest_states)?;
         self.draw_health(ctx, &playing_state.red_health_state, &playing_state.blue_health_state )?;
+        self.draw_opening_chests(ctx, chest_states)?;
         if let Some(deploying_state) = get_deploying_state(chest_states) {
             self.draw_deploying(ctx, deploying_state, playing_state.current_team(),
                                 playing_state.red_health(), playing_state.blue_health())?;
@@ -612,14 +612,20 @@ fn new_sparkle(ctx: Ctx) -> SpriteElem {
 
 fn new_chest(ctx: Ctx) -> SpriteElem {
     let mut chest = SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y,
-                                    "/chest.png");
+                                    "/chest_2.png");
+    let q = 1.0/10.0;
     chest.set_animation(
 	vec![
-            Rect::new(0.0*0.2, 0.0, 0.2, 1.0),
-            Rect::new(1.0*0.2, 0.0, 0.2, 1.0),
-            Rect::new(2.0*0.2, 0.0, 0.2, 1.0),            
-            Rect::new(3.0*0.2, 0.0, 0.2, 1.0),            
-            Rect::new(4.0*0.2, 0.0, 0.2, 1.0),            
+            Rect::new(0.0*q, 0.0, q, 1.0),
+            Rect::new(1.0*q, 0.0, q, 1.0),
+            Rect::new(2.0*q, 0.0, q, 1.0),            
+            Rect::new(3.0*q, 0.0, q, 1.0),            
+            Rect::new(4.0*q, 0.0, q, 1.0),            
+            Rect::new(5.0*q, 0.0, q, 1.0),            
+            Rect::new(6.0*q, 0.0, q, 1.0),            
+            Rect::new(7.0*q, 0.0, q, 1.0),            
+            Rect::new(8.0*q, 0.0, q, 1.0),            
+            Rect::new(9.0*q, 0.0, q, 1.0),            
         ],
     );
     chest

@@ -59,13 +59,13 @@ const fill_board_data = (role:number, team:number, data:any[]) => {
 
 const size_board = () => {
     const ctx = get_context();
-    const gapy = (ctx.dimensions.y - ctx.dimensions.y * 0.1) * 0.013;
-    const gapx = (ctx.dimensions.x / 40);
+    const gapy = ctx.dimensions.y * 0.0001;
+    const gapx = 0;
     const boundingBox:Rectangle = {
-            x: gapx,
-            y: (ctx.dimensions.y * 0.13),
-            h: (ctx.dimensions.y - ctx.dimensions.y * 0.12) / 5.4,
-            w: ctx.dimensions.x / 6
+            x:  ctx.dimensions.y * 0.15,
+            y: (ctx.dimensions.y * 0.05),
+            h: (ctx.dimensions.y * 0.185),
+            w: ctx.dimensions.x / 5.8
         };
     for (let y = 0; y < BOARD_H; y += 1)
     {
@@ -76,8 +76,8 @@ const size_board = () => {
             board.buttons[y][x]._boundingBox = {...boundingBox}
             boundingBox.x += gapx + boundingBox.w;
         }
-        boundingBox.x = gapx;
-        boundingBox.y += gapy + boundingBox.h;
+        boundingBox.x = ctx.dimensions.y * 0.15;
+        boundingBox.y += gapy + boundingBox.h + 2;
     }
 }
 
@@ -160,7 +160,7 @@ export const fill_board = (role:number, team:number, data:any[]) => {
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
     fill_board_data(role, team, data);
-
+    size_main();
 
     // buttons_log();
 }

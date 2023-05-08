@@ -12,8 +12,8 @@ import { GUESSER } from "../interfaces.js";
 export interface TopBar {
     text: DrawableText;
     subText: DrawableText;
-    accept:DrawableRect;
-    deny:DrawableRect;
+    accept:DrawableImage;
+    deny:DrawableImage;
     acceptButton:Button;
     denyButton:Button;
     clueCount:Button[];
@@ -25,47 +25,41 @@ export interface TopBar {
 export const size_topbar= (topBar:TopBar) =>
 {
     const ctx = get_context();
-    const boundingBox:Rectangle = {x:0, y:0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.07};
+    const boundingBox:Rectangle = {x:0, y:0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.04};
 
     topBar.text.boundingBox = {...boundingBox};
+    topBar.subText.boundingBox = {...boundingBox};
 
     boundingBox.h = ctx.dimensions.y * 0.08;
 
-    topBar.subText.boundingBox = {...boundingBox};
-
-    boundingBox.y = boundingBox.w * 0.03;
-    boundingBox.w = boundingBox.w * 0.05;
-    boundingBox.h = boundingBox.h * 0.7;
+    boundingBox.y = ctx.dimensions.y * 0.013;
+    boundingBox.w = ctx.dimensions.y * 0.14;
+    boundingBox.h = ctx.dimensions.y * 0.07;
     boundingBox.x = ctx.dimensions.x * 0.6;
-    topBar.accept.boundingBox = {...boundingBox}
-    topBar.deny.boundingBox = {...boundingBox, x : boundingBox.x + boundingBox.w * 1.25};
+    topBar.accept.dst = {...boundingBox};
+    topBar.deny.dst = {...boundingBox, x: ctx.dimensions.x * 0.33}
 
     topBar.acceptButton._active = false;
     topBar.denyButton._active = false;
 
 
-    topBar.acceptButton._boundingBox = topBar.accept.boundingBox;
-    topBar.denyButton._boundingBox = topBar.deny.boundingBox;
+    topBar.acceptButton._boundingBox = topBar.accept.dst;
+    topBar.denyButton._boundingBox = topBar.deny.dst;
 
-    const key:DrawableImage = {...DEFAULT_DRAWABLE_IMG, image:get_asset('key')};
     const dst:Rectangle = {
-        x: ctx.dimensions.x * 0.5 - (ctx.dimensions.x * 0.1 * 2),
-        y: ctx.dimensions.y * 0.055,
-        w: ctx.dimensions.x * 0.1,
-        h: ctx.dimensions.y * 0.1
-        }
+            x:  ctx.dimensions.x * 0.005,
+            y: ctx.dimensions.y * 0.05,
+            w: ctx.dimensions.x * 0.06,
+            h: ctx.dimensions.x * 0.06
+            }
     for (let x = 0; x < topBar.clueCount.length; x += 1)
     {
-        topBar.clueSprites.push(
-            {...key,
-            src: {x: x * 32,y: 0, w: 32, h: 32},
-            dst: {...dst}
-            });
-        topBar.clueSprites[x] .dst = {...dst};
+        topBar.clueSprites[x].dst = {...dst};
+        topBar.clueSprites[x].src = {x: x* 22,y: 0, w: 22, h: 26};
         topBar.clueCount[x]._boundingBox = {...dst};
+        dst.y += dst.h + ctx.dimensions.y * 0.01
         // topBar.clueCount.push(new Button({...dst}, undefined, undefined, () => {confirm_clue(x + 1)} ));
         // topBar.clueCount[x]._active = false;
-        dst.x += dst.w + 10;
         // buttons_add(topBar.clueCount[x])
     }
 
@@ -83,6 +77,10 @@ export const fill_topbar = (topbar:TopBar ,role:number) => {
     buttons_add(topbar.exitBtn);
     if (role == GUESSER)
     {
+        const button = {...DEFAULT_DRAWABLE_IMG, image:get_asset('buttons')};
+
+        topbar.accept = {...button, src: {x: 64 * 2, y: 0, w: 64, h: 32}};
+        topbar.deny   = {...button, src: {x: 64 * 1, y: 0, w: 64, h: 32}};
         topbar.acceptButton._touchEndCallback = confirm_guess;
         topbar.denyButton._touchEndCallback = deny_guess;
         buttons_add(topbar.denyButton)
@@ -90,24 +88,23 @@ export const fill_topbar = (topbar:TopBar ,role:number) => {
     else if (topbar.clueCount.length == 0)
     {
         const ctx:Context = get_context();
-        const key:DrawableImage = {...DEFAULT_DRAWABLE_IMG, image:get_asset('key')};
+        const key:DrawableImage = {...DEFAULT_DRAWABLE_IMG, image:get_asset('keys')};
         const dst:Rectangle = {
-            x: ctx.dimensions.x * 0.5 - (ctx.dimensions.x * 0.1 * 2),
-            y: ctx.dimensions.y * 0.055,
-            w: ctx.dimensions.x * 0.1,
-            h: ctx.dimensions.y * 0.1
+            x:  ctx.dimensions.x * 0.005,
+            y: ctx.dimensions.y * 0.05,
+            w: ctx.dimensions.x * 0.06,
+            h: ctx.dimensions.x * 0.06
             }
+        topbar.clueSprites.length = 0;
         for (let x = 0; x < 4; x += 1)
         {
             topbar.clueSprites.push(
                 {...key,
-                src: {x: x* 32,y: 0, w: 32, h: 32},
-                dst: {...dst}
                 });
             topbar.clueCount.push(new Button({...dst}, undefined, undefined, () => {confirm_clue(x + 1)} ));
             topbar.clueCount[x]._active = false;
-            dst.x += dst.w + 10;
-            console.log('clueee');
+            // dst.x += dst.w + 10;
+            dst.y += dst.h + ctx.dimensions.y * 0.01
         }
         // topbar.acceptButton._touchEndCallback = confirm_clue;
 
@@ -123,8 +120,8 @@ export const construct_topbar = ():TopBar =>
     const topBar:TopBar = {
         text: {...DEFAULT_DRAWABLE_TEXT, text:""},
         subText:{...DEFAULT_DRAWABLE_TEXT, text:""},
-        accept: {...DEFAULT_DRAWABLE_RECT, color:"#00FF00"},
-        deny: {...DEFAULT_DRAWABLE_RECT, color:"#FF0000"},
+        accept: {...DEFAULT_DRAWABLE_IMG,src: {x:64 * 2, y:0, w:64, h: 32} },
+        deny: {...DEFAULT_DRAWABLE_IMG, src: {x:64, y:0, w:64, h: 32}},
         acceptButton: new Button({x:0, y:0, w:0, h: 0}, undefined, undefined,undefined),
         denyButton: new Button({x:0, y:0, w:0, h: 0}, undefined, undefined, undefined),
         clueCount:[],
@@ -133,7 +130,6 @@ export const construct_topbar = ():TopBar =>
         exit: {...DEFAULT_DRAWABLE_TEXT, text:"EXIT GAME", font: '20px serif', color: '#FF1111'},
     };
     size_topbar(topBar);
-    // buttons_add(topBar.denyButton);
     // buttons_add(topBar.acceptButton);
 
     return topBar

@@ -8,7 +8,8 @@ import { Tutorial, get_tutorial } from "./tutorial_init.js";
 export const set_tutorial_state = () => {
     const tutorial:Tutorial =  get_tutorial();
 
-    tutorial.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
+    tutorial.bg.image = get_asset('keywords_background')
+    tutorial.box.image = get_asset(`tutorial`)
     buttons_add(tutorial.button as Button);
 }
 
@@ -17,6 +18,9 @@ export const tutorial_loop = () => {
 
     if (tutorial.bg)
         drawablesAdd(tutorial.bg);
-    drawablesAdd(tutorial.box)
-    drawablesAdd(tutorial.text)
+    if (tutorial.box)
+    {
+        // console.log('aaaaaaaa', tutorial.box)
+        drawablesAdd(tutorial.box)
+    }
 }

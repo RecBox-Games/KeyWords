@@ -25,12 +25,13 @@ export const chest_clicked_giver = (self:Button) =>
 {
     const board:Board = get_board();
     const x = (self.data as Chest).id % BOARD_W;
+    const y = (self.data as Chest).id / BOARD_W;
     board.overlay.shadow = undefined;
-    board.overlay.box.boundingBox = {
+    board.overlay.box.dst = {
         x: self._boundingBox.x + (x < BOARD_W / 2 ? (self._boundingBox as Rectangle).w : -(self._boundingBox as Rectangle).w) ,
-        y: self._boundingBox.y - (self._boundingBox as Rectangle).h,
-        w: (self._boundingBox as Rectangle).w * 1,
-        h: (self._boundingBox as Rectangle).h * 1.3,
+        y: self._boundingBox.y + (y < BOARD_H / 2 ? (self._boundingBox as Rectangle).h : -(self._boundingBox as Rectangle).h),
+        w: (self._boundingBox as Rectangle).w * 1.5,
+        h: (self._boundingBox as Rectangle).h * 1.8,
     }
 
     if ((self.data as Chest).contents == 'empty'){
@@ -41,18 +42,14 @@ export const chest_clicked_giver = (self:Button) =>
         board.overlay.item.image = get_asset((self.data as Chest).contents.slice(0, -1));
         board.overlay.subtext.text = (self.data as Chest).contents.at(-1) + assetsDic[(self.data as Chest).contents.slice(0, -1)];
     }
-    board.overlay.text.boundingBox = {... board.overlay.box.boundingBox, h:  board.overlay.box.boundingBox.h * 0.2};
-    board.overlay.text.text = "This chest contains :" ;
-    board.overlay.text.font = `15px serif`
     board.overlay.subtext.font = `15px serif`
-    board.overlay.subtext.boundingBox = {...board.overlay.box.boundingBox, y:  board.overlay.box.boundingBox.y + board.overlay.box.boundingBox.h * 0.7, h:  board.overlay.box.boundingBox.h * 0.3};
+    board.overlay.subtext.boundingBox = {...board.overlay.box.dst, y:  board.overlay.box.dst.y + board.overlay.box.dst.h * 0.7, h:  board.overlay.box.dst.h * 0.3};
     board.overlay.item.dst = {
-        x: board.overlay.box.boundingBox.x + board.overlay.box.boundingBox.w * 0.25,
-        y: board.overlay.box.boundingBox.y + board.overlay.box.boundingBox.h * 0.25,
-        w: board.overlay.box.boundingBox.w * 0.5,
-        h: board.overlay.box.boundingBox.h * 0.5,
+        x: board.overlay.box.dst.x + board.overlay.box.dst.w * 0.40,
+        y: board.overlay.box.dst.y + board.overlay.box.dst.h * 0.45,
+        w: board.overlay.box.dst.w * 0.3,
+        h: board.overlay.box.dst.h * 0.3,
     }
-    console.log("this is I", self, board.overlay);
     board.showOverlay = true;
 }
 
@@ -112,7 +109,7 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number, gue
     else if (board.role == GIVER) {
         if (turnRole == board.role)
         {
-            board.topbar.text.text = 'Give your team some keys!';
+            board.topbar.text.text = 'Say a clue to your team, then choose how many chests they must open by giving them keys';
             for (let button of board.topbar.clueCount)
             {
                 button._active = true;
@@ -222,7 +219,7 @@ export const confirm_clue = (amount:number) => {
     const board:Board = get_board();
     const ctx = get_context();
 
-    board.topbar.text.text = "You gave your team" + amount.toString() + 'keys';
+    board.topbar.text.text = "You gave your team " + amount.toString() + ' keys';
     board.topbar.acceptButton._active = false;
     ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
 }

@@ -10,21 +10,38 @@ import { Menu, get_menu, size_menu } from "./init.js";
 
 // TODO set button bounding box to be a bit bigge than text
 
-export const set_menu_state = (team:number, role:number) => {
+export const set_menu_state = (team:number, role:number, redclue: boolean, blueclue:boolean) => {
     const ctx:Context = get_context();
     const menu:Menu = get_menu();
 
+    console.log('n=menu recived clues', redclue, blueclue)
     menu.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
     size_menu();
 
     menu.team = team;
     menu.role = role;
     buttons_add(menu.exitBtn)
+    console.log('n=menu recived clues', redclue, blueclue)
+    menu.redTeam.cluegiver = redclue;
+    menu.blueTeam.cluegiver = blueclue;
     if (role == -1 && team == -1)
     {
-        buttons_add(menu.blueTeam.giverBtn);
+        if (!blueclue)
+        {
+            buttons_add(menu.blueTeam.giverBtn);
+            menu.blueTeam.giverSprite.src = {x:54 * 2 + 0.5, y:0, h:49, w:54}
+        }
+        else
+            menu.blueTeam.giverSprite.src = {x:54 * 4 + 0.5, y:0, h:49, w:54}
         buttons_add(menu.blueTeam.guesserBtn);
-        buttons_add(menu.redTeam.giverBtn);
+        if (!redclue)
+        {
+            buttons_add(menu.redTeam.giverBtn);
+            menu.redTeam.giverSprite.src = {x: 54 * 3 + 0.5, y:0, h:49, w:54}
+        }
+        else
+            menu.redTeam.giverSprite.src = {x: 54 * 4 + 0.5, y:0, h:49, w:54}
+
         buttons_add(menu.redTeam.guesserBtn);
         menu.blueTeam.giverBtn._active = true;
         menu.blueTeam.guesserBtn._active = true;
@@ -48,8 +65,8 @@ export const menu_loop = () => {
     // render_grass();
     // drawablesAdd(menu.container);
     drawablesAdd(menu.text);
-    drawablesAdd(menu.blueTeam.name);
-    drawablesAdd(menu.redTeam.name);
+    // drawablesAdd(menu.blueTeam.name);
+    // drawablesAdd(menu.redTeam.name);
     drawablesAdd(menu.exit)
     if (menu.team == -1 )
     {

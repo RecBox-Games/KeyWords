@@ -1,4 +1,9 @@
 // import { DEFAULTT_BUTTON_RECT, buttons_add } from "./button.js";
+import { size_end } from "../game/end/init.js";
+import { size_loading } from "../game/loading/init.js";
+import { size_main } from "../game/main/init.js";
+import { size_menu } from "../game/menu/init.js";
+import { size_tutorial } from "../game/tutorial/tutorial_init.js";
 import { Context } from "./types/context.js";
 import { handleTouchCancel, handleClick, handleTouchEnd, handleTouchMove, handleTouchStart } from "./utils.js";
 let context:Context;
@@ -71,17 +76,33 @@ window.onresize = screenChange;
 window.onorientationchange = screenChange;
 
 function screenChange() {
-    context.canvas.width = Math.max(window.innerWidth, window.innerHeight);
-    context.canvas.height = Math.min(window.innerWidth, window.innerHeight);
-    context.dimensions.x = Math.max(window.innerWidth, window.innerHeight);
-    context.dimensions.y = Math.min(window.innerWidth, window.innerHeight);
+    // context.canvas.width = Math.max(window.innerWidth, window.innerHeight);
+    // context.canvas.height = Math.min(window.innerWidth, window.innerHeight);
+    // context.dimensions.x = Math.max(window.innerWidth, window.innerHeight);
+    // context.dimensions.y = Math.min(window.innerWidth, window.innerHeight);
+    // let ratio = window.innerWidth / window.innerHeight;
+
+    // if (!(ratio >= 0.8 && ratio <= 1.25))
+    //     return ;
+    context.canvas.width = window.innerWidth;
+    context.canvas.height = window.innerHeight;
+    context.dimensions.x = window.innerWidth;
+    context.dimensions.y = window.innerHeight;
+    // size_loading();
+    // size_menu();
+    // size_tutorial();
+    // size_main();
+    // size_end();
+    // console.log(context.dimensions)
 
     // onFlip(window.innerWidth, window.innerHeight);
 }
 
 
 window.addEventListener("resize", (event) => {
-    screenChange()
+    screenChange();
+
+
 })
 
 window.addEventListener("touchstart", (event) => {

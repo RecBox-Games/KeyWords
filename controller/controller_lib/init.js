@@ -54,10 +54,23 @@ export const init_context = () => {
 window.onresize = screenChange;
 window.onorientationchange = screenChange;
 function screenChange() {
-    context.canvas.width = Math.max(window.innerWidth, window.innerHeight);
-    context.canvas.height = Math.min(window.innerWidth, window.innerHeight);
-    context.dimensions.x = Math.max(window.innerWidth, window.innerHeight);
-    context.dimensions.y = Math.min(window.innerWidth, window.innerHeight);
+    // context.canvas.width = Math.max(window.innerWidth, window.innerHeight);
+    // context.canvas.height = Math.min(window.innerWidth, window.innerHeight);
+    // context.dimensions.x = Math.max(window.innerWidth, window.innerHeight);
+    // context.dimensions.y = Math.min(window.innerWidth, window.innerHeight);
+    // let ratio = window.innerWidth / window.innerHeight;
+    // if (!(ratio >= 0.8 && ratio <= 1.25))
+    //     return ;
+    context.canvas.width = window.innerWidth;
+    context.canvas.height = window.innerHeight;
+    context.dimensions.x = window.innerWidth;
+    context.dimensions.y = window.innerHeight;
+    // size_loading();
+    // size_menu();
+    // size_tutorial();
+    // size_main();
+    // size_end();
+    // console.log(context.dimensions)
     // onFlip(window.innerWidth, window.innerHeight);
 }
 window.addEventListener("resize", (event) => {
