@@ -63,6 +63,7 @@ impl MessageManager {
                     } else if let Some(InMessage::Input(InputMessage::Restart)) = pm {
                         println!("restart");
                         self.client_manager = ClientManager::new();
+                        input_messages.push(InputMessage::Restart);
                     } else if let Some(InMessage::Input(input_message)) = pm {
                         // add this input message to the vec to be returned
                         input_messages.push(input_message);
