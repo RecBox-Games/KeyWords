@@ -22,8 +22,8 @@ pub const TICKS_PROJECTILE: usize = 40;
 pub const TICKS_DISPLAY_CONTENTS: usize = 40;
 pub const TICKS_GAME_OVER: usize = 100;
 // Health
-pub const MAX_HEALTH_RED: usize = 1;
-pub const MAX_HEALTH_BLUE: usize = 1;
+pub const MAX_HEALTH_RED: usize = 10;
+pub const MAX_HEALTH_BLUE: usize = 12;
 // Contents
 pub const N_SWORD1: usize = 5;
 pub const N_SWORD2: usize = 4;
