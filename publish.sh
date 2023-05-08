@@ -1,4 +1,6 @@
 #!/bin/bash
 (cd ts_controller && tsc)
-tar -cf game controller/ resources/ target/debug/keywords meta.txt
+#cargo build --release
+cp target/release/keywords ./
+tar -cfz game controller/ resources/ keywords meta.txt
 gsutil cp game gs://gamenite-games-testing/keywords/game
