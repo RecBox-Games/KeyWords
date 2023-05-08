@@ -44,6 +44,12 @@ window.onload = () => {
     console.log("init");
     load_app();
     window.addEventListener("resize", (event) => {
+        // const context= get_context();
+        // if (context && context.ws && context.ws.readyState)
+        //     {
+        //         // console.log("??")
+        //         context.ws.send(" Canvas HERE size is | w: " + context.dimensions.x.toString() + " h: " + context.dimensions.y.toString());
+        //     }
         size_loading();
         size_menu();
         size_tutorial();

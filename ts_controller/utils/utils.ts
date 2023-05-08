@@ -219,7 +219,7 @@ export const confirm_clue = (amount:number) => {
     const board:Board = get_board();
     const ctx = get_context();
 
-    board.topbar.text.text = "You gave your team" + amount.toString() + 'keys';
+    board.topbar.text.text = "You gave your team " + amount.toString() + ' keys';
     board.topbar.acceptButton._active = false;
     ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
 }

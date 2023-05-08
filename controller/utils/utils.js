@@ -172,7 +172,7 @@ export const deny_guess = () => {
 export const confirm_clue = (amount) => {
     const board = get_board();
     const ctx = get_context();
-    board.topbar.text.text = "You gave your team" + amount.toString() + 'keys';
+    board.topbar.text.text = "You gave your team " + amount.toString() + ' keys';
     board.topbar.acceptButton._active = false;
     ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
 };
