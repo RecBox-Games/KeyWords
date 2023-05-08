@@ -1,10 +1,15 @@
 import { drawablesAdd } from "../../controller_lib/draw.js";
-import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
+import { get_context } from "../../controller_lib/init.js";
+import { DEFAULT_DRAWABLE_RECT } from "../../controller_lib/types/drawables.js";
+import { BLUE, BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { get_board } from "./init.js";
 export const main_loop = () => {
     const board = get_board();
+    const ctx = get_context();
+    const rect = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y };
     if (board.bg)
         drawablesAdd(board.bg);
+    drawablesAdd({ ...DEFAULT_DRAWABLE_RECT, boundingBox: rect, color: board.team == BLUE ? '#0000FF' : '#FF0000', stroke: 6 });
     // drawablesAdd(board.topbar.exit);
     for (let i = 0; i < BOARD_H; i += 1)
         for (let j = 0; j < BOARD_W; j += 1) {

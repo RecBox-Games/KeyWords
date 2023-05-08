@@ -145,7 +145,12 @@ export const state_handler = () => {
             const chestData = parse_cheststate(state_specs[CHEST_STATE])
 
             console.log("State",turnState, role, team, redclue, blueclue, turnRole, turnTeam, clue, guessCount, guessState)
-            if (turnState == TUTORIAL)
+            if (turnState == OVER) {
+                set_state(OVER)
+                fill_end();
+            }
+
+            else if (turnState == TUTORIAL)
             {
                 set_state(TUTORIAL)
                 set_tutorial_state();
@@ -165,10 +170,7 @@ export const state_handler = () => {
                     start_turn(turnRole, clue, guessCount, "", guessState);
                 }
             }
-            else if (turnState == OVER) {
-                set_state(OVER)
-                fill_end();
-            }
+
         }
         ctx.wsMessage = null;
     }
