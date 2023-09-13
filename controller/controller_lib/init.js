@@ -38,14 +38,25 @@ export const init_context = () => {
         context.ws = new WebSocket("ws://" + box_ip + ":50079");
     };
     context.ws.onopen = (event) => {
-        console.log("openned websocket");
+        console.log("opened websocket");
         context.wsState = 1;
         let byte_array = new Uint8Array(1);
         byte_array[0] = context.subid;
         context.ws.send(byte_array);
         context.ws.addEventListener('message', (event) => {
-            const msg = event.data;
-            context.wsMessage = msg;
+	    if(event.data instanceof ArrayBuffer) {
+		const msg = new Uint8Array(event.data);
+		console.log(msg);
+		context.wsMessage = msg;
+		if( msg[0] == "reload") {
+		    console.log("Message is ", msg[0]);
+		    location.reload();
+		}	
+	    }
+	    else {
+		const msg = event.data;
+		context.wsMessage = msg;
+	    }
             //     handleMessage(msg);
         });
     };
