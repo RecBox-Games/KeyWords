@@ -52,21 +52,38 @@ export const init_context = () => {
 		console.log("closed websocket");
         context.wsState = 0;
 		context.ws = new WebSocket("ws://" + box_ip + ":50079");
+		location.reload();
 
 	}
 
-	context.ws.onopen = (event) => {
-		console.log("openned websocket")
-        context.wsState = 1;
-        let byte_array:Uint8Array = new Uint8Array(1);
+	    context.ws.onopen = (event) => {
+		console.log("opened websocket!! keywords ts_controller/controller_lib/init.ts")
+		context.wsState = 1;
+		let byte_array:Uint8Array = new Uint8Array(1);
 		byte_array[0] = context.subid;
 		context.ws.send(byte_array);
+		context.ws.onmessage = async (event) => {
+       		    console.log("Message is: ", event.data);
+		    if (event.data instanceof Blob) {
+      		               const blobData = new Uint8Array(await event.data.arrayBuffer()); // Read the Blob as a Uint8Array
 
-		context.ws.addEventListener('message', (event) => {
-            const msg = event.data;
-            context.wsMessage = msg;
-		//     handleMessage(msg);
-		});
+        // Check the first byte to trigger a reload if it's equal to 0x01
+        if (blobData.length > 0 && blobData[0] === 0x01) {
+            console.log("Hold your hats! It's reload time!");
+            location.reload();
+        } else {
+            // Handle other binary data
+            console.log("Received binary data:", blobData);
+            // Handle it according to your use case.
+        }
+		   }
+		    else {
+		        const msg = event.data;
+			console.log("other messages: ", msg);
+	            	context.wsMessage = msg;
+		 //     handleMessage(msg);
+		   }
+		};
 	}
 
 }
