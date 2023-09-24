@@ -28,19 +28,6 @@ const loops:Function[] = [loading_loop, tutorial_loop, menu_loop, main_loop, end
 
 const app = () => {
     state_handler();
-
-	const ctx = get_context();
-    	  if (ctx.ws && ctx.ws.readyState === WebSocket.OPEN) {
-          	 // WebSocket is open, you can use it
-          	 // For example, you can send a message:
-          	 // ctx.ws.send('Hello WebSocket!');
-			 console.log("websocket open");
-    	  } else {
-          	// WebSocket is not open or doesn't exist
-        	// Handle this situation as needed
-			 console.log("websocket closed");
-    	}
-
     loops[state]();
     drawablesRenderAll();
 	window.requestAnimationFrame(app);
