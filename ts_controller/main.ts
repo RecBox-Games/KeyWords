@@ -30,7 +30,7 @@ const app = () => {
     state_handler();
     loops[state]();
     drawablesRenderAll();
-	window.requestAnimationFrame(app);
+    window.requestAnimationFrame(app);
 }
 
 window.onerror = (event, source, lineno, colno, error) => {
