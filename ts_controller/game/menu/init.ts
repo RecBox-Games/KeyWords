@@ -110,7 +110,9 @@ export const init_menu = () => {
             giverSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:54 * 3 + 0.5,y:0, h:49, w:54}}
         },
         text: {...DEFAULT_DRAWABLE_TEXT, text:"Choose your team !", font: '40px serif'},
-        exitBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('kill'); location.reload()}),
+        exitBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {
+				 get_context().ws.send('kill');
+			}),
         exit: {...DEFAULT_DRAWABLE_IMG, dst: {x:0, y:0, h:0, w:0}, src: {x:0, y:0, h:32, w:64}},
     }
 
