@@ -275,7 +275,7 @@ impl Graphical {
         if playing_state.sudden_death && ! playing_state.sudden_death_progress.is_done() {
             self.draw_sudden_death(ctx, &playing_state.sudden_death_progress)?;
         }
-        self.draw_debug_turn(ctx, &playing_state.turn_state)?;
+        //self.draw_debug_turn(ctx, &playing_state.turn_state)?;
         Ok(())
     }
 
@@ -517,6 +517,7 @@ impl Graphical {
         Ok(())
     }
 
+    #[allow(dead_code)]
     fn draw_debug_turn(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
         let s = format!("{:?}", turn_state);
         let te = TextElem::new(&s, 40.0, 1.0, 1.0);
