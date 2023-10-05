@@ -7,5 +7,6 @@
 .diffman
 /ts_controller/node_modules
 /ts_controller/package-lock.json
+controller/*
 game
 keywords
