@@ -934,8 +934,8 @@ impl std::fmt::Display for TurnState {
             }
             RedGuessing(clue, proposed_guess) => {
                 let pg_str = match proposed_guess {
-                    Some(_) => "true",
-                    None => "false",
+                    Some((row,col)) => format!("{}{}", row, col),
+                    None => format!("none"),
                 };
                 format!("redguessing,{},{},{}",clue.word, clue.num, pg_str)
             }
@@ -944,14 +944,14 @@ impl std::fmt::Display for TurnState {
             }
             BlueGuessing(clue, proposed_guess) => {
                 let pg_str = match proposed_guess {
-                    Some(_) => "true",
-                    None => "false",
+                    Some((row,col)) => format!("{}{}", row, col),
+                    None => format!("none"),
                 };
                 format!("blueguessing,{},{},{}",clue.word, clue.num, pg_str)
             }
         };
+        println!("{}", s); //TODO: remove
         write!(f, "{}", s)
-
     }
 }
     

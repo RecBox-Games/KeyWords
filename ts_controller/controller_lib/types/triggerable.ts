@@ -46,7 +46,7 @@ class Triggerable {
 }
 
 //TODO add a drawble optional field to buttons
-class  Button extends Triggerable{
+class Button extends Triggerable{
 
 	_boundingBox: Rectangle | Circle;
 	_hoverCallback?: Function;

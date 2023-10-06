@@ -68,10 +68,12 @@ export const chest_clicked_guessser = (self:Button) =>
         console.log("Someone already guessed a word, accept or deny ", board.guessedWord);
         return ;
     }
-    ctx.ws.send('input:guess' + ',' + (((self.data as Chest).id / BOARD_W) | 0).toString() +  ',' +  (((self.data as Chest).id % BOARD_W) | 0).toString())
+    ctx.ws.send('input:guess' + ',' + (((self.data as Chest).id / BOARD_W) | 0).toString() +
+        ',' +  (((self.data as Chest).id % BOARD_W) | 0).toString())
 }
 
-export const start_turn = (turnRole:number, clue:string, guessRemain:number, guess:string, guessState:boolean) =>
+export const start_turn = (turnRole:number, clue:string, guessRemain:number,
+                           guess:string, proposedGuessX:number, proposedGuessY:number) =>
 {
     const board:Board = get_board();
 
@@ -83,22 +85,35 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number, gue
         if (turnRole == board.role)
         {
 
-                if (guessState)
-                {
-                    board.topbar.acceptButton._active = true;
-                    board.topbar.denyButton._active = true;
-                    board.topbar.subText.text = "";
-                    board.topbar.text.text = "Validate guess ?";
+            if (proposedGuessX != -1) {
+                board.topbar.acceptButton._active = true;
+                board.topbar.denyButton._active = true;
+                board.topbar.subText.text = "";
+                board.topbar.text.text = "Validate guess ?";
+                // activate and position select graphic
+                if (proposedGuessX != -1) {
+                    board.selector.xIndex = proposedGuessX;
+                    board.selector.yIndex = proposedGuessY;
+                    const selector_dst = board.chests[proposedGuessX][proposedGuessY].sprite.dst;
+                    console.log("------------------- ", selector_dst);
+                    if (board.team == 0 /*TODO: BLUE*/) {
+                        board.selector.red = false;
+                        board.selector.blue_sprite.dst = selector_dst;
+                    } else if (board.team == 1 /*TODO: RED*/) {
+                        board.selector.red = true;
+                        board.selector.blue_sprite.dst = selector_dst;
+                    } else {
+                        console.log("board.team is unexpected: ", board.team);
+                    }
                 }
-            else
-            {
+            }
+            else {
                 board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
                 board.topbar.acceptButton._active = false;
                 board.topbar.denyButton._active = false;
             }
         }
-        else
-        {
+        else {
             board.topbar.text.text = "Waiting for a clue...";
             board.currentGuesses = 0;
             board.totalGuesses = 0;
@@ -107,27 +122,23 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number, gue
         }
     }
     else if (board.role == GIVER) {
-        if (turnRole == board.role)
-        {
+        if (turnRole == board.role) {
             board.topbar.text.text = 'Say a clue to your team, then choose how many chests they must open by giving them keys';
-            for (let button of board.topbar.clueCount)
-            {
+            for (let button of board.topbar.clueCount) {
                 button._active = true;
             }
-        // board.topbar.acceptButton._active = true;
-        //    add buttons
+            // board.topbar.acceptButton._active = true;
+            //    add buttons
         }
         else {
-            board.topbar.subText.text  = '';
-            board.topbar.text.text  = 'Your team has ' + board.currentGuesses.toString() + ' guesses remaining';
-            for (let button of board.topbar.clueCount)
-            {
+            board.topbar.subText.text = '';
+            board.topbar.text.text = 'Your team has ' + board.currentGuesses.toString() + ' guesses remaining';
+            for (let button of board.topbar.clueCount) {
                 button._active = false;
             }
         }
     }
-    if (!get_board().showOverlay)
-    {
+    if (!get_board().showOverlay) {
         console.log("No overlay")
         set_chests_status(true);
     }

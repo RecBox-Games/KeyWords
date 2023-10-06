@@ -39,6 +39,15 @@ export const main_loop = () => {
             drawablesAdd(board.topbar.clueSprites[i]);
         }
     }
+    if (board.selector.xIndex != -1) {
+        if (board.selector.red) {
+            console.log("---red ", board.selector.xIndex);
+            drawablesAdd(board.selector.red_sprite);         
+        } else {
+            console.log("---blue ", board.selector.xIndex);
+            drawablesAdd(board.selector.blue_sprite);            
+        }
+    }
     if (!board.guessedWord)
     {
         drawablesAdd(board.topbar.subText);

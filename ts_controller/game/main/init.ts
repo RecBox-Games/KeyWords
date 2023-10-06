@@ -11,10 +11,20 @@ import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js"
 import { Overlay, construct_overlay, fill_overlay, size_overlay } from "./init_overlay.js";
 import { TopBar, construct_topbar, fill_topbar, size_topbar } from "./init_topbar.js";
 
+export interface Selector {
+    red:boolean,
+    xIndex:number,
+    yIndex:number,
+    red_sprite:DrawableImage;
+    blue_sprite:DrawableImage;
+}
+
+
 export interface Board {
     chests:((Chest)[])[];
     topbar:TopBar;
     buttons:(Button[])[];
+    selector:Selector;
     guessedWord: string | undefined;
     totalGuesses: number;
     currentGuesses: number;
@@ -34,9 +44,13 @@ export const get_board = ():Board => {return board};
 
 // }
 
-const fill_board_data = (role:number, team:number, data:any[]) => {
+const fill_board_data = (role: number, team: number, data: any[]) => {
     board.team = team;
     board.role = role;
+    // selectors
+    board.selector.red_sprite.image = get_asset('phone_select_red'); // TODO: may need to set src
+    board.selector.blue_sprite.image = get_asset('phone_select_blue');
+    //
     for (let y = 0; y < BOARD_H; y += 1)
     {
         for (let x = 0; x < BOARD_W; x += 1)
@@ -65,7 +79,7 @@ const size_board = () => {
             x:  ctx.dimensions.y * 0.15,
             y: (ctx.dimensions.y * 0.05),
             h: (ctx.dimensions.y * 0.185),
-            w: ctx.dimensions.x / 5.8
+            w: ctx.dimensions.x * 0.172
         };
     for (let y = 0; y < BOARD_H; y += 1)
     {
@@ -121,11 +135,13 @@ const construct_Board = () => {
     board.chests = chests_arr;
 }
 
+
 export const init_main_screen = () =>
 {
     board = {
         buttons: [],
         chests: [],
+        selector: construct_selector(),
         topbar: construct_topbar(),
         overlay: construct_overlay(),
         guessedWord:undefined,
@@ -138,6 +154,19 @@ export const init_main_screen = () =>
     };
     construct_Board();
     size_main();
+}
+
+
+export const construct_selector = ():Selector =>
+{
+    const selector:Selector = {
+        red: false,
+        xIndex:-1,
+        yIndex:-1,
+        red_sprite:{...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:43, h:35}},
+        blue_sprite:{...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:43, h:35}},
+    }
+    return selector;
 }
 
 export const size_main = () => {
