@@ -7,6 +7,7 @@ import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { buttons_add, buttons_len, buttons_log } from "../controller_lib/button.js";
 import { assetsDic, get_asset } from "./assets.js";
+import { TurnRole, TurnState } from "./state_handler.js";
 
 
 export const set_chests_status = (status:boolean) =>
@@ -72,19 +73,15 @@ export const chest_clicked_guessser = (self:Button) =>
         ',' +  (((self.data as Chest).id % BOARD_W) | 0).toString())
 }
 
-export const start_turn = (turnRole:number, clue:string, guessRemain:number,
-                           guess:string, proposedGuessX:number, proposedGuessY:number) =>
+export const start_turn = (turn_state: TurnState) =>
 {
     const board:Board = get_board();
 
-    board.currentGuesses = guessRemain;
-    board.clue = clue;
-    board.guessedWord = guess;
-    if (board.role == GUESSER)
-    {
-        if (turnRole == board.role)
-        {
 
+    board.currentGuesses = turn_state.guesses_remaining;
+    board.clue = turn_state.clue;
+    if (turn_state.turn.is_guess()) {
+        if (turn_state.turn == board.role) {
             if (proposedGuessX != -1) {
                 board.topbar.acceptButton._active = true;
                 board.topbar.denyButton._active = true;
@@ -106,22 +103,19 @@ export const start_turn = (turnRole:number, clue:string, guessRemain:number,
                         console.log("board.team is unexpected: ", board.team);
                     }
                 }
-            }
-            else {
+            } else {
                 board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
                 board.topbar.acceptButton._active = false;
                 board.topbar.denyButton._active = false;
             }
-        }
-        else {
+        } else {
             board.topbar.text.text = "Waiting for a clue...";
             board.currentGuesses = 0;
             board.totalGuesses = 0;
             board.clue = undefined;
             board.topbar.subText.text = "";
         }
-    }
-    else if (board.role == GIVER) {
+    } else if (board.role == GIVER) {
         if (turnRole == board.role) {
             board.topbar.text.text = 'Say a clue to your team, then choose how many chests they must open by giving them keys';
             for (let button of board.topbar.clueCount) {

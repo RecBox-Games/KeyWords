@@ -7,26 +7,24 @@ import { get_asset } from "../../utils/assets.js";
 import { animate_grass, render_grass } from "../../utils/render_utils.js";
 import { BLUE, GIVER, GUESSER, RED } from "../interfaces.js";
 import { Menu, get_menu, size_menu } from "./init.js";
+import { RoleState, TurnRole } from "../../utils/state_handler.js";
 
 // TODO set button bounding box to be a bit bigge than text
 
-export const set_menu_state = (team:number, role:number, redclue: boolean, blueclue:boolean) => {
-    const ctx:Context = get_context();
-    const menu:Menu = get_menu();
+export const set_menu_state = (role_state: RoleState) => {
+    const ctx: Context = get_context();
+    const menu: Menu = get_menu();
 
-    console.log('n=menu recived clues', redclue, blueclue)
     menu.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
     size_menu();
 
-    menu.team = team;
-    menu.role = role;
+    menu.role = role_state.role;
     buttons_add(menu.exitBtn)
-    console.log('n=menu recived clues', redclue, blueclue)
-    menu.redTeam.cluegiver = redclue;
-    menu.blueTeam.cluegiver = blueclue;
-    if (role == -1 && team == -1)
+    menu.redTeam.cluegiver = role_state.red_cluer_taken == true ? true : false;
+    menu.blueTeam.cluegiver = role_state.blue_cluer_taken == true ? true : false;
+    if (role_state.role == TurnRole.Choosing)
     {
-        if (!blueclue)
+        if (!role_state.blue_cluer_taken)
         {
             buttons_add(menu.blueTeam.giverBtn);
             menu.blueTeam.giverSprite.src = {x:54 * 2 + 0.5, y:0, h:49, w:54}
@@ -34,7 +32,7 @@ export const set_menu_state = (team:number, role:number, redclue: boolean, bluec
         else
             menu.blueTeam.giverSprite.src = {x:54 * 4 + 0.5, y:0, h:49, w:54}
         buttons_add(menu.blueTeam.guesserBtn);
-        if (!redclue)
+        if (!role_state.red_cluer_taken)
         {
             buttons_add(menu.redTeam.giverBtn);
             menu.redTeam.giverSprite.src = {x: 54 * 3 + 0.5, y:0, h:49, w:54}

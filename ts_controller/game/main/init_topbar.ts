@@ -5,6 +5,7 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, Dra
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
+import { TurnRole } from "../../utils/state_handler.js";
 import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
 import { GUESSER } from "../interfaces.js";
 
@@ -73,9 +74,9 @@ export const size_topbar= (topBar:TopBar) =>
 
 }
 
-export const fill_topbar = (topbar:TopBar ,role:number) => {
+export const fill_topbar = (topbar:TopBar ,role:TurnRole) => {
     buttons_add(topbar.exitBtn);
-    if (role == GUESSER)
+    if (role == TurnRole.RedGuess || role == TurnRole.BlueGuess)
     {
         const button = {...DEFAULT_DRAWABLE_IMG, image:get_asset('buttons')};
 

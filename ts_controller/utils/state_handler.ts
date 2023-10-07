@@ -10,20 +10,6 @@ import { set_tutorial_state } from "../game/tutorial/tutorial_loop.js";
 import { set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
 
-export const load_app = () => {
-    init_context();
-    init_loading();
-    init_tutorial();
-    init_menu();
-    init_main_screen();
-    init_end();
-
-    // Init context
-    // Load assets
-    // request state && exec state
-    // wait for state & load (store)
-}
-
 const NONE = -1;
 const MESSAE_TYPE = 0;
 const PLAYERSTATE = 1;
@@ -33,147 +19,308 @@ const CHOOSING = -1;
 const PLAYING = 2;
 const OVER = 4;
 
-const parse_rolestate = (msg:string):[number, number, boolean, boolean] => {
-    let role = -1;
-    let team = -1;
-    let redclue = false;
-    let blueclue = false;
-    const message_str:string[] = msg.split(',');
 
-    if (message_str[0].includes('choosing'))
-    {
-        if (message_str[1].includes('true'))
-            redclue = true;
-        if (message_str[2].includes('true'))
-            blueclue = true;
-        return [CHOOSING, CHOOSING, redclue, blueclue];
-    }
-    else {
-        if (message_str[0].includes('red'))
-            team = RED;
-        else if (message_str[0].includes('blue'))
-            team = BLUE;
-        if (message_str[0].includes('guesser'))
-            role = GUESSER;
-        else if (message_str[0].includes('cluer'))
-            role = GIVER
-        return [role, team, false, false];
-    }
+
+
+let game_state: GameState;
+export const get_game_state = (): GameState => { return game_state };
+
+// combine turn and role because it's convenient (we can use if turn == role)
+export enum TurnRole {
+    Tutorial,
+    Over,
+    Choosing,
+    RedClue,
+    RedGuess,
+    BlueClue,
+    BlueGuess,
 }
 
-const parse_turnstate = (msg: string): [number, number, number, string, number, number, number] => {
-    let role = CHOOSING;
-    let team = CHOOSING;
-    let clue = ""
-    let guessCount = NONE;
-    let proposedGuessX = -1;
-    let proposedGuessY = -1;
-    let turnState = -1;
-    // {tutorial,over,redcluing,bluecluing,<guessing_state>}
-    // - where <guessing_state> is
-    //   {redguessing,blueguessing},<clue>,<guesses_remaining>,<proposed_guess>
-    // - where <proposed_guess> is a two digit number where the first number is
-    //   row and the second is column e.g. 04
-    const state = msg.split(',')
-
-    if (state[0] == 'tutorial')
-        turnState = TUTORIAL;
-    else if (state[0] == 'over')
-        turnState = OVER
-    else {
-        turnState = PLAYING;
-
-        if (state[0].includes('red'))
-            team = RED;
-        else if (state[0].includes('blue'))
-            team = BLUE;
-
-        if (state[0].includes('cluing'))
-            role = GIVER;
-        else if (state[0].includes('guessing')) {
-            role = GUESSER;
-            clue = state[1];
-            guessCount = parseInt(state[2]);
-            const pgx = parseInt(state[3][0]);
-            const pgy = parseInt(state[3][1]);
-            if (pgx) {
-                console.log("------------sdsds");
-                proposedGuessX = pgx;
-                proposedGuessY = pgy;
-            }
+export namespace TurnRole {
+    export function is_red(turnrole: TurnRole): boolean {
+        switch (turnrole) {
+            case TurnRole.RedClue:
+            case TurnRole.RedGuess:
+                return true;
+            default:
+                return false;
         }
-
     }
-    console.log("state 0", state, state[0], state[0] == 'over', turnState)
-    return [turnState, role, team, clue, guessCount, proposedGuessX, proposedGuessY];
+
+    export function is_blue(turnrole: TurnRole): boolean {
+        switch (turnrole) {
+            case TurnRole.BlueClue:
+            case TurnRole.BlueGuess:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    export function is_guess(turnrole: TurnRole): boolean {
+        switch (turnrole) {
+            case TurnRole.RedGuess:
+            case TurnRole.BlueGuess:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    export function is_clue(turnrole: TurnRole): boolean {
+        switch (turnrole) {
+            case TurnRole.RedClue:
+            case TurnRole.BlueClue:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    export function is_playing(turnrole: TurnRole): boolean {
+        switch (turnrole) {
+            case TurnRole.RedClue:
+            case TurnRole.BlueClue:
+            case TurnRole.RedGuess:
+            case TurnRole.BlueGuess:
+                return true;
+            default:
+                return false;
+        }
+    }
+
 }
 
-const parse_cheststate = (msg: string): any[] => {
-    const arr: any = [];
-    const message_str: string[] = msg.split(';');
-
-    for (let obj of message_str)
-    {
-        const words:string[] = obj.split(',')
-        arr.push({
-            text: words[0],
-            state: words[1] == 'open',
-            contents: words[2]
-        })
-    }
-    return arr;
+export enum Team {
+    Red,
+    Blue,
+    None,
 }
+
+export const team_of_turnrole = (turnrole: TurnRole): Team => {
+    switch (turnrole) {
+        case TurnRole.Tutorial:
+        case TurnRole.Over:
+        case TurnRole.Choosing:
+            return Team.None;
+        case TurnRole.RedClue:
+        case TurnRole.RedGuess:
+            return Team.Red;
+        case TurnRole.BlueClue:
+        case TurnRole.BlueGuess:
+            return Team.Blue;
+    }
+}
+
+
+export interface None {}
+
+export interface GameState {
+    role_state: RoleState,
+    turn_state: TurnState,
+    health_state: HealthState,
+    chests_5x5_state: ChestState[][],
+}
+
+export interface RoleState {
+    role: TurnRole, // can't be TurnRole::{Tutorial, Over}
+    red_cluer_taken: boolean | None,
+    blue_cluer_taken: boolean | None,
+}
+
+export interface TurnState {
+    turn: TurnRole, // can't be TurnRole::{Choosing}
+    clue: string | None,
+    guesses_remaining: number | None,
+    proposed_guess: ProposedGuess | None,
+}
+
+export interface ProposedGuess {
+    exists: boolean,
+    x: number | None,
+    y: number | None,
+}
+
+export interface HealthState {
+    red_team_health: number,
+    blue_team_health: number,
+}
+
+export interface ChestState {
+    word: string,
+    open: boolean,
+    content: string, // empty, bomb1, bomb2, bomb5, sword1, sword2, heal3
+}
+
+
+const parse_game_state = (msg: string): GameState => {
+    const parts = msg.split(':');
+    const role_state = parse_role_state(parts[1]);
+    const turn_state = parse_turn_state(parts[2]);
+    const health_state = parse_health_state(parts[3]);
+    const chests_5x5_state = parse_chests_5x5_state(parts[4]);
+    //
+    const game_state: GameState = {
+        role_state,
+        turn_state,
+        health_state,
+        chests_5x5_state,
+    };
+    return game_state;
+}
+
+const parse_turnrole = (msg: string, is_turn: boolean): TurnRole => {
+    switch (msg) {
+        case "tutorial":
+            if (!is_turn) {
+                throw new Error("role cannot be 'tutorial'");
+            }
+            return TurnRole.Tutorial;
+        case "over":
+            if (!is_turn) {
+                throw new Error("role cannot be 'over'");
+            }
+            return TurnRole.Over;
+        case "choosing":
+            if (is_turn) {
+                throw new Error("turn cannot be 'choosing'");
+            }
+            return TurnRole.Choosing;
+        case "redcluer" || "redcluing":
+            return TurnRole.RedClue;
+        case "redguesser" || "redguessing":
+            return TurnRole.RedGuess;
+        case "bluecluer" || "bluecluing":
+            return TurnRole.BlueClue;
+        case "blueguesser" || "blueguessing":
+            return TurnRole.BlueGuess;
+        default:
+            throw new Error("Invalid turn or role passed to parse_turnrole");
+    }
+}
+
+const parse_role_state = (msg: string): RoleState => {
+    const parts = msg.split(',');
+    const role = parse_turnrole(parts[0], false);
+    //
+    const _choosing = role == TurnRole.Choosing;
+    //
+    const role_state: RoleState = {
+        role,
+        red_cluer_taken: _choosing ? (parts[1] == 'true' ? true : false) : {},
+        blue_cluer_taken: _choosing ? (parts[2] == 'true' ? true : false) : {},
+    };
+    return role_state;
+}
+
+const parse_turn_state = (msg: string): TurnState => {
+    const parts = msg.split(',');
+    const turn = parse_turnrole(parts[0], true);
+    //
+    const _guessing = (turn == TurnRole.RedGuess || turn == TurnRole.BlueGuess);
+    //
+    const turn_state: TurnState = {
+        turn,
+        clue: _guessing ? parts[1] : {},
+        guesses_remaining: _guessing ? parseInt(parts[2]) : {},
+        proposed_guess: _guessing ? parse_proposed_guess(parts[3]) : {},
+    };
+    return turn_state;
+}
+
+const parse_proposed_guess = (msg: string): ProposedGuess => {
+    const _exists = msg != "none";
+    //
+    const proposed_guess: ProposedGuess = {
+        exists: _exists,
+        x: _exists ? parseInt(msg[0]) : {},
+        y: _exists ? parseInt(msg[1]) : {},
+    };
+    return proposed_guess;
+}
+
+const parse_health_state = (msg: string): HealthState => {
+    const parts = msg.split(',');
+    const health_state: HealthState = {
+        red_team_health: parseInt(parts[0]),
+        blue_team_health: parseInt(parts[1]),
+    }
+    return health_state;
+}
+
+const parse_chests_5x5_state = (msg: string): ChestState[][] => {
+    const parts = msg.split(';');
+    var chests_5x5_state: ChestState[][] = [];
+    var flat_i = 0;
+    for (let j = 0; j < 5; j++) {
+        var chests_5: ChestState[] = [];
+        for (let i = 0; i < 5; i++) {
+            chests_5.push(parse_chest_state(parts[flat_i]));
+            flat_i++;
+        }
+        chests_5x5_state.push(chests_5);
+    }
+    return chests_5x5_state;
+}
+
+const parse_chest_state = (msg: string): ChestState => {
+    const parts = msg.split(',');
+    const chest_state: ChestState = {
+        word: parts[0],
+        open: parts[1] == "true",
+        content: parts[2],
+    }
+    return chest_state;
+}
+
+export const load_app = () => {
+    init_context();
+    init_loading();
+    init_tutorial();
+    init_menu();
+    init_main_screen();
+    init_end();
+}
+
 
 
 
 export const state_handler = () => {
     const ctx = get_context();
-
-    if (!ctx.wsMessage)
-        return ;
-    else
-    {
-        const state_specs:string[] = ctx.wsMessage.split(':');
-
-        if (state_specs[MESSAE_TYPE] == 'notify')
-            console.log('Notify' +  state_specs[PLAYERSTATE]);
-        else if (state_specs[MESSAE_TYPE] == 'state')
-        {
-            const [role, team, redclue, blueclue] = parse_rolestate(state_specs[PLAYERSTATE]);
-            const [turnState, turnRole, turnTeam, clue, guessCount,
-                   proposedGuessX, proposedGuessY] = parse_turnstate(state_specs[TURN_STATE]);
-            const chestData = parse_cheststate(state_specs[CHEST_STATE])
-
-            console.log("State",turnState, role, team, redclue, blueclue,
-                        turnRole, turnTeam, clue, guessCount, proposedGuessX, proposedGuessY)
-            if (turnState == OVER) {
-                set_state(OVER)
-                fill_end();
-            }
-
-            else if (turnState == TUTORIAL)
-            {
-                set_state(TUTORIAL)
-                set_tutorial_state();
-            }
-            else if (role == CHOOSING)
-            {
-                set_state(MENU);
-                set_menu_state(team, role, redclue, blueclue);
-            }
-            else if (turnState == PLAYING) {
-                set_state(GAME);
-                fill_board(role, team, chestData);
-
-                if (turnTeam != team)
-                    end_turn();
-                else {
-                     start_turn(turnRole, clue, guessCount, "", proposedGuessX, proposedGuessY);
-                }
-            }
-
+    if (ctx.wsMessage) {
+        const msg = ctx.wsMessage;
+        if (msg.startsWith('notify')) {
+            console.log('Notify' + state_specs[PLAYERSTATE]);
+        } else if (msg.startsWith('state')) {
+            game_state = parse_game_state(msg);
+            handle_new_state();
+        } else {
+            throw new Error("bad message start");
         }
         ctx.wsMessage = null;
     }
+}
 
+
+function handle_new_state() {
+    if (game_state.turn_state.turn == TurnRole.Over) {
+        set_state(OVER);
+        fill_end();
+    } else if (game_state.turn_state.turn == TurnRole.Tutorial) {
+        set_state(TUTORIAL);
+        set_tutorial_state();
+    } else if (game_state.role_state.role == TurnRole.Choosing) {
+        set_state(MENU);
+        set_menu_state(game_state.role_state);
+    } else {
+        set_state(GAME);
+        fill_board(game_state.role_state.role, game_state.chests_5x5_state);
+        const turnTeam = game_state.turn_state.turn.is_red() ? 'red' : 'blue';
+        const roleTeam = game_state.role_state.role.is_red() ? 'red' : 'blue';
+        if (turnTeam != roleTeam) {
+            end_turn();
+        } else {
+            start_turn(game_state.turn_state);
+        }
+    }
 }

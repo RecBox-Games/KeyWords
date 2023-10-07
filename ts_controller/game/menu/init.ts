@@ -5,6 +5,7 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, Dra
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
+import { TurnRole } from "../../utils/state_handler.js";
 
 export interface Team {
     cluegiver: boolean,
@@ -18,7 +19,7 @@ export interface Team {
 export interface Menu {
     bg?:DrawableImage,
     team:number,
-    role:number,
+    role: TurnRole,
     text:DrawableText,
     blueTeam: Team,
     redTeam: Team,

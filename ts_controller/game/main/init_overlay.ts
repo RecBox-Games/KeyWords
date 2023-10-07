@@ -5,6 +5,7 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, Dra
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
+import { TurnRole } from "../../utils/state_handler.js";
 import { close_overlay } from "../../utils/utils.js";
 import { BOARD_H, GIVER, GUESSER } from "../interfaces.js";
 
@@ -48,16 +49,16 @@ export const size_overlay = (overlay:Overlay ,role:number) => {
     }
 }
 
-export const fill_overlay = (overlay:Overlay ,role:number) => {
+export const fill_overlay = (overlay:Overlay ,role:TurnRole) => {
     const ctx:Context = get_context();
 
     size_overlay(overlay, role);
-    if (role == GIVER)
+    if (role == TurnRole.RedClue || role == TurnRole.BlueClue)
     {
         overlay.subtext.font = '24px serif';
         overlay.box.image = get_asset('chest_contents')
     }
-    else if (role == GUESSER)
+    else if (role == TurnRole.RedGuess || role == TurnRole.BlueGuess)
     {
         overlay.subtext.font = '30px serif';
 

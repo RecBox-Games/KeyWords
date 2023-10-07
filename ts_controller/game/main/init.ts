@@ -5,6 +5,7 @@ import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 import { size_grass } from "../../utils/render_utils.js";
+import { None, TurnRole } from "../../utils/state_handler.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js";
@@ -27,24 +28,23 @@ export interface Board {
     selector:Selector;
     guessedWord: string | undefined;
     totalGuesses: number;
-    currentGuesses: number;
+    currentGuesses: number | None;
     overlay:Overlay;
     showOverlay:boolean;
-    clue:string | undefined;
+    clue:string | None;
     team:number,
     role:number,
     bg?: DrawableImage
 }
 
 let board:Board;
-
 export const get_board = ():Board => {return board};
 
 // const construct_chestGiver = (x:number, y: number, box:Rectangle) => {
 
 // }
 
-const fill_board_data = (role: number, team: number, data: any[]) => {
+const fill_board_data = (role: TurnRole, data: any[]) => {
     board.team = team;
     board.role = role;
     // selectors
@@ -177,7 +177,7 @@ export const size_main = () => {
     board.chests.map((arr) => arr.map((e) => size_chest(e)))
 }
 
-export const fill_board = (role:number, team:number, data:any[]) => {
+export const fill_board = (role:TurnRole, data:any[]) => {
     // buttons_flush();
     if (!board)
         init_main_screen();
@@ -188,7 +188,7 @@ export const fill_board = (role:number, team:number, data:any[]) => {
 
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
-    fill_board_data(role, team, data);
+    fill_board_data(role, data);
     size_main();
 
     // buttons_log();
