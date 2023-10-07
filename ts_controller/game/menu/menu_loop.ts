@@ -22,36 +22,32 @@ export const set_menu_state = (role_state: RoleState) => {
     buttons_add(menu.exitBtn)
     menu.redTeam.cluegiver = role_state.red_cluer_taken == true ? true : false;
     menu.blueTeam.cluegiver = role_state.blue_cluer_taken == true ? true : false;
-    if (role_state.role == TurnRole.Choosing)
-    {
-        if (!role_state.blue_cluer_taken)
-        {
+    if (role_state.role == TurnRole.Choosing) {
+        buttons_add(menu.blueTeam.guesserBtn);
+        buttons_add(menu.redTeam.guesserBtn);
+        if (!role_state.blue_cluer_taken) {
             buttons_add(menu.blueTeam.giverBtn);
             menu.blueTeam.giverSprite.src = {x:54 * 2 + 0.5, y:0, h:49, w:54}
-        }
-        else
+        } else {
             menu.blueTeam.giverSprite.src = {x:54 * 4 + 0.5, y:0, h:49, w:54}
-        buttons_add(menu.blueTeam.guesserBtn);
-        if (!role_state.red_cluer_taken)
-        {
+        }
+        if (!role_state.red_cluer_taken) {
             buttons_add(menu.redTeam.giverBtn);
             menu.redTeam.giverSprite.src = {x: 54 * 3 + 0.5, y:0, h:49, w:54}
-        }
-        else
+        } else {
             menu.redTeam.giverSprite.src = {x: 54 * 4 + 0.5, y:0, h:49, w:54}
-
-        buttons_add(menu.redTeam.guesserBtn);
+        }
         menu.blueTeam.giverBtn._active = true;
         menu.blueTeam.guesserBtn._active = true;
         menu.redTeam.giverBtn._active = true;
         menu.redTeam.guesserBtn._active = true;
-        return ;
+    } else {
+        menu.blueTeam.giverBtn._active = false;
+        menu.blueTeam.guesserBtn._active = false;
+        menu.redTeam.giverBtn._active = false;
+        menu.redTeam.guesserBtn._active = false;
+        menu.text.text = "Waiting for game to start...";
     }
-    menu.blueTeam.giverBtn._active = false;
-    menu.blueTeam.guesserBtn._active = false;
-    menu.redTeam.giverBtn._active = false;
-    menu.redTeam.guesserBtn._active = false;
-    menu.text.text = "Waiting for game to start...";
 }
 
 export const menu_loop = () => {
@@ -66,11 +62,8 @@ export const menu_loop = () => {
     // drawablesAdd(menu.blueTeam.name);
     // drawablesAdd(menu.redTeam.name);
     drawablesAdd(menu.exit)
-    if (menu.team == -1 )
-    {
-        drawablesAdd(menu.blueTeam.giverSprite);
-        drawablesAdd(menu.blueTeam.guesserSprite);
-        drawablesAdd(menu.redTeam.giverSprite);
-        drawablesAdd(menu.redTeam.guesserSprite);
-    }
+    drawablesAdd(menu.blueTeam.giverSprite);
+    drawablesAdd(menu.blueTeam.guesserSprite);
+    drawablesAdd(menu.redTeam.giverSprite);
+    drawablesAdd(menu.redTeam.guesserSprite);
 }

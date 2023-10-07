@@ -5,7 +5,7 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, Dra
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
-import { TurnRole } from "../../utils/state_handler.js";
+import { TurnRole, is_clue, is_guess } from "../../utils/state_handler.js";
 import { close_overlay } from "../../utils/utils.js";
 import { BOARD_H, GIVER, GUESSER } from "../interfaces.js";
 
@@ -20,15 +20,15 @@ export interface Overlay {
     item:DrawableImage;
 }
 
-export const size_overlay = (overlay:Overlay ,role:number) => {
+export const size_overlay = (overlay: Overlay, role: TurnRole) => {
     const ctx:Context = get_context();
 
-    if (role == GIVER)
+    if (is_clue(role))
     {
         overlay.box .dst = {x:0, y:0, w: ctx.dimensions.x / 14, h : ctx.dimensions.y * 0.15};
 
     }
-    else if (role == GUESSER)
+    else if (is_guess(role))
     {
         overlay.shadow = {...DEFAULT_DRAWABLE_RECT};
         overlay.shadow.boundingBox = {x: 0, y: 0, w : ctx.dimensions.x, h : ctx.dimensions.y};

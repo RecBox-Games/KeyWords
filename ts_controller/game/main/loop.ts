@@ -6,6 +6,7 @@ import { Context } from "../../controller_lib/types/context.js";
 import { DEFAULT_DRAWABLE_RECT } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { animate_grass, render_chest_grass, render_grass } from "../../utils/render_utils.js";
+import { TurnRole, is_blue } from "../../utils/state_handler.js";
 import { BLUE, BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 
@@ -15,10 +16,9 @@ export const main_loop = () => {
     const ctx:Context = get_context();
     const rect:Rectangle = {x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y};
 
-
     if (board.bg)
         drawablesAdd(board.bg);
-    drawablesAdd({...DEFAULT_DRAWABLE_RECT, boundingBox: rect, color: board.team == BLUE ? '#0000FF' : '#FF0000', stroke: 6})
+    drawablesAdd({...DEFAULT_DRAWABLE_RECT, boundingBox: rect, color: is_blue(board.role) ? '#0000FF' : '#FF0000', stroke: 6})
     // drawablesAdd(board.topbar.exit);
     for (let i = 0; i < BOARD_H; i += 1)
         for (let j = 0; j < BOARD_W; j += 1)
@@ -32,8 +32,7 @@ export const main_loop = () => {
             }
         }
     drawablesAdd(board.topbar.text);
-    for (let i in board.topbar.clueCount)
-    {
+    for (let i in board.topbar.clueCount) {
         if (board.topbar.clueCount[i]._active)
         {
             drawablesAdd(board.topbar.clueSprites[i]);

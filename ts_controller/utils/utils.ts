@@ -7,7 +7,7 @@ import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { buttons_add, buttons_len, buttons_log } from "../controller_lib/button.js";
 import { assetsDic, get_asset } from "./assets.js";
-import { TurnRole, TurnState } from "./state_handler.js";
+import { TurnRole, ProposedGuess, TurnState, is_guess, is_blue, is_some, is_clue } from "./state_handler.js";
 
 
 export const set_chests_status = (status:boolean) =>
@@ -80,29 +80,26 @@ export const start_turn = (turn_state: TurnState) =>
 
     board.currentGuesses = turn_state.guesses_remaining;
     board.clue = turn_state.clue;
-    if (turn_state.turn.is_guess()) {
-        if (turn_state.turn == board.role) {
-            if (proposedGuessX != -1) {
+    if (is_guess(board.role)) {
+        if (board.role === turn_state.turn) {
+            if (is_some(turn_state.proposed_guess.exists)) {
                 board.topbar.acceptButton._active = true;
                 board.topbar.denyButton._active = true;
                 board.topbar.subText.text = "";
                 board.topbar.text.text = "Validate guess ?";
-                // activate and position select graphic
-                if (proposedGuessX != -1) {
-                    board.selector.xIndex = proposedGuessX;
-                    board.selector.yIndex = proposedGuessY;
-                    const selector_dst = board.chests[proposedGuessX][proposedGuessY].sprite.dst;
-                    console.log("------------------- ", selector_dst);
-                    if (board.team == 0 /*TODO: BLUE*/) {
-                        board.selector.red = false;
-                        board.selector.blue_sprite.dst = selector_dst;
-                    } else if (board.team == 1 /*TODO: RED*/) {
-                        board.selector.red = true;
-                        board.selector.blue_sprite.dst = selector_dst;
-                    } else {
-                        console.log("board.team is unexpected: ", board.team);
-                    }
-                }
+                const x = turn_state.proposed_guess.x;
+                const y = turn_state.proposed_guess.y;
+                board.selector.xIndex = x;
+                board.selector.yIndex = y;
+                const selector_dst = board.chests[x][y].sprite.dst;
+                console.log("------------------- ", selector_dst);
+                if (is_blue(board.role)) {
+                    board.selector.red = false;
+                    board.selector.blue_sprite.dst = selector_dst;
+                } else {
+                    board.selector.red = true;
+                    board.selector.red_sprite.dst = selector_dst;
+                } 
             } else {
                 board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
                 board.topbar.acceptButton._active = false;
@@ -112,19 +109,18 @@ export const start_turn = (turn_state: TurnState) =>
             board.topbar.text.text = "Waiting for a clue...";
             board.currentGuesses = 0;
             board.totalGuesses = 0;
-            board.clue = undefined;
+            board.clue = {};
             board.topbar.subText.text = "";
         }
-    } else if (board.role == GIVER) {
-        if (turnRole == board.role) {
+    } else if (is_clue(board.role)) {
+        if (board.role === turn_state.turn) {
             board.topbar.text.text = 'Say a clue to your team, then choose how many chests they must open by giving them keys';
             for (let button of board.topbar.clueCount) {
                 button._active = true;
             }
             // board.topbar.acceptButton._active = true;
             //    add buttons
-        }
-        else {
+        } else {
             board.topbar.subText.text = '';
             board.topbar.text.text = 'Your team has ' + board.currentGuesses.toString() + ' guesses remaining';
             for (let button of board.topbar.clueCount) {

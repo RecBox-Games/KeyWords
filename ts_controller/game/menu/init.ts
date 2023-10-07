@@ -18,7 +18,6 @@ export interface Team {
 
 export interface Menu {
     bg?:DrawableImage,
-    team:number,
     role: TurnRole,
     text:DrawableText,
     blueTeam: Team,
@@ -92,7 +91,6 @@ export const size_menu = () => {
 
 export const init_menu = () => {
     menu = {
-        team: 0,
         role :0,
         blueTeam: {
             cluegiver:false,

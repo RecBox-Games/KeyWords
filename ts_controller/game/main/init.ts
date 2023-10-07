@@ -5,7 +5,7 @@ import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 import { size_grass } from "../../utils/render_utils.js";
-import { None, TurnRole } from "../../utils/state_handler.js";
+import { None, TurnRole, is_guess } from "../../utils/state_handler.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js";
@@ -22,18 +22,17 @@ export interface Selector {
 
 
 export interface Board {
-    chests:((Chest)[])[];
-    topbar:TopBar;
-    buttons:(Button[])[];
-    selector:Selector;
+    chests: Chest[][];
+    topbar: TopBar;
+    buttons: Button[][];
+    selector: Selector;
     guessedWord: string | undefined;
     totalGuesses: number;
     currentGuesses: number | None;
-    overlay:Overlay;
-    showOverlay:boolean;
-    clue:string | None;
-    team:number,
-    role:number,
+    overlay: Overlay;
+    showOverlay: boolean;
+    clue: string | None;
+    role: TurnRole,
     bg?: DrawableImage
 }
 
@@ -45,7 +44,6 @@ export const get_board = ():Board => {return board};
 // }
 
 const fill_board_data = (role: TurnRole, data: any[]) => {
-    board.team = team;
     board.role = role;
     // selectors
     board.selector.red_sprite.image = get_asset('phone_select_red'); // TODO: may need to set src
@@ -56,7 +54,7 @@ const fill_board_data = (role: TurnRole, data: any[]) => {
         for (let x = 0; x < BOARD_W; x += 1)
         {
             fill_chest(board.chests[y][x], data[x + BOARD_W * y], role);
-            if (role == GUESSER)
+            if (is_guess(role))
             {
                 board.buttons[y][x]._touchEndCallback = chest_clicked_guessser;
             }
@@ -148,9 +146,8 @@ export const init_main_screen = () =>
         totalGuesses: 4,
         currentGuesses:2,
         showOverlay: false,
-        clue: undefined,
-        team: -1,
-        role: -1
+        clue: {},
+        role: TurnRole.Tutorial,
     };
     construct_Board();
     size_main();
