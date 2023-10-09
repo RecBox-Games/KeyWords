@@ -128,7 +128,7 @@ export const construct_topbar = ():TopBar =>
         clueCount:[],
         clueSprites:[],
         exitBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('kill')}),
-        exit: {...DEFAULT_DRAWABLE_TEXT, text:"EXIT GAME", font: '20px serif', color: '#FF1111'},
+        exit: {...DEFAULT_DRAWABLE_TEXT, text:"EXIT GAME", font: '20px arial', color: '#FF1111'},
     };
     size_topbar(topBar);
     // buttons_add(topBar.acceptButton);

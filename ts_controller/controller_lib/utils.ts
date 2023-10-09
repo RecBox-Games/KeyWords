@@ -30,7 +30,7 @@ export const scale_and_center = (src:Rectangle, dst:Rectangle, scale:number) =>
     src.h *= scale;
 
     src.x = dst.x + (dst.w / 2 ) - (src.w / 2);
-    src.y = dst.y + (dst.h / 2 ) - (src.h / 2);
+    src.y = dst.y + (dst.h ) - (src.h);
 
     return src;
 }

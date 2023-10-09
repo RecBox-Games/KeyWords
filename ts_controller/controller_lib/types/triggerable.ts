@@ -1,7 +1,8 @@
 import { Rectangle, Circle, Point, isCircle, isRect, PointInCircle, PointInRect } from "./shapes.js";
 import { NONE, TRIGGER_END, TRIGGER_HELD, TRIGGER_START } from "../macros.js";
 import { TOUCH_END, TOUCH_START, checkAllFieldsExist } from "../utils.js";
-import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableRect, DrawableText } from "./drawables.js";
+import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT,
+         DrawableImage, DrawableRect, DrawableText } from "./drawables.js";
 class Triggerable {
 	_active: boolean = true;
 	_state: number = NONE;

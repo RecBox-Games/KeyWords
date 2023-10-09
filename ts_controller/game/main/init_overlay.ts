@@ -55,12 +55,12 @@ export const fill_overlay = (overlay:Overlay ,role:TurnRole) => {
     size_overlay(overlay, role);
     if (role == TurnRole.RedClue || role == TurnRole.BlueClue)
     {
-        overlay.subtext.font = '24px serif';
+        overlay.subtext.font = '24px arial';
         overlay.box.image = get_asset('chest_contents')
     }
     else if (role == TurnRole.RedGuess || role == TurnRole.BlueGuess)
     {
-        overlay.subtext.font = '30px serif';
+        overlay.subtext.font = '30px arial';
 
         if (overlay.shadow)
         {

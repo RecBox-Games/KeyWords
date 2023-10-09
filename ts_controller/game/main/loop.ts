@@ -5,8 +5,9 @@ import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
 import { DEFAULT_DRAWABLE_RECT } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
+import { get_state } from "../../main.js";
 import { animate_grass, render_chest_grass, render_grass } from "../../utils/render_utils.js";
-import { TurnRole, is_blue } from "../../utils/state_handler.js";
+import { TurnRole, get_game_state, is_blue, is_clue } from "../../utils/state_handler.js";
 import { BLUE, BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 
@@ -25,7 +26,7 @@ export const main_loop = () => {
         {
             drawablesAdd(board.chests[i][j].sprite);
             drawablesAdd(board.chests[i][j].text)
-            if (board.role == GIVER && !board.chests[i][j].open)
+            if (is_clue(board.role) && !board.chests[i][j].state.open)
             {
                 for (let obj of board.chests[i][j].contentimg)
                     drawablesAdd(obj);
@@ -33,30 +34,25 @@ export const main_loop = () => {
         }
     drawablesAdd(board.topbar.text);
     for (let i in board.topbar.clueCount) {
-        if (board.topbar.clueCount[i]._active)
-        {
+        if (board.topbar.clueCount[i]._active) {
             drawablesAdd(board.topbar.clueSprites[i]);
         }
     }
-    if (board.selector.xIndex != -1) {
+    if (get_game_state().turn_state.proposed_guess.exists && board.role === get_game_state().turn_state.turn) {
         if (board.selector.red) {
-            console.log("---red ", board.selector.xIndex);
             drawablesAdd(board.selector.red_sprite);         
         } else {
-            console.log("---blue ", board.selector.xIndex);
             drawablesAdd(board.selector.blue_sprite);            
         }
     }
-    if (!board.guessedWord)
-    {
+    if (!board.guessedWord) {
         drawablesAdd(board.topbar.subText);
     }
     if (board.topbar.acceptButton._active)
         drawablesAdd(board.topbar.accept);
     if (board.topbar.denyButton._active)
         drawablesAdd(board.topbar.deny);
-    if (board.showOverlay)
-    {
+    if (board.showOverlay) {
         // if (board.overlay.shadow)
         //     drawablesAdd(board.overlay.shadow);
         drawablesAdd(board.overlay.box);

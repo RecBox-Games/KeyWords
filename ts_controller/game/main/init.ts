@@ -5,7 +5,7 @@ import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 import { size_grass } from "../../utils/render_utils.js";
-import { None, TurnRole, is_guess } from "../../utils/state_handler.js";
+import { ChestState, None, TurnRole, is_guess } from "../../utils/state_handler.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js";
@@ -43,28 +43,25 @@ export const get_board = ():Board => {return board};
 
 // }
 
-const fill_board_data = (role: TurnRole, data: any[]) => {
+const fill_board_data = (role: TurnRole, chest_states: ChestState[][]) => {
     board.role = role;
     // selectors
     board.selector.red_sprite.image = get_asset('phone_select_red'); // TODO: may need to set src
     board.selector.blue_sprite.image = get_asset('phone_select_blue');
     //
-    for (let y = 0; y < BOARD_H; y += 1)
-    {
-        for (let x = 0; x < BOARD_W; x += 1)
-        {
-            fill_chest(board.chests[y][x], data[x + BOARD_W * y], role);
-            if (is_guess(role))
-            {
-                board.buttons[y][x]._touchEndCallback = chest_clicked_guessser;
-            }
-            else if (role == GIVER)
-            {
-                board.buttons[y][x]._touchStartCallback = chest_clicked_giver;
-                board.buttons[y][x]._touchEndCallback = () => {get_board().showOverlay = false;};
+    for (let j = 0; j < BOARD_H; j += 1) {
+        for (let i = 0; i < BOARD_W; i += 1) {
+            fill_chest(board.chests[j][i], chest_states[j][i], role);
+            board.chests[j][i].x = j; // Not going to go fix whatever is causing this
+            board.chests[j][i].y = i;
+            if (is_guess(role)) {
+                board.buttons[j][i]._touchEndCallback = chest_clicked_guessser;
+            } else if (role == GIVER) {
+                board.buttons[j][i]._touchStartCallback = chest_clicked_giver;
+                board.buttons[j][i]._touchEndCallback = () => {get_board().showOverlay = false;};
 
             }
-            buttons_add(board.buttons[y][x]);
+            buttons_add(board.buttons[j][i]);
         }
     }
 }
@@ -79,10 +76,8 @@ const size_board = () => {
             h: (ctx.dimensions.y * 0.185),
             w: ctx.dimensions.x * 0.172
         };
-    for (let y = 0; y < BOARD_H; y += 1)
-    {
-        for (let x = 0; x < BOARD_W; x += 1)
-        {
+    for (let y = 0; y < BOARD_H; y += 1) {
+        for (let x = 0; x < BOARD_W; x += 1) {
             board.chests[y][x].sprite.dst = {...boundingBox}
             board.chests[y][x].text.boundingBox = {...boundingBox}
             board.buttons[y][x]._boundingBox = {...boundingBox}
@@ -98,8 +93,7 @@ const construct_board_row = (row:number): [Chest[], Button[]]  => {
     const chest_Arr: (Chest)[] = [];
     const button_Arr: Button[] = [];
 
-    for (let x = 0; x < BOARD_W; x += 1)
-    {
+    for (let x = 0; x < BOARD_W; x += 1) {
         let newChest:Chest = construct_chest(x + (BOARD_W * row)) ;
         let newButton:Button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
 
@@ -122,8 +116,7 @@ const construct_Board = () => {
     const chests_arr : (Chest [])[] = [];
     const buttons_arr: (Button[])[] = [];
 
-    for (let y = 0; y < BOARD_H; y += 1)
-    {
+    for (let y = 0; y < BOARD_H; y += 1) {
         const [chests, buttons] = construct_board_row(y);
 
         chests_arr.push(chests);
@@ -134,8 +127,7 @@ const construct_Board = () => {
 }
 
 
-export const init_main_screen = () =>
-{
+export const init_main_screen = () => {
     board = {
         buttons: [],
         chests: [],
@@ -154,8 +146,7 @@ export const init_main_screen = () =>
 }
 
 
-export const construct_selector = ():Selector =>
-{
+export const construct_selector = ():Selector => {
     const selector:Selector = {
         red: false,
         xIndex:-1,

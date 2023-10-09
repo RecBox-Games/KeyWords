@@ -2,13 +2,14 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, Dra
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { scale_and_center } from "../../controller_lib/utils.js";
 import { get_asset } from "../../utils/assets.js";
+import { ChestState, TurnRole, TurnState, is_clue, is_guess } from "../../utils/state_handler.js";
 import { BOARD_H, GIVER, GUESSER } from "../interfaces.js";
 
 
 export interface Chest {
-    open:boolean;
-    id: number;
-    contents: string;
+    x: number,
+    y: number,
+    state:ChestState;
     text:DrawableText;
     // sprite:DrawableRect;
     sprite:DrawableImage;
@@ -27,11 +28,11 @@ export const size_chest = (chest:Chest) => {
     };
 
 
-    const count = parseInt(chest.contents.at(-1) as string);
+    const count = parseInt(chest.state.content.at(-1) as string);
     const img =  {...DEFAULT_DRAWABLE_IMG};
     const dst = chest.sprite.dst as Rectangle;
 
-    img.image = get_asset(chest.contents.slice(0, -1));
+    img.image = get_asset(chest.state.content.slice(0, -1));
     img.dst = {x: dst.x, y: dst.y + dst.h * 0.2, w: dst.w * 0.32 , h: dst.w * 0.3};
 
     const dest = img.dst;
@@ -47,42 +48,25 @@ export const size_chest = (chest:Chest) => {
     }
 }
 
-export const fill_chest = (chest:Chest, data:any, role:number) => {
-    chest.text.text = data['text'];
-    chest.open = data['state'];
-    chest.contents = data['contents']
+export const fill_chest = (chest: Chest, state: ChestState, role: TurnRole) => {
+    chest.state = state;
+    chest.text.text = state.word;
     chest.sprite.image = get_asset('chests')
-    if (role == GIVER)
-    {
-
-        const count = parseInt(chest.contents.at(-1) as string);
-        const img =  {...DEFAULT_DRAWABLE_IMG};
-
-        if (chest.open)
-            chest.sprite.src = {y:0, w:37, h:29, x: 37 * 14};
-        else
-            chest.sprite.src = {y:0, w:37, h:29, x: 37 * 13};
-        img.image = get_asset(chest.contents.slice(0, -1));
-        if (chest.contentimg.length == 0)
-        {
-            for (let x = 0; x < count; x += 1)
-            {
-                chest.contentimg.push({...img});
-                // startX += img.dst.w + 10;
-            }
-        }
-        // img.dst.x
+    if (chest.state.open) {
+        chest.sprite.src = { y: 0, w: 37, h: 29, x: 37 * 1 };
+        chest.text.color = '#200000'
+    } else {
+        chest.sprite.src = { y: 0, w: 37, h: 29, x: 37 * 0 };
+        chest.text.color = '#FFFFFF'
     }
-    else if (role == GUESSER)
-    {
-        if (chest.open)
-        {
-            chest.sprite.src = {y:0, w:37, h:29, x: 37 * 12};
-            chest.text.color = '#000000'
-        }
-        else {
-            chest.sprite.src = {y:0, w:37, h:29, x:0};
-            chest.text.color = '#FFFFFF'
+    if (is_clue(role)) {
+        const count = parseInt(chest.state.content.at(-1) as string);
+        const img =  {...DEFAULT_DRAWABLE_IMG};
+        img.image = get_asset(chest.state.content.slice(0, -1));
+        if (chest.contentimg.length == 0) {
+            for (let x = 0; x < count; x += 1) {
+                chest.contentimg.push({...img});
+            }
         }
     }
     size_chest(chest);
@@ -91,10 +75,10 @@ export const fill_chest = (chest:Chest, data:any, role:number) => {
 export const construct_chest = (id:number) : Chest => {
     //fetch content from assets.ts
     const newChest: Chest = {
-        open: false,
-        id: id,
-        contents: "",
-        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF", font:'19px serif'},
+        x: -1,
+        y: -1,
+        state: {word: "", open: false, content: ""},
+        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF", font:'24px Arial'},
         contentimg: [],
         sprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:37, h:29}}// {..box} or else it will assign as reference
         // sprite: {...DEFAULT_DRAWABLE_RECT, boundingBox: {...box}}// {..box} or else it will assign as reference
@@ -102,3 +86,5 @@ export const construct_chest = (id:number) : Chest => {
 
     return newChest;
 }
+
+

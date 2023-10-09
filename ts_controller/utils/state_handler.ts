@@ -1,6 +1,7 @@
 import { get_context, init_context } from "../controller_lib/init.js";
 import { fill_end, init_end } from "../game/end/init.js";
-import { BLUE, GAME, GIVER, GUESSER, MENU, RED, TUTORIAL } from "../game/interfaces.js";
+import { BLUE, GAME, GIVER, GUESSER, MENU, RED, TUTORIAL
+       } from "../game/interfaces.js";
 import { init_loading } from "../game/loading/init.js";
 import { fill_board, init_main_screen } from "../game/main/init.js";
 import { init_menu } from "../game/menu/init.js";
@@ -19,7 +20,7 @@ const CHOOSING = -1;
 const PLAYING = 2;
 const OVER = 4;
 
-
+                                                                                
 
 
 let game_state: GameState;
@@ -34,6 +35,7 @@ export enum TurnRole {
     RedGuess,
     BlueClue,
     BlueGuess,
+    None,
 }
 
 export function is_red(turnrole: TurnRole): boolean {
@@ -85,32 +87,6 @@ export function is_playing(turnrole: TurnRole): boolean {
             return true;
         default:
             return false;
-    }
-}
-
-export function is_some(thing: any): boolean {
-    const is_none = Object.prototype.toString.call(thing) === '[object Object]' && Object.keys(thing).length === 0;
-    return !is_none;
-}
-
-export enum Team {
-    Red,
-    Blue,
-    None,
-}
-
-export const team_of_turnrole = (turnrole: TurnRole): Team => {
-    switch (turnrole) {
-        case TurnRole.Tutorial:
-        case TurnRole.Over:
-        case TurnRole.Choosing:
-            return Team.None;
-        case TurnRole.RedClue:
-        case TurnRole.RedGuess:
-            return Team.Red;
-        case TurnRole.BlueClue:
-        case TurnRole.BlueGuess:
-            return Team.Blue;
     }
 }
 
@@ -200,8 +176,10 @@ const parse_turnrole = (msg: string, is_turn: boolean): TurnRole => {
         case "blueguesser":
         case "blueguessing":
             return TurnRole.BlueGuess;
+        case "none":
+            return TurnRole.None;
         default:
-            throw new Error("Invalid turn or role passed to parse_turnrole");
+            throw new Error("Invalid turn or role passed to parse_turnrole " + msg);
     }
 }
 
@@ -209,12 +187,12 @@ const parse_role_state = (msg: string): RoleState => {
     const parts = msg.split(',');
     const role = parse_turnrole(parts[0], false);
     //
-    const _choosing = role == TurnRole.Choosing;
+    const _choosing = role === TurnRole.Choosing;
     //
     const role_state: RoleState = {
         role,
-        red_cluer_taken: _choosing ? (parts[1] == 'true' ? true : false) : {},
-        blue_cluer_taken: _choosing ? (parts[2] == 'true' ? true : false) : {},
+        red_cluer_taken: _choosing ? (parts[1] === 'true' ? true : false) : {},
+        blue_cluer_taken: _choosing ? (parts[2] === 'true' ? true : false) : {},
     };
     return role_state;
 }
@@ -223,7 +201,7 @@ const parse_turn_state = (msg: string): TurnState => {
     const parts = msg.split(',');
     const turn = parse_turnrole(parts[0], true);
     //
-    const _guessing = (turn == TurnRole.RedGuess || turn == TurnRole.BlueGuess);
+    const _guessing = (turn === TurnRole.RedGuess || turn === TurnRole.BlueGuess);
     //
     const turn_state: TurnState = {
         turn,
@@ -281,7 +259,7 @@ const parse_chest_state = (msg: string): ChestState => {
     const parts = msg.split(',');
     const chest_state: ChestState = {
         word: parts[0],
-        open: parts[1] == "true",
+        open: parts[1] === "open",
         content: parts[2],
     }
     return chest_state;
@@ -317,13 +295,13 @@ export const state_handler = () => {
 
 
 function handle_new_state() {
-    if (game_state.turn_state.turn == TurnRole.Over) {
+    if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();
-    } else if (game_state.turn_state.turn == TurnRole.Tutorial) {
+    } else if (game_state.turn_state.turn === TurnRole.Tutorial) {
         set_state(TUTORIAL);
         set_tutorial_state();
-    } else if (game_state.role_state.role == TurnRole.Choosing) {
+    } else if (game_state.role_state.role === TurnRole.Choosing) {
         set_state(MENU);
         set_menu_state(game_state.role_state);
     } else {

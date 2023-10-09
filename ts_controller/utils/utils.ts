@@ -7,43 +7,48 @@ import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { buttons_add, buttons_len, buttons_log } from "../controller_lib/button.js";
 import { assetsDic, get_asset } from "./assets.js";
-import { TurnRole, ProposedGuess, TurnState, is_guess, is_blue, is_some, is_clue } from "./state_handler.js";
+import { TurnRole, ProposedGuess, TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
 
 
 export const set_chests_status = (status:boolean) =>
 {
     const board:Board = get_board();
     console.log("sets status", status, buttons_len())
-    for (let i = 0; i < BOARD_W; i += 1)
-        for (let j = 0; j < BOARD_W; j += 1)
-        {
-            if (!board.chests[i][j].open)
+    for (let i = 0; i < BOARD_W; i += 1) {
+        for (let j = 0; j < BOARD_W; j += 1) {
+            if (!board.chests[i][j].state.open) {
                 board.buttons[i][j]._active = status;
+            }
         }
+    }
 }
 
 export const chest_clicked_giver = (self:Button) =>
 {
     const board:Board = get_board();
-    const x = (self.data as Chest).id % BOARD_W;
-    const y = (self.data as Chest).id / BOARD_W;
+    const the_chest = (self.data as Chest)
     board.overlay.shadow = undefined;
     board.overlay.box.dst = {
-        x: self._boundingBox.x + (x < BOARD_W / 2 ? (self._boundingBox as Rectangle).w : -(self._boundingBox as Rectangle).w) ,
-        y: self._boundingBox.y + (y < BOARD_H / 2 ? (self._boundingBox as Rectangle).h : -(self._boundingBox as Rectangle).h),
+        x: self._boundingBox.x + (the_chest.x < BOARD_W / 2
+            ? (self._boundingBox as Rectangle).w
+            : -(self._boundingBox as Rectangle).w),
+        y: self._boundingBox.y + (the_chest.y < BOARD_H / 2
+            ? (self._boundingBox as Rectangle).h
+            : -(self._boundingBox as Rectangle).h),
         w: (self._boundingBox as Rectangle).w * 1.5,
         h: (self._boundingBox as Rectangle).h * 1.8,
     }
 
-    if ((self.data as Chest).contents == 'empty'){
+    if (the_chest.state.content == 'empty'){
         board.overlay.subtext.text = 'There is nothing here :) '
          board.overlay.item.image = null;
     }
     else {
-        board.overlay.item.image = get_asset((self.data as Chest).contents.slice(0, -1));
-        board.overlay.subtext.text = (self.data as Chest).contents.at(-1) + assetsDic[(self.data as Chest).contents.slice(0, -1)];
+        board.overlay.item.image = get_asset(the_chest.state.content.slice(0, -1));
+        board.overlay.subtext.text = the_chest.state.content.at(-1)
+            + assetsDic[the_chest.state.content.slice(0, -1)];
     }
-    board.overlay.subtext.font = `15px serif`
+    board.overlay.subtext.font = `15px arial`
     board.overlay.subtext.boundingBox = {...board.overlay.box.dst, y:  board.overlay.box.dst.y + board.overlay.box.dst.h * 0.7, h:  board.overlay.box.dst.h * 0.3};
     board.overlay.item.dst = {
         x: board.overlay.box.dst.x + board.overlay.box.dst.w * 0.40,
@@ -58,19 +63,12 @@ export const chest_clicked_guessser = (self:Button) =>
 {
     const board:Board = get_board();
     const ctx = get_context();
-    if (!board.clue)
-    {
-        console.log("No clue");
-        return;
-    }
-
-    if (board.guessedWord)
-    {
+    if (board.guessedWord) {
         console.log("Someone already guessed a word, accept or deny ", board.guessedWord);
         return ;
     }
-    ctx.ws.send('input:guess' + ',' + (((self.data as Chest).id / BOARD_W) | 0).toString() +
-        ',' +  (((self.data as Chest).id % BOARD_W) | 0).toString())
+    ctx.ws.send('input:guess' + ',' + (((self.data as Chest).x) | 0).toString() +
+        ',' +  (((self.data as Chest).y) | 0).toString())
 }
 
 export const start_turn = (turn_state: TurnState) =>
@@ -82,7 +80,7 @@ export const start_turn = (turn_state: TurnState) =>
     board.clue = turn_state.clue;
     if (is_guess(board.role)) {
         if (board.role === turn_state.turn) {
-            if (is_some(turn_state.proposed_guess.exists)) {
+            if (turn_state.proposed_guess.exists) {
                 board.topbar.acceptButton._active = true;
                 board.topbar.denyButton._active = true;
                 board.topbar.subText.text = "";
@@ -91,7 +89,13 @@ export const start_turn = (turn_state: TurnState) =>
                 const y = turn_state.proposed_guess.y;
                 board.selector.xIndex = x;
                 board.selector.yIndex = y;
-                const selector_dst = board.chests[x][y].sprite.dst;
+                var selector_dst = Object.assign({}, board.chests[x][y].sprite.dst);
+                if (selector_dst && selector_dst.w) {
+                    selector_dst.x -= 2;
+                    selector_dst.y += 5;
+                    selector_dst.w += 13;
+                    selector_dst.h += 7;
+                }
                 console.log("------------------- ", selector_dst);
                 if (is_blue(board.role)) {
                     board.selector.red = false;
@@ -154,10 +158,10 @@ export const open_chest = (id:number) => {
     const y = (id / BOARD_W) | 0; // | 0 to take the integer part, more efficient than floor or ceil
 
     // add_animation({object: board.chests[y][x].sprite, animate_fn: (object:Animation) => {object = }})
-    board.chests[y][x].open = true;
+    board.chests[y][x].state.open = true;
 }
 
-export const open_overlay_guesser = (guess:string) =>{
+/*export const open_overlay_guesser = (guess:string) =>{
     const board:Board = get_board();
 
     board.topbar.acceptButton._active = false;
@@ -166,19 +170,17 @@ export const open_overlay_guesser = (guess:string) =>{
     board.showOverlay = true;
     set_chests_status(false);
     (board.overlay.exit as Button)._active = true;
-    for (let y = 0; y < BOARD_H; y += 1)
-    {
-        for (let x = 0; x < BOARD_W; x += 1)
-        {
-            if (board.chests[y][x].text.text == guess)
-            {
+    for (let y = 0; y < BOARD_H; y += 1) {
+        for (let x = 0; x < BOARD_W; x += 1) {
+            if (board.chests[y][x].text.text == guess) {
                 board.overlay.subtext.text = "This chest contains {{contents}}";
                 break ;
             }
         }
     }
-
 }
+*/
+
 export const close_overlay = () =>{
     const board:Board = get_board();
 
