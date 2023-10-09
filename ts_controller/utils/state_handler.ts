@@ -285,6 +285,7 @@ export const state_handler = () => {
             console.log(msg);
         } else if (msg.startsWith('state')) {
             game_state = parse_game_state(msg);
+            console.log(game_state);
             handle_new_state();
         } else {
             throw new Error("bad message start");

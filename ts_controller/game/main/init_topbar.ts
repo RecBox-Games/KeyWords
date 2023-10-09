@@ -26,7 +26,7 @@ export interface TopBar {
 export const size_topbar= (topBar:TopBar) =>
 {
     const ctx = get_context();
-    const boundingBox:Rectangle = {x:0, y:0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.04};
+    const boundingBox:Rectangle = {x:0, y:0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.06};
 
     topBar.text.boundingBox = {...boundingBox};
     topBar.subText.boundingBox = {...boundingBox};
@@ -34,11 +34,11 @@ export const size_topbar= (topBar:TopBar) =>
     boundingBox.h = ctx.dimensions.y * 0.08;
 
     boundingBox.y = ctx.dimensions.y * 0.013;
-    boundingBox.w = ctx.dimensions.y * 0.14;
-    boundingBox.h = ctx.dimensions.y * 0.07;
-    boundingBox.x = ctx.dimensions.x * 0.6;
-    topBar.accept.dst = {...boundingBox};
-    topBar.deny.dst = {...boundingBox, x: ctx.dimensions.x * 0.33}
+    boundingBox.w = ctx.dimensions.y * 0.26;
+    boundingBox.h = ctx.dimensions.y * 0.13;
+    boundingBox.x = ctx.dimensions.x * 0.23;
+    topBar.deny.dst = {...boundingBox};
+    topBar.accept.dst = {...boundingBox, x: (ctx.dimensions.x * 0.77) - boundingBox.w }
 
     topBar.acceptButton._active = false;
     topBar.denyButton._active = false;

@@ -118,7 +118,7 @@ export const start_turn = (turn_state: TurnState) =>
         }
     } else if (is_clue(board.role)) {
         if (board.role === turn_state.turn) {
-            board.topbar.text.text = 'Say a clue to your team, then choose how many chests they must open by giving them keys';
+            board.topbar.text.text = 'Say a clue to your team, then touch the number of keys you wish to give them';
             for (let button of board.topbar.clueCount) {
                 button._active = true;
             }

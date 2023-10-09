@@ -232,6 +232,7 @@ impl GameState {
                 let tick_event = intro_state.tick();
                 if tick_event.is_done() {
                     *self = Playing(PlayingState::new());
+                    return TickEvent::NeedsUpdate;
                 }
                 if let TickEvent::NeedsUpdate = tick_event {
                     return TickEvent::NeedsUpdate;
