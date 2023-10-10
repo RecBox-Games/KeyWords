@@ -5,10 +5,8 @@ import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
 import { DEFAULT_DRAWABLE_RECT } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
-import { get_state } from "../../main.js";
-import { animate_grass, render_chest_grass, render_grass } from "../../utils/render_utils.js";
-import { TurnRole, get_game_state, is_blue, is_clue } from "../../utils/state_handler.js";
-import { BLUE, BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
+import { get_game_state, is_blue, is_clue } from "../../utils/state_handler.js";
+import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 
 

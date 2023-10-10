@@ -9,8 +9,6 @@ import { size_main } from "./game/main/init.js";
 import { main_loop } from "./game/main/loop.js";
 import { size_menu } from "./game/menu/init.js";
 import { menu_loop } from "./game/menu/menu_loop.js";
-import { size_tutorial } from "./game/tutorial/tutorial_init.js";
-import { tutorial_loop } from "./game/tutorial/tutorial_loop.js";
 import { prepare_grass } from "./utils/render_utils.js";
 import { load_app, state_handler } from "./utils/state_handler.js";
 
@@ -23,7 +21,8 @@ export const set_state = (val:number) => {
     // buttons_set(false);
     };
 
-const loops:Function[] = [loading_loop, tutorial_loop, menu_loop, main_loop, end_loop]
+const loops:Function[] = [loading_loop, loading_loop, menu_loop, main_loop, end_loop]
+// TODO: get rid of the double or do greater refactor
 
 
 const app = () => {
@@ -52,7 +51,6 @@ window.onload = () => {
         //     }
         size_loading();
         size_menu();
-        size_tutorial();
         size_main();
         size_end();
         prepare_grass();

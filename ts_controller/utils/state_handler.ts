@@ -1,26 +1,12 @@
 import { get_context, init_context } from "../controller_lib/init.js";
 import { fill_end, init_end } from "../game/end/init.js";
-import { BLUE, GAME, GIVER, GUESSER, MENU, RED, TUTORIAL
-       } from "../game/interfaces.js";
+import { GAME, MENU, STARTING, OVER } from "../game/interfaces.js";
 import { init_loading } from "../game/loading/init.js";
 import { fill_board, init_main_screen } from "../game/main/init.js";
 import { init_menu } from "../game/menu/init.js";
 import { set_menu_state } from "../game/menu/menu_loop.js";
-import { init_tutorial } from "../game/tutorial/tutorial_init.js";
-import { set_tutorial_state } from "../game/tutorial/tutorial_loop.js";
 import { set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
-
-const NONE = -1;
-const MESSAE_TYPE = 0;
-const PLAYERSTATE = 1;
-const TURN_STATE = 2;
-const CHEST_STATE = 4;
-const CHOOSING = -1;
-const PLAYING = 2;
-const OVER = 4;
-
-                                                                                
 
 
 let game_state: GameState;
@@ -28,7 +14,7 @@ export const get_game_state = (): GameState => { return game_state };
 
 // combine turn and role because it's convenient (we can use if turn == role)
 export enum TurnRole {
-    Tutorial,
+    Starting,
     Over,
     Choosing,
     RedClue,
@@ -101,7 +87,7 @@ export interface GameState {
 }
 
 export interface RoleState {
-    role: TurnRole, // can't be TurnRole::{Tutorial, Over}
+    role: TurnRole, // can't be TurnRole::{Starting, Over}
     red_cluer_taken: boolean | None,
     blue_cluer_taken: boolean | None,
 }
@@ -151,9 +137,9 @@ const parse_turnrole = (msg: string, is_turn: boolean): TurnRole => {
     switch (msg) {
         case "tutorial":
             if (!is_turn) {
-                throw new Error("role cannot be 'tutorial'");
+                throw new Error("role cannot be 'tutorial' (Starting)");
             }
-            return TurnRole.Tutorial;
+            return TurnRole.Starting;
         case "over":
             if (!is_turn) {
                 throw new Error("role cannot be 'over'");
@@ -268,7 +254,6 @@ const parse_chest_state = (msg: string): ChestState => {
 export const load_app = () => {
     init_context();
     init_loading();
-    init_tutorial();
     init_menu();
     init_main_screen();
     init_end();
@@ -299,10 +284,9 @@ function handle_new_state() {
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();
-    } else if (game_state.turn_state.turn === TurnRole.Tutorial) {
-        set_state(TUTORIAL);
-        set_tutorial_state();
-    } else if (game_state.role_state.role === TurnRole.Choosing) {
+    } else if (game_state.turn_state.turn === TurnRole.Starting) {
+        set_state(STARTING);
+    } else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
         set_state(MENU);
         set_menu_state(game_state.role_state);
     } else {

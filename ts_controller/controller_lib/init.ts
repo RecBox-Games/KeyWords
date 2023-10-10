@@ -3,7 +3,6 @@ import { size_end } from "../game/end/init.js";
 import { size_loading } from "../game/loading/init.js";
 import { size_main } from "../game/main/init.js";
 import { size_menu } from "../game/menu/init.js";
-import { size_tutorial } from "../game/tutorial/tutorial_init.js";
 import { Context } from "./types/context.js";
 import { handleTouchCancel, handleClick, handleTouchEnd, handleTouchMove, handleTouchStart } from "./utils.js";
 let context:Context;

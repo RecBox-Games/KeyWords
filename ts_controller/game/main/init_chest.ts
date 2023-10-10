@@ -1,9 +1,7 @@
-import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
+import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableText } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
-import { scale_and_center } from "../../controller_lib/utils.js";
 import { get_asset } from "../../utils/assets.js";
-import { ChestState, TurnRole, TurnState, is_clue, is_guess } from "../../utils/state_handler.js";
-import { BOARD_H, GIVER, GUESSER } from "../interfaces.js";
+import { ChestState, TurnRole, is_clue } from "../../utils/state_handler.js";
 
 
 export interface Chest {

@@ -1,18 +1,13 @@
 import { buttons_add } from "../../controller_lib/button.js";
 import { drawablesAdd } from "../../controller_lib/draw.js";
-import { get_context } from "../../controller_lib/init.js";
-import { Context } from "../../controller_lib/types/context.js";
 import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
 import { get_asset } from "../../utils/assets.js";
-import { animate_grass, render_grass } from "../../utils/render_utils.js";
-import { BLUE, GIVER, GUESSER, RED } from "../interfaces.js";
 import { Menu, get_menu, size_menu } from "./init.js";
 import { RoleState, TurnRole } from "../../utils/state_handler.js";
 
 // TODO set button bounding box to be a bit bigge than text
 
 export const set_menu_state = (role_state: RoleState) => {
-    const ctx: Context = get_context();
     const menu: Menu = get_menu();
 
     menu.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }

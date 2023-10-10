@@ -139,7 +139,7 @@ export const init_main_screen = () => {
         currentGuesses:2,
         showOverlay: false,
         clue: {},
-        role: TurnRole.Tutorial,
+        role: TurnRole.Starting,
     };
     construct_Board();
     size_main();
