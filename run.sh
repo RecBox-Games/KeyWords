@@ -2,6 +2,9 @@
 
 set -e
 
+# kill last KeyWords
+grep_kill -f keywords
+
 # build controller
 cd ts_controller
 tsc
@@ -15,7 +18,9 @@ cd KeyWords
 cargo run &
 
 # open controller webpages
-google-chrome http://localhost:3000?subid=0 --new-window
-google-chrome http://localhost:3000?subid=1
-google-chrome http://localhost:3000?subid=2
-google-chrome http://localhost:3000?subid=3
+if [[ "$1" == "--chrome" ]]; then
+    google-chrome http://localhost:3000?subid=0 --new-window
+    google-chrome http://localhost:3000?subid=1
+    google-chrome http://localhost:3000?subid=2
+    google-chrome http://localhost:3000?subid=3
+fi
