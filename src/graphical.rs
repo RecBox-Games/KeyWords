@@ -383,18 +383,10 @@ impl Graphical {
                     let p = if i == deploying_state.projectiles.len() - 1 {
                         let heart_index = match team.opposite() {
                             Team::Red => {
-                                if red_health > 0 {
-                                    red_health - 1
-                                } else {
-                                    0
-                                }
+                                remove_health(red_health)
                             }
                             Team::Blue => {
-                                if blue_health > 0 {
-                                    blue_health - 1
-                                } else {
-                                    0
-                                }
+                                remove_health(blue_health)
                             }
                         };
                         let end_p = self.get_heart_location(team.opposite(), heart_index);
@@ -409,18 +401,10 @@ impl Graphical {
                     let p = if i == deploying_state.projectiles.len() - 1 {
                         let heart_index = match team {
                             Team::Red => {
-                                if red_health > 0 {
-                                    red_health - 1
-                                } else {
-                                    0
-                                }
+                                remove_health(red_health)                                
                             }
                             Team::Blue => {
-                                if red_health > 0 {
-                                    blue_health - 1
-                                } else {
-                                    0
-                                }
+                                remove_health(blue_health)
                             }
                         };
                         let end_p = self.get_heart_location(team, heart_index);
@@ -633,3 +617,7 @@ fn new_sudden_death(ctx: Ctx) -> SpriteElem {
 
 //==================================<===|===>=================================//
 
+//=========================== Helpers =========================//
+fn remove_health(health: usize) -> usize {
+    if  health > 0 { health - 1 } else { 0 }
+}
