@@ -23,4 +23,4 @@ fi
 
 # run game
 cd KeyWords
-cargo run &
+cargo run
