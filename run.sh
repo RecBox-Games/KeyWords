@@ -16,7 +16,7 @@ cd ../..
 
 set +e
 # open controller webpages
-google-chrome http://localhost:3000?subid=0 --incognito --new-window &
+google-chrome http://localhost:3000?subid=0 --incognito --new-window 
 google-chrome http://localhost:3000?subid=1 --incognito
 google-chrome http://localhost:3000?subid=2 --incognito
 google-chrome http://localhost:3000?subid=3 --incognito
