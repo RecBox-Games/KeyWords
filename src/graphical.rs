@@ -417,7 +417,7 @@ impl Graphical {
                                 }
                             }
                             Team::Blue => {
-                                if red_health > 0 {
+                                if blue_health > 0 {
                                     blue_health - 1
                                 } else {
                                     0
