@@ -64,7 +64,6 @@ pub struct Graphical {
     heart_red: SpriteElem,
     heart_blue: SpriteElem,
     // notification
-    notify_box: SpriteElem,
     red_win: SpriteElem,
     blue_win: SpriteElem,
     sudden_death: SpriteElem,
@@ -88,7 +87,6 @@ impl Graphical {
             word_meshes: HashMap::new(),
             heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4], true),
             heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4], false),
-            notify_box: new_notify_box(ctx),
             red_win: new_win_box(ctx, true),
             blue_win: new_win_box(ctx, false),
             sudden_death: new_sudden_death(ctx),
@@ -106,9 +104,6 @@ impl Graphical {
         match &state.game_state {
             GameState::Intro(IntroState::Title(prg)) => {
                 self.draw_intro_title(ctx, prg)?;
-            }
-            GameState::Intro(IntroState::TutNotify(tutnotify_state)) => {
-                self.draw_intro_tut_drop(ctx, &tutnotify_state)?;
             }
             GameState::Intro(IntroState::ChestFall(prg)) => {
                 self.draw_intro_chestfall(ctx, prg, &state.chest_states)?;
@@ -158,28 +153,6 @@ impl Graphical {
         Ok(())
     }
 
-    fn draw_intro_tut_drop(&mut self, ctx: Ctx, tutnotify_state: &NotifyState) -> GR {
-        let x = 220.0;
-        let p1 = Point {x, y: -1000.0};
-        let p2 = Point {x, y: 100.0};
-        let p3 = Point {x, y: 1100.0};
-        match tutnotify_state {
-            NotifyState::DropIn(prg) => {
-                let p = interpolate(p1, p2, Interpolation::RoundEnd, prg.as_decimal());
-                self.notify_box.draw(ctx, p)?;
-            }
-            NotifyState::In => {
-                self.notify_box.draw(ctx, p2)?;
-            }
-            NotifyState::DropOut(prg) => {
-                let p = interpolate(p2, p3, Interpolation::RoundStart, prg.as_decimal());
-                self.notify_box.draw(ctx, p)?;
-            }
-        }
-        //
-        Ok(())
-    }
-    
     fn draw_intro_chestfall(&mut self, ctx: Ctx, progress: &Progress,
                             chest_states: &Vec<Vec<ChestState>>) -> GR {
         self.draw_hearts_forming(ctx, progress.as_decimal())?;
@@ -644,12 +617,6 @@ fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
     }
     heart.set_animation(anim);
     heart
-}
-
-fn new_notify_box(ctx: Ctx) -> SpriteElem {
-    let notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
-                                     "/tut_notify.png");
-    notify_box
 }
 
 fn new_win_box(ctx: Ctx, red: bool) -> SpriteElem {
