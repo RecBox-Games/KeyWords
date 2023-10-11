@@ -1,11 +1,8 @@
-
-import { buttons_add } from "../../controller_lib/button.js";
 import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG, DrawableImage } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
-import { set_menu_state } from "../menu/menu_loop.js";
 
 export interface End {
     restartSprite: DrawableImage,
@@ -29,9 +26,6 @@ export const fill_end = () => {
     end.endSprite.image = get_asset('buttons');
     end.restartSprite.image = get_asset('buttons');
     end.bg.image = get_asset('keywords_background')
-
-    buttons_add(end.restartButton);
-    buttons_add(end.endButton);
     size_end();
 }
 
