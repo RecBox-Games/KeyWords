@@ -14,3 +14,4 @@ controller/*.js
 controller/*/*.js
 controller/*/*/*.js
 
+*.xcf
