@@ -1,5 +1,4 @@
-import { Rectangle, Circle, Point, isCircle, isRect } from "./shapes.js";
-import { Context } from "./context.js";
+import { Rectangle, Point } from "./shapes.js";
 //  text : x, y, font, text,, center, color
 //  imag : x, y, img, scale, center, rotation
 //  rect : x,y, w, h, color, outline

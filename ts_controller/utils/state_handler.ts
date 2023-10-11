@@ -4,8 +4,7 @@ import { GAME, MENU, STARTING, OVER } from "../game/interfaces.js";
 import { init_loading } from "../game/loading/init.js";
 import { fill_board, init_main_screen } from "../game/main/init.js";
 import { init_menu } from "../game/menu/init.js";
-import { set_menu_state } from "../game/menu/menu_loop.js";
-import { set_state } from "../main.js";
+import { set_menu_state, set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
 import { init_popup, post_popup } from "./popup.js";
 import { HEADER_STARTING, INSTRUCTIONS_STARTING,
@@ -328,11 +327,5 @@ function handle_new_state() {
         } else {
             end_turn();
         }
-        // LEFTOFF: post popup here unconditionally for now
     }
-    
-}
-
-function deep_copy(obj: Object) {
-    return JSON.parse(JSON.stringify(obj));
 }

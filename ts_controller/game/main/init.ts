@@ -1,17 +1,15 @@
-import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG, DrawableImage } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
-import { init_popup, fill_popup, size_popup  } from "../../utils/popup.js";
 import { size_grass } from "../../utils/render_utils.js";
 import { ChestState, None, TurnRole, is_guess } from "../../utils/state_handler.js";
-import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
+import { chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js";
-import { Overlay, construct_overlay, fill_overlay, size_overlay } from "./init_overlay.js";
-import { TopBar, construct_topbar, fill_topbar, size_topbar } from "./init_topbar.js";
+import { TopBar, construct_topbar, size_topbar } from "./init_topbar.js";
+import { fill_topbar } from "./fill_topbar.js";
 
 export interface Selector {
     red:boolean,
@@ -29,8 +27,6 @@ export interface Board {
     guessedWord: string | undefined;
     totalGuesses: number;
     currentGuesses: number | None;
-    overlay: Overlay;
-    showOverlay: boolean;
     clue: string | None;
     role: TurnRole,
     bg?: DrawableImage
@@ -48,16 +44,11 @@ const fill_board_data = (role: TurnRole, chest_states: ChestState[][]) => {
     for (let j = 0; j < BOARD_H; j += 1) {
         for (let i = 0; i < BOARD_W; i += 1) {
             fill_chest(board.chests[j][i], chest_states[j][i], role);
-            board.chests[j][i].x = j; // Not going to go fix whatever is causing this
+            board.chests[j][i].x = j;
             board.chests[j][i].y = i;
             if (is_guess(role)) {
                 board.buttons[j][i]._touchEndCallback = chest_clicked_guessser;
-            } else if (role == GIVER) {
-                board.buttons[j][i]._touchStartCallback = chest_clicked_giver;
-                board.buttons[j][i]._touchEndCallback = () => {get_board().showOverlay = false;};
-
-            }
-            buttons_add(board.buttons[j][i]);
+            } 
         }
     }
 }
@@ -95,18 +86,12 @@ const construct_board_row = (row:number): [Chest[], Button[]]  => {
 
         newButton.data = newChest;
         newButton._active = false;
-        buttons_add(newButton);
         chest_Arr.push(newChest);
         button_Arr.push(newButton);
     }
     return [chest_Arr, button_Arr]
 }
 
-// role
-// data :
-// {[..., {state, contentId, asset}, ...]
-//
-// }
 const construct_Board = () => {
     const ctx = get_context();
     const chests_arr : (Chest [])[] = [];
@@ -122,25 +107,21 @@ const construct_Board = () => {
     board.chests = chests_arr;
 }
 
-
 export const init_main_screen = () => {
     board = {
         buttons: [],
         chests: [],
         selector: construct_selector(),
         topbar: construct_topbar(),
-        overlay: construct_overlay(),
         guessedWord:undefined,
         totalGuesses: 4,
         currentGuesses:2,
-        showOverlay: false,
         clue: {},
         role: TurnRole.Starting,
     };
     construct_Board();
     size_main();
 }
-
 
 export const construct_selector = ():Selector => {
     const selector:Selector = {
@@ -155,7 +136,6 @@ export const construct_selector = ():Selector => {
 
 export const size_main = () => {
     size_topbar(board.topbar);
-    size_overlay(board.overlay, board.role);
     size_board();
     size_grass();
     board.chests.map((arr) => arr.map((e) => size_chest(e)))
@@ -169,8 +149,6 @@ export const fill_board = (role:TurnRole, data:any[]) => {
     board.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
     //
     fill_topbar(board.topbar, role);
-    fill_overlay(board.overlay, role);
     fill_board_data(role, data);
     size_main();
 }
-

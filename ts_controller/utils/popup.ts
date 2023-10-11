@@ -1,12 +1,9 @@
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT, DrawableImage,
          DrawableText } from "../controller_lib/types/drawables.js";
-import { buttons_add } from "../controller_lib/button.js";
 import { get_context } from "../controller_lib/init.js";
 import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { get_asset } from "./assets.js";
-import { set_chest_buttons_activeness, set_key_buttons_activeness,
-         set_menu_buttons_activeness } from "./utils.js";
 
 let popup:Popup;
 export const get_popup = ():Popup => {return popup};
@@ -23,31 +20,23 @@ export interface Popup {
 
 // opening and closing popup //
 export function post_popup(header: string, message: string) {
-    return;
     fill_popup();
     size_popup();
     popup.header.text = header;
     popup.message.text = message;
     popup.show = true;
     popup.x_button._active = true;
-    buttons_add(popup.x_button);
-    set_chest_buttons_activeness(false);
-    set_menu_buttons_activeness(false);
-    set_key_buttons_activeness(false);
 }
 
 export const exit_popup_clicked = (_self:Button) => {
     popup.show = false;
-    set_chest_buttons_activeness(true);
-    set_menu_buttons_activeness(true);
-    set_key_buttons_activeness(true);
+    popup.x_button._active = false;
 }
 
 // setting data for popup //
 export function init_popup() {
     var button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
     button._active = false;
-    buttons_add(button);
     popup =  {
         show: false,
         header: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "30px times"},
