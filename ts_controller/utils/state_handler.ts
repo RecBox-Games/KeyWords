@@ -300,7 +300,7 @@ function handle_new_state() {
             start_turn(game_state.turn_state);
         }
         // LEFTOFF: post popup here unconditionally for now
-        post_popup();
+        post_popup("Remove install screenn instruction will also allow every wait for all 4 roles rto join. What do we show in the starting state?");
     }
     
 }

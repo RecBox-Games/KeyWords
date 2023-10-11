@@ -58,5 +58,6 @@ export const main_loop = () => {
     if (board.popup.show) {
         drawablesAdd(board.popup.base_sprite);
         drawablesAdd(board.popup.x_sprite);
+        drawablesAdd(board.popup.message);
     }
 }

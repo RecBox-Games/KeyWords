@@ -5,15 +5,12 @@ import { Button } from "../controller_lib/types/triggerable.js";
 import { Board, get_board } from "../game/main/init.js";
 import { BOARD_H, BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
-import { buttons_len } from "../controller_lib/button.js";
 import { assetsDic, get_asset } from "./assets.js";
-import { TurnRole, ProposedGuess, TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
+import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
 
 
-export const set_chests_status = (status:boolean) =>
-{
+export const set_chests_active = (status:boolean) => {
     const board:Board = get_board();
-    console.log("sets status", status, buttons_len())
     for (let i = 0; i < BOARD_W; i += 1) {
         for (let j = 0; j < BOARD_W; j += 1) {
             if (!board.chests[i][j].state.open) {
@@ -67,12 +64,6 @@ export const chest_clicked_guessser = (self:Button) => {
     }
     ctx.ws.send('input:guess' + ',' + (((self.data as Chest).x) | 0).toString() +
         ',' +  (((self.data as Chest).y) | 0).toString())
-}
-
-export const cancel_clicked = (_self:Button) => {
-    console.log("------ x clicked");
-    const board:Board = get_board();
-    board.popup.show = false;
 }
 
 export const start_turn = (turn_state: TurnState) =>
@@ -138,7 +129,7 @@ export const start_turn = (turn_state: TurnState) =>
     }
     if (!get_board().showOverlay) {
         console.log("No overlay")
-        set_chests_status(true);
+        set_chests_active(true);
     }
 }
 
@@ -149,7 +140,7 @@ export const end_turn = () =>
     board.topbar.subText.text = "";
     board.currentGuesses = 0;
     board.totalGuesses = 0;
-    set_chests_status(false);
+    set_chests_active(false);
      for (let button of board.topbar.clueCount)
     {
         button._active = false;
@@ -172,7 +163,7 @@ export const open_chest = (id:number) => {
     board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
     board.showOverlay = true;
-    set_chests_status(false);
+    set_chests_active(false);
     (board.overlay.exit as Button)._active = true;
     for (let y = 0; y < BOARD_H; y += 1) {
         for (let x = 0; x < BOARD_W; x += 1) {
@@ -191,7 +182,7 @@ export const close_overlay = () =>{
     console.log("close overlay");
     board.showOverlay = false;
     (board.overlay.exit as Button)._active = false;
-    set_chests_status(true);
+    set_chests_active(true);
     board.guessedWord = undefined;
 }
 
@@ -205,7 +196,7 @@ export const confirm_guess = () => {
     board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
     // board.showOverlay = true;
-    set_chests_status(false);
+    set_chests_active(false);
     // (board.overlay.exit as Button)._active = true;
     console.log("confirm",board.overlay.exit)
 }

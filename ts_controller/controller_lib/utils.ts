@@ -1,4 +1,4 @@
-import { buttons_update } from "./button.js";
+import { buttons_try_trigger } from "./button.js";
 import { get_context } from "./init.js";
 import { Point, Rectangle } from "./types/shapes.js";
 
@@ -41,22 +41,22 @@ export const handleClick = (x, y) => {
 
 // Handle a single touch as it starts
 export const handleTouchStart = (id, x, y) => {
-	buttons_update(<Point>{x:x, y:y}, TOUCH_START);
+	buttons_try_trigger(<Point>{x:x, y:y}, TOUCH_START);
 }
 
 // Handle a single touch that has moved
 export const handleTouchMove = (id, x, y) => {
-        buttons_update(<Point>{x:x, y:y}, TOUCH_MOVE);
+        buttons_try_trigger(<Point>{x:x, y:y}, TOUCH_MOVE);
 }
 
 // Handle a single touch that has ended
 export const handleTouchEnd = (id, x, y) => {
-    buttons_update(<Point>{x:x, y:y}, TOUCH_END);
+    buttons_try_trigger(<Point>{x:x, y:y}, TOUCH_END);
 }
 
 // Handle a single touch that has ended in an unexpected way
 //TODO : Find a way to disable right click menu on long presses
 export const handleTouchCancel = (id, x, y) => {
-     buttons_update(<Point>{x:x, y:y}, TOUCH_END);
+     buttons_try_trigger(<Point>{x:x, y:y}, TOUCH_END);
 }
 
