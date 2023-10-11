@@ -120,8 +120,9 @@ export const start_turn = (turn_state: TurnState) => {
         const input = document.getElementById("clue_input");
         if (board.role === turn_state.turn) {
             board.topbar.text.text = "Give your teammate a clue";
-            if (input){
+            if (input) {
                 present_input(input);
+                listner_handler(input);
                 input.blur();
             }
             for (let button of board.topbar.clueCount) {
@@ -132,7 +133,7 @@ export const start_turn = (turn_state: TurnState) => {
             //    add buttons
         }
         else {
-            board.topbar.text.text ="";
+            board.topbar.text.text = "";
             if (input) input.style.display = 'none';
             for (let button of board.topbar.clueCount) {
                 button._active = false;
@@ -234,30 +235,34 @@ export const confirm_clue = (amount: number) => {
 
 function present_input(input: HTMLElement) {
     input.style.display = "flex";
-    input.style.position = "fixed";
-    input.style.left = "68vw";
-    input.style.width = "20%";
-    input.style.fontSize = "20px";
-    input.style.background = "transparent";
+    input.style.top = "0vh";
+    input.style.position = "Absolute";
+    input.style.left = "67.75vw";
+    input.style.width = "11.5%";
+    input.style.fontSize = "15px";
+    input.style.background = "tansparent";
     input.style.border = "none";
     input.style.borderBottom = "2px solid white";
-    input.style.paddingBottom = "4px";
-    input.style.paddingLeft = "12px";
-    input.style.paddingRight = "12px";
     input.style.color = "black";
-    input.style.fontWeight = "bold";   
-
+    input.style.fontWeight = "bold";
     (input as HTMLInputElement).value = "";
+}
+
+function listner_handler(input: HTMLElement) {
     input.onchange = handle_input;
+
+    // touchstart handler
     document.addEventListener('touchstart', function(e) {
         if (input === document.activeElement) {
             handle_input(e);
         }
     });
+
+    // blur handler with delay
     input.addEventListener("blur", function(e) {
         setTimeout(function() {
             handle_input(e);
-        }, 50);
+        }, 500);
     });
 }
 
