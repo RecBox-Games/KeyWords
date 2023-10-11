@@ -10,7 +10,7 @@ import { main_loop } from "./game/main/loop.js";
 import { size_menu } from "./game/menu/init.js";
 import { menu_loop } from "./game/menu/menu_loop.js";
 import { prepare_grass } from "./utils/render_utils.js";
-import { load_app, state_handler } from "./utils/state_handler.js";
+import { load_app, handle_message } from "./utils/state_handler.js";
 
 let state = 0;
 
@@ -26,7 +26,7 @@ const loops:Function[] = [loading_loop, loading_loop, menu_loop, main_loop, end_
 
 
 const app = () => {
-    state_handler();
+    handle_message();
     loops[state]();
     drawablesRenderAll();
     window.requestAnimationFrame(app);

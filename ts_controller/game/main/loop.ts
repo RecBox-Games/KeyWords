@@ -1,5 +1,3 @@
-
-
 import { drawablesAdd } from "../../controller_lib/draw.js";
 import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
@@ -56,5 +54,8 @@ export const main_loop = () => {
         drawablesAdd(board.overlay.box);
         drawablesAdd(board.overlay.subtext);
         drawablesAdd(board.overlay.item);
+    }
+    if (board.popup.show) {
+        drawablesAdd(board.popup.sprite);
     }
 }

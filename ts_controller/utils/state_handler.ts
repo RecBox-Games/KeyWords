@@ -7,6 +7,7 @@ import { init_menu } from "../game/menu/init.js";
 import { set_menu_state } from "../game/menu/menu_loop.js";
 import { set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
+import { post_popup } from "./popup.js";
 
 
 let game_state: GameState;
@@ -260,9 +261,7 @@ export const load_app = () => {
 }
 
 
-
-
-export const state_handler = () => {
+export const handle_message = () => {
     const ctx = get_context();
     if (ctx.wsMessage) {
         const msg = ctx.wsMessage;
@@ -281,6 +280,7 @@ export const state_handler = () => {
 
 
 function handle_new_state() {
+    //var last_turn_state = deep_copy(game_state.turn_state);
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();
@@ -299,5 +299,15 @@ function handle_new_state() {
         } else {
             start_turn(game_state.turn_state);
         }
+        // LEFTOFF: post popup here unconditionally for now
+        post_popup();
     }
+    
 }
+
+
+
+/*function deep_copy(obj: Object) {
+    return JSON.parse(JSON.stringify(obj));
+}
+*/

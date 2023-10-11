@@ -1,4 +1,4 @@
-import { buttons_add, buttons_flush, buttons_len, buttons_log } from "../../controller_lib/button.js";
+import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG, DrawableImage } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
@@ -7,7 +7,7 @@ import { get_asset } from "../../utils/assets.js";
 import { size_grass } from "../../utils/render_utils.js";
 import { ChestState, None, TurnRole, is_guess } from "../../utils/state_handler.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
-import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../interfaces.js";
+import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js";
 import { Overlay, construct_overlay, fill_overlay, size_overlay } from "./init_overlay.js";
 import { TopBar, construct_topbar, fill_topbar, size_topbar } from "./init_topbar.js";
@@ -21,6 +21,11 @@ export interface Selector {
 }
 
 
+export interface Popup {
+    sprite: DrawableImage,
+    show: boolean,
+}
+
 export interface Board {
     chests: Chest[][];
     topbar: TopBar;
@@ -33,15 +38,12 @@ export interface Board {
     showOverlay: boolean;
     clue: string | None;
     role: TurnRole,
+    popup: Popup,
     bg?: DrawableImage
 }
 
 let board:Board;
 export const get_board = ():Board => {return board};
-
-// const construct_chestGiver = (x:number, y: number, box:Rectangle) => {
-
-// }
 
 const fill_board_data = (role: TurnRole, chest_states: ChestState[][]) => {
     board.role = role;
@@ -86,6 +88,7 @@ const size_board = () => {
         boundingBox.x = ctx.dimensions.y * 0.15;
         boundingBox.y += gapy + boundingBox.h + 2;
     }
+    size_popup();
 }
 
 
@@ -140,6 +143,7 @@ export const init_main_screen = () => {
         showOverlay: false,
         clue: {},
         role: TurnRole.Starting,
+        popup: construct_popup(),
     };
     construct_Board();
     size_main();
@@ -166,18 +170,40 @@ export const size_main = () => {
 }
 
 export const fill_board = (role:TurnRole, data:any[]) => {
-    // buttons_flush();
-    if (!board)
+    if (!board) {
         init_main_screen();
-
+    }
     console.log("filling board")
     board.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
-
-
+    //
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
     fill_board_data(role, data);
+    fill_popup();
     size_main();
+}
 
-    // buttons_log();
+function construct_popup(): Popup {
+    var image =  get_asset('popup');
+    return {
+        sprite: {...DEFAULT_DRAWABLE_IMG },
+        show: false,
+    }
+}
+
+function size_popup() {
+    const ctx = get_context();
+    const boundingBox:Rectangle = {
+        x: ctx.dimensions.x * 0.20,
+        y: ctx.dimensions.y * 0.20,
+        h: ctx.dimensions.y * 0.60,
+        w: ctx.dimensions.x * 0.60,
+    };
+    board.popup.sprite.dst = boundingBox;
+}
+
+function fill_popup() {
+    board.popup.sprite.image = get_asset('popup');
+    board.popup.sprite.src = {x:0, y:0, w:200, h:100};
+
 }
