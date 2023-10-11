@@ -23,6 +23,7 @@ export interface Popup {
 
 // opening and closing popup //
 export function post_popup(header: string, message: string) {
+    return;
     fill_popup();
     size_popup();
     popup.header.text = header;
