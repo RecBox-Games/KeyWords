@@ -14,14 +14,14 @@ export const get_game_state = (): GameState => { return game_state };
 
 // combine turn and role because it's convenient (we can use if turn == role)
 export enum TurnRole {
-    Starting,
-    Over,
-    Choosing,
-    RedClue,
-    RedGuess,
-    BlueClue,
-    BlueGuess,
-    None,
+    Starting, // turn
+    Over, // turn
+    Choosing, // turn
+    RedClue, // role
+    RedGuess, //role
+    BlueClue, //role
+    BlueGuess, //role
+    None, // neither
 }
 
 export function is_red(turnrole: TurnRole): boolean {
@@ -77,7 +77,7 @@ export function is_playing(turnrole: TurnRole): boolean {
 }
 
 
-export interface None {}
+export interface None { }
 
 export interface GameState {
     role_state: RoleState,
@@ -284,12 +284,15 @@ function handle_new_state() {
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();
-    } else if (game_state.turn_state.turn === TurnRole.Starting) {
+    }
+    else if (game_state.turn_state.turn === TurnRole.Starting) {
         set_state(STARTING);
-    } else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
+    }
+    else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
         set_state(MENU);
         set_menu_state(game_state.role_state);
-    } else {
+    }
+    else {
         set_state(GAME);
         fill_board(game_state.role_state.role, game_state.chests_5x5_state);
         const turnTeam = is_red(game_state.turn_state.turn) ? 'red' : 'blue';
