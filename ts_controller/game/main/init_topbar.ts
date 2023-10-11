@@ -1,13 +1,12 @@
 import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
-import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
+import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableText } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 import { TurnRole } from "../../utils/state_handler.js";
 import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
-import { GUESSER } from "../interfaces.js";
 
 
 export interface TopBar {
@@ -58,10 +57,7 @@ export const size_topbar= (topBar:TopBar) =>
         topBar.clueSprites[x].dst = {...dst};
         topBar.clueSprites[x].src = {x: x* 22,y: 0, w: 22, h: 26};
         topBar.clueCount[x]._boundingBox = {...dst};
-        dst.y += dst.h + ctx.dimensions.y * 0.01
-        // topBar.clueCount.push(new Button({...dst}, undefined, undefined, () => {confirm_clue(x + 1)} ));
-        // topBar.clueCount[x]._active = false;
-        // buttons_add(topBar.clueCount[x])
+        dst.y += dst.h + ctx.dimensions.y * 0.05;
     }
 
     topBar.exit.boundingBox = {

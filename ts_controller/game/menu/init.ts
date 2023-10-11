@@ -1,7 +1,5 @@
-import { buttons_add } from "../../controller_lib/button.js";
 import { get_context } from "../../controller_lib/init.js";
-import { Context } from "../../controller_lib/types/context.js";
-import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_RECT, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableRect, DrawableText } from "../../controller_lib/types/drawables.js";
+import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableText } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
@@ -9,17 +7,17 @@ import { TurnRole } from "../../utils/state_handler.js";
 
 export interface Team {
     cluegiver: boolean,
-    name:DrawableImage,
+    name: DrawableImage,
     guesserBtn: Button,
-    giverBtn:Button,
+    giverBtn: Button,
     guesserSprite: DrawableImage,
     giverSprite: DrawableImage,
 }
 
 export interface Menu {
-    bg?:DrawableImage,
+    bg?: DrawableImage,
     role: TurnRole,
-    text:DrawableText,
+    text: DrawableText,
     blueTeam: Team,
     redTeam: Team,
     exitBtn: Button,
@@ -86,6 +84,7 @@ export const size_menu = () => {
         h: ctx.dimensions.y * 0.1,
     }
     menu.exitBtn._boundingBox = menu.exit.dst;
+
 }
 
 

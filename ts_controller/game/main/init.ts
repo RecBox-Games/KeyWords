@@ -4,7 +4,7 @@ import { DEFAULT_DRAWABLE_IMG, DrawableImage } from "../../controller_lib/types/
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
-import { Popup, construct_popup, fill_popup, size_popup  } from "../../utils/popup.js";
+import { init_popup, fill_popup, size_popup  } from "../../utils/popup.js";
 import { size_grass } from "../../utils/render_utils.js";
 import { ChestState, None, TurnRole, is_guess } from "../../utils/state_handler.js";
 import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
@@ -33,7 +33,6 @@ export interface Board {
     showOverlay: boolean;
     clue: string | None;
     role: TurnRole,
-    popup: Popup,
     bg?: DrawableImage
 }
 
@@ -83,7 +82,6 @@ const size_board = () => {
         boundingBox.x = ctx.dimensions.y * 0.15;
         boundingBox.y += gapy + boundingBox.h + 2;
     }
-    size_popup();
 }
 
 
@@ -138,7 +136,6 @@ export const init_main_screen = () => {
         showOverlay: false,
         clue: {},
         role: TurnRole.Starting,
-        popup: construct_popup(),
     };
     construct_Board();
     size_main();
@@ -175,6 +172,5 @@ export const fill_board = (role:TurnRole, data:any[]) => {
     fill_overlay(board.overlay, role);
     fill_board_data(role, data);
     size_main();
-    fill_popup();
 }
 

@@ -4,6 +4,8 @@ import { DEFAULT_DRAWABLE_IMG } from "../../controller_lib/types/drawables.js";
 import { get_asset } from "../../utils/assets.js";
 import { Menu, get_menu, size_menu } from "./init.js";
 import { RoleState, TurnRole } from "../../utils/state_handler.js";
+import { get_board } from "../main/init.js";
+import { get_popup } from "../../utils/popup.js";
 
 // TODO set button bounding box to be a bit bigge than text
 
@@ -61,4 +63,11 @@ export const menu_loop = () => {
     drawablesAdd(menu.blueTeam.guesserSprite);
     drawablesAdd(menu.redTeam.giverSprite);
     drawablesAdd(menu.redTeam.guesserSprite);
+    var popup = get_popup();
+    if (popup.show) {
+        drawablesAdd(popup.base_sprite);
+        drawablesAdd(popup.x_sprite);
+        drawablesAdd(popup.header);
+        drawablesAdd(popup.message);
+    }
 }

@@ -3,6 +3,7 @@ import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
 import { DEFAULT_DRAWABLE_RECT } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
+import { get_popup } from "../../utils/popup.js";
 import { get_game_state, is_blue, is_clue } from "../../utils/state_handler.js";
 import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
@@ -55,9 +56,11 @@ export const main_loop = () => {
         drawablesAdd(board.overlay.subtext);
         drawablesAdd(board.overlay.item);
     }
-    if (board.popup.show) {
-        drawablesAdd(board.popup.base_sprite);
-        drawablesAdd(board.popup.x_sprite);
-        drawablesAdd(board.popup.message);
+    const popup = get_popup();
+    if (popup.show) {
+        drawablesAdd(popup.base_sprite);
+        drawablesAdd(popup.x_sprite);
+        drawablesAdd(popup.header);
+        drawablesAdd(popup.message);
     }
 }

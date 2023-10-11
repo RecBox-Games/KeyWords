@@ -9,6 +9,7 @@ import { size_main } from "./game/main/init.js";
 import { main_loop } from "./game/main/loop.js";
 import { size_menu } from "./game/menu/init.js";
 import { menu_loop } from "./game/menu/menu_loop.js";
+import { size_popup } from "./utils/popup.js";
 import { prepare_grass } from "./utils/render_utils.js";
 import { load_app, handle_message } from "./utils/state_handler.js";
 
@@ -43,17 +44,12 @@ window.onload = () => {
     console.log("init");
     load_app();
     window.addEventListener("resize", (event) => {
-        // const context= get_context();
-        // if (context && context.ws && context.ws.readyState)
-        //     {
-        //         // console.log("??")
-        //         context.ws.send(" Canvas HERE size is | w: " + context.dimensions.x.toString() + " h: " + context.dimensions.y.toString());
-        //     }
         size_loading();
         size_menu();
         size_main();
         size_end();
         prepare_grass();
+        size_popup();
     })
     window.requestAnimationFrame(app);
 

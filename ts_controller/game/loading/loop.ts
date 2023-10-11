@@ -1,6 +1,7 @@
 import { drawablesAdd } from "../../controller_lib/draw.js";
 import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
+import { get_popup } from "../../utils/popup.js";
 import { Loading, get_loading } from "./init.js"
 
 export const loading_loop = () => {
@@ -23,5 +24,11 @@ export const loading_loop = () => {
     drawablesAdd(loading.barBG);
     drawablesAdd(loading.bar);
 
-    // console.log("aa", ('.'.repeat((loading.text.text.length - 'Loading'.length) % 3)));
+    var popup = get_popup();
+    if (popup.show) {
+        drawablesAdd(popup.base_sprite);
+        drawablesAdd(popup.x_sprite);
+        drawablesAdd(popup.header);
+        drawablesAdd(popup.message);
+    }
 }

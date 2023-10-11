@@ -7,16 +7,33 @@ import { BOARD_H, BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { assetsDic, get_asset } from "./assets.js";
 import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
+import { get_menu } from "../game/menu/init.js";
 
 
-export const set_chests_active = (status:boolean) => {
+export const set_menu_buttons_activeness = (activeness: boolean) => {
+    const menu = get_menu();
+    menu.redTeam.giverBtn._active = activeness;
+    menu.redTeam.guesserBtn._active = activeness;
+    menu.blueTeam.giverBtn._active = activeness;
+    menu.blueTeam.guesserBtn._active = activeness;
+    menu.exitBtn._active = activeness;
+}
+
+export const set_chest_buttons_activeness = (activeness:boolean) => {
     const board:Board = get_board();
     for (let i = 0; i < BOARD_W; i += 1) {
         for (let j = 0; j < BOARD_W; j += 1) {
             if (!board.chests[i][j].state.open) {
-                board.buttons[i][j]._active = status;
+                board.buttons[i][j]._active = activeness;
             }
         }
+    }
+}
+
+export const set_key_buttons_activeness = (activeness:boolean) => {
+    const topbar = get_board().topbar;
+    for (let i = 0; i < topbar.clueCount.length; i += 1) {
+        topbar.clueCount[i]._active = activeness;
     }
 }
 
@@ -129,7 +146,7 @@ export const start_turn = (turn_state: TurnState) =>
     }
     if (!get_board().showOverlay) {
         console.log("No overlay")
-        set_chests_active(true);
+        set_chest_buttons_activeness(true);
     }
 }
 
@@ -140,7 +157,7 @@ export const end_turn = () =>
     board.topbar.subText.text = "";
     board.currentGuesses = 0;
     board.totalGuesses = 0;
-    set_chests_active(false);
+    set_chest_buttons_activeness(false);
      for (let button of board.topbar.clueCount)
     {
         button._active = false;
@@ -182,7 +199,7 @@ export const close_overlay = () =>{
     console.log("close overlay");
     board.showOverlay = false;
     (board.overlay.exit as Button)._active = false;
-    set_chests_active(true);
+    set_chest_buttons_activeness(true);
     board.guessedWord = undefined;
 }
 
@@ -196,7 +213,7 @@ export const confirm_guess = () => {
     board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
     // board.showOverlay = true;
-    set_chests_active(false);
+    set_chest_buttons_activeness(false);
     // (board.overlay.exit as Button)._active = true;
     console.log("confirm",board.overlay.exit)
 }
