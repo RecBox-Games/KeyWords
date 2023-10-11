@@ -56,6 +56,7 @@ export const main_loop = () => {
         drawablesAdd(board.overlay.item);
     }
     if (board.popup.show) {
-        drawablesAdd(board.popup.sprite);
+        drawablesAdd(board.popup.base_sprite);
+        drawablesAdd(board.popup.x_sprite);
     }
 }

@@ -1,4 +1,4 @@
-import { buttons_flush, buttons_set } from "./controller_lib/button.js";
+import { buttons_flush } from "./controller_lib/button.js";
 import { drawablesRenderAll } from "./controller_lib/draw.js";
 import { get_context } from "./controller_lib/init.js";
 import { size_end } from "./game/end/init.js";

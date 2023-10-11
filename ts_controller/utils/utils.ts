@@ -3,9 +3,9 @@ import { get_context } from "../controller_lib/init.js";
 import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { Board, get_board } from "../game/main/init.js";
-import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../game/interfaces.js";
+import { BOARD_H, BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
-import { buttons_add, buttons_len, buttons_log } from "../controller_lib/button.js";
+import { buttons_len } from "../controller_lib/button.js";
 import { assetsDic, get_asset } from "./assets.js";
 import { TurnRole, ProposedGuess, TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
 
@@ -23,8 +23,7 @@ export const set_chests_status = (status:boolean) =>
     }
 }
 
-export const chest_clicked_giver = (self:Button) =>
-{
+export const chest_clicked_giver = (self:Button) => {
     const board:Board = get_board();
     const the_chest = (self.data as Chest)
     board.overlay.shadow = undefined;
@@ -59,8 +58,7 @@ export const chest_clicked_giver = (self:Button) =>
     board.showOverlay = true;
 }
 
-export const chest_clicked_guessser = (self:Button) =>
-{
+export const chest_clicked_guessser = (self:Button) => {
     const board:Board = get_board();
     const ctx = get_context();
     if (board.guessedWord) {
@@ -69,6 +67,12 @@ export const chest_clicked_guessser = (self:Button) =>
     }
     ctx.ws.send('input:guess' + ',' + (((self.data as Chest).x) | 0).toString() +
         ',' +  (((self.data as Chest).y) | 0).toString())
+}
+
+export const cancel_clicked = (_self:Button) => {
+    console.log("------ x clicked");
+    const board:Board = get_board();
+    board.popup.show = false;
 }
 
 export const start_turn = (turn_state: TurnState) =>

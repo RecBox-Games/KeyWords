@@ -76,7 +76,7 @@ export const construct_chest = (id:number) : Chest => {
         x: -1,
         y: -1,
         state: {word: "", open: false, content: ""},
-        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF", font:'28px arial'},
+        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF", font:'26px arial'},
         contentimg: [],
         sprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:37, h:29}}// {..box} or else it will assign as reference
         // sprite: {...DEFAULT_DRAWABLE_RECT, boundingBox: {...box}}// {..box} or else it will assign as reference

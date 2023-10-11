@@ -6,7 +6,7 @@ import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 import { size_grass } from "../../utils/render_utils.js";
 import { ChestState, None, TurnRole, is_guess } from "../../utils/state_handler.js";
-import { chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
+import { cancel_clicked, chest_clicked_giver, chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js";
 import { Overlay, construct_overlay, fill_overlay, size_overlay } from "./init_overlay.js";
@@ -20,10 +20,11 @@ export interface Selector {
     blue_sprite:DrawableImage;
 }
 
-
 export interface Popup {
-    sprite: DrawableImage,
     show: boolean,
+    base_sprite: DrawableImage,
+    x_sprite: DrawableImage,
+    x_button: Button,
 }
 
 export interface Board {
@@ -176,34 +177,48 @@ export const fill_board = (role:TurnRole, data:any[]) => {
     console.log("filling board")
     board.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
     //
+    fill_popup();
     fill_topbar(board.topbar, role);
     fill_overlay(board.overlay, role);
     fill_board_data(role, data);
-    fill_popup();
     size_main();
 }
 
 function construct_popup(): Popup {
-    var image =  get_asset('popup');
+    var button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
+    button._active = false;
+    buttons_add(button);
     return {
-        sprite: {...DEFAULT_DRAWABLE_IMG },
         show: false,
+        base_sprite: {...DEFAULT_DRAWABLE_IMG },
+        x_sprite: {...DEFAULT_DRAWABLE_IMG },
+        x_button: button,
     }
 }
 
 function size_popup() {
     const ctx = get_context();
-    const boundingBox:Rectangle = {
-        x: ctx.dimensions.x * 0.20,
-        y: ctx.dimensions.y * 0.20,
-        h: ctx.dimensions.y * 0.60,
-        w: ctx.dimensions.x * 0.60,
+    const base_box: Rectangle = {
+        x: ctx.dimensions.x * 0.16,
+        y: ctx.dimensions.y * 0.16,
+        w: ctx.dimensions.x * 0.68,
+        h: ctx.dimensions.y * 0.64,
     };
-    board.popup.sprite.dst = boundingBox;
+    board.popup.base_sprite.dst = base_box;
+    const x_box: Rectangle = {
+        x: base_box.x + base_box.w * (186/200),
+        y: base_box.y + base_box.h * (3/100),
+        w: base_box.w * (11/200),
+        h: base_box.h * (11/100),
+    }
+    board.popup.x_sprite.dst = x_box;
+    board.popup.x_button._boundingBox = base_box;
 }
 
 function fill_popup() {
-    board.popup.sprite.image = get_asset('popup');
-    board.popup.sprite.src = {x:0, y:0, w:200, h:100};
-
+    board.popup.base_sprite.image = get_asset('popup');
+    board.popup.base_sprite.src = {x:0, y:0, w:200, h:100};
+    board.popup.x_sprite.image = get_asset('x');
+    board.popup.x_sprite.src = {x:0, y:0, w:11, h:11};
+    board.popup.x_button._touchStartCallback = cancel_clicked;
 }
