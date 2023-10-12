@@ -68,7 +68,7 @@ export function size_menu() {
 }
 
 export function fill_menu() {
-    menu.base_sprite.image = get_asset('menu');
+    menu.base_sprite.image = get_asset('popup');
     menu.base_sprite.src = {x:0, y:0, w:200, h:100};
     menu.x_sprite.image = get_asset('x');
     menu.x_sprite.src = {x:0, y:0, w:11, h:11};

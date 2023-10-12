@@ -58,7 +58,7 @@ export const start_turn = (turn_state: TurnState) =>
         }
     } else if (is_clue(board.role)) {
         if (board.role === turn_state.turn) {
-            board.topbar.text.text = 'Say a clue to your team, then touch the number of keys you wish to give them';
+            board.topbar.text.text = 'Your turn. Give you team some keys.';
         } else {
             board.topbar.subText.text = '';
             board.topbar.text.text = 'Your team has ' + board.currentGuesses.toString() + ' guesses remaining';

@@ -12,7 +12,7 @@ import { role_screen_loop } from "./game/role_screen/role_screen_loop.js";
 import { get_asset } from "./utils/assets.js";
 import { size_popup } from "./utils/popup.js";
 import { prepare_grass } from "./utils/render_utils.js";
-import { load_app, handle_message, RoleState, TurnRole } from "./utils/state_handler.js";
+import { load_app, handle_message, RoleState } from "./utils/state_handler.js";
 import { DEFAULT_DRAWABLE_IMG } from "./controller_lib/types/drawables.js";
 
 let state = 0;
@@ -21,12 +21,9 @@ export const get_state = () => state;
 export const set_state = (val:number) => {
     state = val
     buttons_flush();
-    // buttons_set(false);
-    };
+};
 
 const loops:Function[] = [loading_loop, loading_loop, role_screen_loop, main_loop, end_loop]
-// TODO: get rid of the double or do greater refactor
-
 
 const app = () => {
     handle_message();
@@ -37,9 +34,9 @@ const app = () => {
 
 window.onerror = (event, source, lineno, colno, error) => {
     const ctx = get_context();
-
-    if (ctx.ws)
+    if (ctx.ws) {
         ctx.ws.send('warn:' + 'error : ' + error +'at ' + source + ' line:' + lineno);
+    }
 }
 
 window.onload = () => {
@@ -54,9 +51,7 @@ window.onload = () => {
         size_popup();
     })
     window.requestAnimationFrame(app);
-
 }
-
 
 export const set_role_screen_state = (role_state: RoleState) => {
     const role_screen: RoleScreen = get_role_screen();
@@ -78,4 +73,3 @@ export const set_role_screen_state = (role_state: RoleState) => {
         role_screen.redTeam.giverSprite.src = { x: 54 * 4 + 0.5, y: 0, h: 49, w: 54 }
     }
 }
-

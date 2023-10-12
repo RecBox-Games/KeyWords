@@ -6,7 +6,7 @@ import { get_asset } from "../../utils/assets.js";
 import { size_grass } from "../../utils/render_utils.js";
 import { ChestState, None, TurnRole, is_guess } from "../../utils/state_handler.js";
 import { chest_clicked_guessser } from "../../utils/utils.js";
-import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
+import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js";
 import { TopBar, construct_topbar, size_topbar, fill_topbar } from "./topbar.js";
 
@@ -56,21 +56,22 @@ const size_board = () => {
     const ctx = get_context();
     const cw = ctx.dimensions.x;
     const ch = ctx.dimensions.y;
+    const startx = cw* 0.12;
     const dst: Rectangle = {
-        x: cw * 0.08,
-        y: ch * 0.05,
+        x: startx,
+        y: ch * 0.08,
         w: cw * 0.172,
-        h: ch * 0.185,
+        h: ch * 0.180,
     };
     for (let y = 0; y < BOARD_H; y += 1) {
         for (let x = 0; x < BOARD_W; x += 1) {
             board.chests[y][x].sprite.dst = {...dst}
             board.chests[y][x].text.boundingBox = {...dst}
             board.buttons[y][x]._boundingBox = { x: dst.x + cw*.02, y: dst.y + ch*.02,
-                                                 w: dst.w - cw*.04, h: dst.y - ch*.04}
+                                                 w: dst.w - cw*.04, h: dst.h - ch*.04}
             dst.x += dst.w;
         }
-        dst.x = cw * 0.08;
+        dst.x = startx;
         dst.y += dst.h;
     }
 }
