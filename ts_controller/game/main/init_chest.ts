@@ -31,15 +31,18 @@ export const size_chest = (chest:Chest) => {
     const dst = chest.sprite.dst as Rectangle;
 
     img.image = get_asset(chest.state.content.slice(0, -1));
-    img.dst = {x: dst.x, y: dst.y + dst.h * 0.2, w: dst.w * 0.32 , h: dst.w * 0.3};
+    img.dst = {
+        x: dst.x,        y: dst.y + dst.h * 0.16,
+        w: dst.w * 0.32, h: dst.h * 0.47,
+    };
 
     const dest = img.dst;
 
     let startX = dst.x + (dst.w * 0.5) - ((count * ((img.dst.w + dest.w * 0.5) * 0.25)));
-    if ( count > 1)
+    if ( count > 1) {
         startX += dest.w * 0.25
-    for (let x = 0; x < chest.contentimg.length; x += 1)
-    {
+    }
+    for (let x = 0; x < chest.contentimg.length; x += 1) {
         dest.x = startX;
         chest.contentimg[x].dst = {...dest};
         startX += dest.w * 0.5;
