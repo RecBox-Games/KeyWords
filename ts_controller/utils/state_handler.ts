@@ -3,8 +3,8 @@ import { fill_end, init_end } from "../game/end/init.js";
 import { GAME, MENU, STARTING, OVER } from "../game/interfaces.js";
 import { init_loading } from "../game/loading/init.js";
 import { fill_board, init_main_screen } from "../game/main/init.js";
-import { init_menu } from "../game/menu/init.js";
-import { set_menu_state, set_state } from "../main.js";
+import { init_role_screen } from "../game/role_screen/init.js";
+import { set_role_screen_state, set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
 import { init_popup, post_popup } from "./popup.js";
 import { init_input } from "./input.js";
@@ -14,6 +14,7 @@ import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_MAKE_GUESS, INSTRUCTIONS_MAKE_GUESS,
          HEADER_SD, INSTRUCTIONS_SD,
        } from "./popup_messages.js";
+import { construct_menu, initialize_menu } from "./menu.js";
 
 
 let game_state: GameState;
@@ -262,9 +263,10 @@ const parse_chest_state = (msg: string): ChestState => {
 
 export const load_app = () => {
     init_popup();
+    construct_menu();
     init_context();
     init_loading();
-    init_menu();
+    init_role_screen();
     init_main_screen();
     init_end();
     init_input();
@@ -289,6 +291,7 @@ export const handle_message = () => {
 }
 
 function handle_new_state() {
+    initialize_menu();
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();
@@ -304,7 +307,7 @@ function handle_new_state() {
         }
     } else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
         set_state(MENU);
-        set_menu_state(game_state.role_state);
+        set_role_screen_state(game_state.role_state);
         if (last_turnrole !== TurnRole.Choosing) {
             post_popup(HEADER_CHOOSING, INSTRUCTIONS_CHOOSING);
             last_turnrole = TurnRole.Choosing;

@@ -6,8 +6,8 @@ import { Chest } from "../game/main/init_chest.js";
 import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
 import { Input, get_input, show_input, hide_input, deactivate_input, activate_input } from "./input.js";
 
-export const chest_clicked_guessser = (self:Button) => {
-    const board:Board = get_board();
+export const chest_clicked_guessser = (self: Button) => {
+    const board: Board = get_board();
     const ctx = get_context();
     if (board.guessedWord) {
         console.log("Someone already guessed a word, accept or deny ", board.guessedWord);
@@ -27,8 +27,6 @@ export const start_turn = (turn_state: TurnState) => {
         console.log("active input:" + input.is_active);
         if (board.role === turn_state.turn) {
             if (turn_state.proposed_guess.exists) {
-                board.topbar.acceptButton._active = true;
-                board.topbar.denyButton._active = true;
                 board.topbar.subText.text = "";
                 board.topbar.text.text = "Validate guess ?";
                 const x = turn_state.proposed_guess.x;
@@ -42,7 +40,6 @@ export const start_turn = (turn_state: TurnState) => {
                     selector_dst.w += 13;
                     selector_dst.h += 7;
                 }
-                console.log("------------------- ", selector_dst);
                 if (is_blue(board.role)) {
                     board.selector.red = false;
                     board.selector.blue_sprite.dst = selector_dst;
@@ -50,14 +47,12 @@ export const start_turn = (turn_state: TurnState) => {
                 else {
                     board.selector.red = true;
                     board.selector.red_sprite.dst = selector_dst;
+
                 }
-            }
-            else {
+            } else {
                 let clueText = typeof board.clue === "string" ? board.clue : '';
                 let guessesText = board.currentGuesses.toString();
                 board.topbar.text.text = "Your clue: " + clueText + ' | ' + "Keys: " + guessesText;
-                board.topbar.acceptButton._active = false;
-                board.topbar.denyButton._active = false;
             }
         }
         else {
@@ -70,25 +65,17 @@ export const start_turn = (turn_state: TurnState) => {
     }
     else if (is_clue(board.role)) {
         if (board.role === turn_state.turn) {
-            board.topbar.text.text = "Give your teammate a clue";
+            board.topbar.text.text = 'Your turn. Give you team some keys.';
             if (input) {
                 show_input();
                 add_textbox_handlers(input);
-//                add_textbox_handlers(input);
+                //                add_textbox_handlers(input);
             }
-            for (let button of board.topbar.clueCount) {
-                button._active = true;
-            }
-
-            // board.topbar.acceptButton._active = true;
-            //    add buttons
         }
         else {
-            board.topbar.text.text = "";
+            board.topbar.subText.text = '';
+            board.topbar.text.text = 'Your team has ' + board.currentGuesses.toString() + ' guesses remaining';
             if (input) hide_input();
-            for (let button of board.topbar.clueCount) {
-                button._active = false;
-            }
         }
     }
 }
@@ -116,8 +103,6 @@ export const confirm_guess = () => {
 
     ctx.ws.send('input:second,support');
     board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
-    board.topbar.acceptButton._active = false;
-    board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
 }
 
@@ -127,8 +112,6 @@ export const deny_guess = () => {
 
     ctx.ws.send('input:second,dissent');
     board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
-    board.topbar.acceptButton._active = false;
-    board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
     console.log("deny")
 }

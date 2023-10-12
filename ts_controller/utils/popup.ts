@@ -25,18 +25,15 @@ export function post_popup(header: string, message: string) {
     popup.header.text = header;
     popup.message.text = message;
     popup.show = true;
-    popup.x_button._active = true;
 }
 
 export const exit_popup_clicked = (_self:Button) => {
     popup.show = false;
-    popup.x_button._active = false;
 }
 
 // setting data for popup //
 export function init_popup() {
     var button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
-    button._active = false;
     popup =  {
         show: false,
         header: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "30px times"},

@@ -3,13 +3,13 @@ import { drawablesAdd } from "../../controller_lib/draw.js";
 import { get_context } from "../../controller_lib/init.js";
 import { Context } from "../../controller_lib/types/context.js";
 import { get_popup } from "../../utils/popup.js";
-import { Menu, get_menu } from "../menu/init.js";
+import { RoleScreen, get_role_screen } from "../role_screen/init.js";
 import { Loading, get_loading } from "./init.js"
 
 export const loading_loop = () => {
     const loading: Loading = get_loading();
     const ctx: Context = get_context();
-    const menu: Menu = get_menu();
+    const role_screen: RoleScreen = get_role_screen();
     const popup = get_popup();
 
     //////// Buttons ////////
