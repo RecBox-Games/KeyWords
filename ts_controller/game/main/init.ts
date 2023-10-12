@@ -75,7 +75,6 @@ const size_board = () => {
     }
 }
 
-
 const construct_board_row = (row:number): [Chest[], Button[]]  => {
     const chest_Arr: (Chest)[] = [];
     const button_Arr: Button[] = [];

@@ -7,6 +7,7 @@ import { init_menu } from "../game/menu/init.js";
 import { set_menu_state, set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
 import { init_popup, post_popup } from "./popup.js";
+import { init_input } from "./input.js";
 import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_CHOOSING, INSTRUCTIONS_CHOOSING,         
          HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE,
@@ -266,6 +267,7 @@ export const load_app = () => {
     init_menu();
     init_main_screen();
     init_end();
+    init_input();
 }
 
 

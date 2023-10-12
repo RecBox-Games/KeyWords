@@ -4,6 +4,7 @@ import { Board, get_board } from "../game/main/init.js";
 import { BOARD_H, BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
+import { Input, get_input, show_input, hide_input, deactivate_input, activate_input } from "./input.js";
 
 export const chest_clicked_guessser = (self:Button) => {
     const board:Board = get_board();
@@ -18,9 +19,12 @@ export const chest_clicked_guessser = (self:Button) => {
 
 export const start_turn = (turn_state: TurnState) => {
     const board: Board = get_board();
+    const input: Input = get_input();
     board.currentGuesses = turn_state.guesses_remaining;
     board.clue = turn_state.clue;
     if (is_guess(board.role)) {
+        deactivate_input();
+        console.log("active input:" + input.is_active);
         if (board.role === turn_state.turn) {
             if (turn_state.proposed_guess.exists) {
                 board.topbar.acceptButton._active = true;
@@ -65,13 +69,12 @@ export const start_turn = (turn_state: TurnState) => {
         }
     }
     else if (is_clue(board.role)) {
-        const input = document.getElementById("clue_input");
         if (board.role === turn_state.turn) {
             board.topbar.text.text = "Give your teammate a clue";
             if (input) {
-                present_input(input);
-                listner_handler(input);
-                input.blur();
+                show_input();
+                add_textbox_handlers(input);
+//                add_textbox_handlers(input);
             }
             for (let button of board.topbar.clueCount) {
                 button._active = true;
@@ -82,7 +85,7 @@ export const start_turn = (turn_state: TurnState) => {
         }
         else {
             board.topbar.text.text = "";
-            if (input) input.style.display = 'none';
+            if (input) hide_input();
             for (let button of board.topbar.clueCount) {
                 button._active = false;
             }
@@ -139,46 +142,17 @@ export const confirm_clue = (amount: number) => {
     ctx.ws.send("input:clue," + board.clue + "," + amount.toString());
 }
 
-function present_input(input: HTMLElement) {
-    input.style.display = "flex";
-    input.style.top = "0vh";
-    input.style.position = "Absolute";
-    input.style.left = "67.75vw";
-    input.style.width = "11.5%";
-    input.style.fontSize = "15px";
-    input.style.background = "tansparent";
-    input.style.border = "none";
-    input.style.borderBottom = "2px solid white";
-    input.style.color = "black";
-    input.style.fontWeight = "bold";
-    (input as HTMLInputElement).value = "";
-}
-
-function listner_handler(input: HTMLElement) {
-    input.onchange = handle_input;
-
-    // touchstart handler
-    document.addEventListener('touchstart', function(e) {
-        if (input === document.activeElement) {
-            handle_input(e);
-        }
-    });
-
-    // blur handler with delay
-    input.addEventListener("blur", function(e) {
-        setTimeout(function() {
-            handle_input(e);
-        }, 500);
-    });
+function add_textbox_handlers(input: Input) {
+    input.element.onchange = activate_input;
+    input.element.addEventListener("blur", handle_input);
 }
 
 function handle_input(e: Event) {
+    deactivate_input();
+
+    console.log("rectivate");
     if ((e.target as HTMLInputElement).value != "") {
         get_board().clue = (e.target as HTMLInputElement).value;
-        get_board().topbar.acceptButton._active = true;
-    }
-    else {
-        get_board().topbar.acceptButton._active = false;
     }
     console.log((e.target as HTMLInputElement).value);
 }
