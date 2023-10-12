@@ -11,10 +11,10 @@ export const INSTRUCTIONS_CHOOSING =
 
 export const HEADER_GIVE_CLUE = "Your Turn: Give a Clue";
 export const INSTRUCTIONS_GIVE_CLUE =
-    "Take a good look at the chests and their contents. You need to come up " +
-    "with a single-word clue to give your team in order to get them to open " +
-    "chests with swords to attack the enemy team (and avoid chests with harmful " +
-    "bombs). When you're ready, say the word out load to your team then choose " +
+    "Take a look at the chests and their contents. You need to come up " +
+    "with a single-word clue to give your team to get them to open " +
+    "chests with swords which damage the enemy team (and avoid chests with " +
+    "bombs). When you're ready, type the word in the top right box (or say it aloud) then choose " +
     "how many chests you want them to open by tapping that number of keys on " +
     "the left of your screen.";
 

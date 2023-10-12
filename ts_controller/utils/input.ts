@@ -45,7 +45,7 @@ export function style_placeholder() {
     const style = document.createElement('style');
     style.innerHTML = `
 .uniqueInput::placeholder {
-    color: red;
+    color: #666666;
   }
 `;
     document.head.appendChild(style);
@@ -54,17 +54,18 @@ export function style_placeholder() {
 
 export function style_input() {
     input.element.type = 'text';
-    input.element.placeholder = 'enter clue here';
+    input.element.placeholder = ' Enter clue here';
     input.element.style.display = 'none';
-    input.element.style.top = '-.1vh';
     input.element.style.position = 'Absolute';
-    input.element.style.left = "74.5vw";
-    input.element.style.width = '15%';
-    input.element.style.fontSize = '20px';
-    input.element.style.background = '#2eaf5b';
-    input.element.style.border = 'none';
+    input.element.style.fontSize = '24px';
+    input.element.style.background = '#eaeae8';
+    input.element.style.border = '2px solid black';
     input.element.style.color = 'black';
     input.element.style.fontWeight = 'bold';
+
+    input.element.style.top = '-.1v';
+    input.element.style.left = "75%";
+    input.element.style.width = '19%';
 }
 
 
