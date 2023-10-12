@@ -39,7 +39,7 @@ export const size_topbar= (topBar:TopBar) => {
     topBar.denyButton._boundingBox = topBar.deny.dst;
     //
     const dst: Rectangle = {
-        x: ctxw * 0.018, y: ctxh * 0.13,
+        x: ctxw * 0.018, y: ctxh * 0.135,
         w: ctxw * 0.09, h: ctxh * 0.16,
     };
     const margin = ctxh * 0.03;
