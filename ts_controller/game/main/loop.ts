@@ -86,6 +86,7 @@ export const main_loop = () => {
     drawablesAdd(board.topbar.text);
     if (is_clue(role) && role === turn) {
         for (let i in board.topbar.keyButtons) {
+            drawablesAdd(board.topbar.keyBgSprites[i]);
             drawablesAdd(board.topbar.keySprites[i]);
         }
     }

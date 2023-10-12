@@ -8,6 +8,7 @@ const assetsSrc = [
     `chest_contents.png`,
     `heal.png`,
     `keys.png`,
+    `key_bg.png`,
     `keywords_background.png`,
     `popup.png`,
     `x.png`,
