@@ -13,7 +13,7 @@ import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_MAKE_GUESS, INSTRUCTIONS_MAKE_GUESS,
          HEADER_SD, INSTRUCTIONS_SD,
        } from "./popup_messages.js";
-import { init_menu } from "./menu.js";
+import { construct_menu, initialize_menu } from "./menu.js";
 
 
 let game_state: GameState;
@@ -262,7 +262,7 @@ const parse_chest_state = (msg: string): ChestState => {
 
 export const load_app = () => {
     init_popup();
-    init_menu();
+    construct_menu();
     init_context();
     init_loading();
     init_role_screen();
@@ -289,6 +289,7 @@ export const handle_message = () => {
 }
 
 function handle_new_state() {
+    initialize_menu();
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();

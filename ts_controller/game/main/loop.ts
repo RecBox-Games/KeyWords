@@ -33,7 +33,7 @@ export const main_loop = () => {
     } else {
 
         // menu button
-        buttons_add(board.topbar.menuButton);
+        buttons_add(menu.open_button);
 
         // guess accept/deny
         if (get_game_state().turn_state.proposed_guess.exists) {
@@ -80,7 +80,7 @@ export const main_loop = () => {
     }
     
     // topbar (including key buttons)
-    drawablesAdd(board.topbar.menu);
+    drawablesAdd(menu.open_sprite);
     drawablesAdd(board.topbar.text);
     if (is_clue(role) && role === turn) {
         for (let i in board.topbar.keyButtons) {
@@ -111,9 +111,10 @@ export const main_loop = () => {
         drawablesAdd(popup.header);
         drawablesAdd(popup.message);
     }
+
     // menu
     else if (menu.show) {
-        drawablesAdd(menu.base_sprite);
+        drawablesAdd(menu.container_sprite);
         drawablesAdd(menu.x_sprite);
         drawablesAdd(menu.header);
     }
