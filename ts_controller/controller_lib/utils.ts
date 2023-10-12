@@ -55,7 +55,7 @@ export const handleTouchEnd = (id, x, y) => {
 }
 
 // Handle a single touch that has ended in an unexpected way
-//TODO : Find a way to disable right click menu on long presses
+//TODO : Find a way to disable right click role_screen on long presses
 export const handleTouchCancel = (id, x, y) => {
      buttons_try_trigger(<Point>{x:x, y:y}, TOUCH_END);
 }

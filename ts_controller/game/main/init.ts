@@ -8,8 +8,7 @@ import { ChestState, None, TurnRole, is_guess } from "../../utils/state_handler.
 import { chest_clicked_guessser } from "../../utils/utils.js";
 import { BOARD_H, BOARD_W, GIVER } from "../interfaces.js";
 import { Chest, construct_chest, fill_chest, size_chest } from "./init_chest.js";
-import { TopBar, construct_topbar, size_topbar } from "./init_topbar.js";
-import { fill_topbar } from "./fill_topbar.js";
+import { TopBar, construct_topbar, size_topbar, fill_topbar } from "./topbar.js";
 
 export interface Selector {
     red:boolean,
@@ -55,23 +54,24 @@ const fill_board_data = (role: TurnRole, chest_states: ChestState[][]) => {
 
 const size_board = () => {
     const ctx = get_context();
-    const gapy = ctx.dimensions.y * 0.0001;
-    const gapx = 0;
-    const boundingBox:Rectangle = {
-            x:  ctx.dimensions.y * 0.15,
-            y: (ctx.dimensions.y * 0.05),
-            h: (ctx.dimensions.y * 0.185),
-            w: ctx.dimensions.x * 0.172
-        };
+    const cw = ctx.dimensions.x;
+    const ch = ctx.dimensions.y;
+    const dst: Rectangle = {
+        x: cw * 0.08,
+        y: ch * 0.05,
+        w: cw * 0.172,
+        h: ch * 0.185,
+    };
     for (let y = 0; y < BOARD_H; y += 1) {
         for (let x = 0; x < BOARD_W; x += 1) {
-            board.chests[y][x].sprite.dst = {...boundingBox}
-            board.chests[y][x].text.boundingBox = {...boundingBox}
-            board.buttons[y][x]._boundingBox = {...boundingBox}
-            boundingBox.x += gapx + boundingBox.w;
+            board.chests[y][x].sprite.dst = {...dst}
+            board.chests[y][x].text.boundingBox = {...dst}
+            board.buttons[y][x]._boundingBox = { x: dst.x + cw*.02, y: dst.y + ch*.02,
+                                                 w: dst.w - cw*.04, h: dst.y - ch*.04}
+            dst.x += dst.w;
         }
-        boundingBox.x = ctx.dimensions.y * 0.15;
-        boundingBox.y += gapy + boundingBox.h + 2;
+        dst.x = cw * 0.08;
+        dst.y += dst.h;
     }
 }
 
@@ -83,9 +83,7 @@ const construct_board_row = (row:number): [Chest[], Button[]]  => {
     for (let x = 0; x < BOARD_W; x += 1) {
         let newChest:Chest = construct_chest(x + (BOARD_W * row)) ;
         let newButton:Button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
-
         newButton.data = newChest;
-        newButton._active = false;
         chest_Arr.push(newChest);
         button_Arr.push(newButton);
     }
@@ -93,16 +91,14 @@ const construct_board_row = (row:number): [Chest[], Button[]]  => {
 }
 
 const construct_Board = () => {
-    const ctx = get_context();
     const chests_arr : (Chest [])[] = [];
     const buttons_arr: (Button[])[] = [];
 
     for (let y = 0; y < BOARD_H; y += 1) {
         const [chests, buttons] = construct_board_row(y);
-
         chests_arr.push(chests);
         buttons_arr.push(buttons);
-    };
+    }
     board.buttons = buttons_arr;
     board.chests = chests_arr;
 }

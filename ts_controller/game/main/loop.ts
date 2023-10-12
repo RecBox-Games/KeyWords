@@ -15,6 +15,8 @@ export const main_loop = () => {
     const ctx:Context = get_context();
     const rect:Rectangle = {x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y};
     const popup = get_popup();
+    const role = get_game_state().role_state.role;
+    const turn = get_game_state().turn_state.turn;
 
     //////// Buttons ////////
     buttons_flush();
@@ -36,8 +38,8 @@ export const main_loop = () => {
             buttons_add(board.topbar.acceptButton);
             buttons_add(board.topbar.denyButton);
         }
-        for (let i in board.topbar.clueCount) {
-            if (board.topbar.clueCount[i]._active) {
+        if (is_clue(role) && role === turn) {
+            for (let i in board.topbar.clueCount) {
                 buttons_add(board.topbar.clueCount[i]);
             }
         }
@@ -65,8 +67,8 @@ export const main_loop = () => {
     
     // topbar (including key buttons)
     drawablesAdd(board.topbar.text);
-    for (let i in board.topbar.clueCount) {
-        if (board.topbar.clueCount[i]._active) {
+    if (is_clue(role) && role === turn) {
+        for (let i in board.topbar.clueCount) {
             drawablesAdd(board.topbar.clueSprites[i]);
         }
     }

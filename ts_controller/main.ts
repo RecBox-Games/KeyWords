@@ -7,8 +7,8 @@ import { size_loading } from "./game/loading/init.js";
 import { loading_loop } from "./game/loading/loop.js";
 import { size_main } from "./game/main/init.js";
 import { main_loop } from "./game/main/loop.js";
-import { Menu, get_menu, size_menu } from "./game/menu/init.js";
-import { menu_loop } from "./game/menu/menu_loop.js";
+import { RoleScreen, get_role_screen, size_role_screen } from "./game/role_screen/init.js";
+import { role_screen_loop } from "./game/role_screen/role_screen_loop.js";
 import { get_asset } from "./utils/assets.js";
 import { size_popup } from "./utils/popup.js";
 import { prepare_grass } from "./utils/render_utils.js";
@@ -24,7 +24,7 @@ export const set_state = (val:number) => {
     // buttons_set(false);
     };
 
-const loops:Function[] = [loading_loop, loading_loop, menu_loop, main_loop, end_loop]
+const loops:Function[] = [loading_loop, loading_loop, role_screen_loop, main_loop, end_loop]
 // TODO: get rid of the double or do greater refactor
 
 
@@ -47,7 +47,7 @@ window.onload = () => {
     load_app();
     window.addEventListener("resize", (event) => {
         size_loading();
-        size_menu();
+        size_role_screen();
         size_main();
         size_end();
         prepare_grass();
@@ -58,36 +58,24 @@ window.onload = () => {
 }
 
 
-export const set_menu_state = (role_state: RoleState) => {
-    const menu: Menu = get_menu();
+export const set_role_screen_state = (role_state: RoleState) => {
+    const role_screen: RoleScreen = get_role_screen();
 
-    menu.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
-    size_menu();
+    role_screen.bg = {...DEFAULT_DRAWABLE_IMG, image: get_asset('keywords_background'), }
+    size_role_screen();
 
-    menu.role = role_state.role;
-    menu.redTeam.cluegiver = role_state.red_cluer_taken == true ? true : false;
-    menu.blueTeam.cluegiver = role_state.blue_cluer_taken == true ? true : false;
-    if (role_state.role == TurnRole.Choosing) {
-        if (!role_state.blue_cluer_taken) {
-            menu.blueTeam.giverSprite.src = {x:54 * 2 + 0.5, y:0, h:49, w:54}
-        } else {
-            menu.blueTeam.giverSprite.src = {x:54 * 4 + 0.5, y:0, h:49, w:54}
-        }
-        if (!role_state.red_cluer_taken) {
-            menu.redTeam.giverSprite.src = {x: 54 * 3 + 0.5, y:0, h:49, w:54}
-        } else {
-            menu.redTeam.giverSprite.src = {x: 54 * 4 + 0.5, y:0, h:49, w:54}
-        }
-        menu.blueTeam.giverBtn._active = true;
-        menu.blueTeam.guesserBtn._active = true;
-        menu.redTeam.giverBtn._active = true;
-        menu.redTeam.guesserBtn._active = true;
+    role_screen.role = role_state.role;
+    role_screen.redTeam.cluegiver = role_state.red_cluer_taken == true ? true : false;
+    role_screen.blueTeam.cluegiver = role_state.blue_cluer_taken == true ? true : false;
+    if (!role_state.blue_cluer_taken) {
+        role_screen.blueTeam.giverSprite.src = { x: 54 * 2 + 0.5, y: 0, h: 49, w: 54 }
     } else {
-        menu.blueTeam.giverBtn._active = false;
-        menu.blueTeam.guesserBtn._active = false;
-        menu.redTeam.giverBtn._active = false;
-        menu.redTeam.guesserBtn._active = false;
-        menu.text.text = "Waiting for game to start...";
+        role_screen.blueTeam.giverSprite.src = { x: 54 * 4 + 0.5, y: 0, h: 49, w: 54 }
+    }
+    if (!role_state.red_cluer_taken) {
+        role_screen.redTeam.giverSprite.src = { x: 54 * 3 + 0.5, y: 0, h: 49, w: 54 }
+    } else {
+        role_screen.redTeam.giverSprite.src = { x: 54 * 4 + 0.5, y: 0, h: 49, w: 54 }
     }
 }
 
