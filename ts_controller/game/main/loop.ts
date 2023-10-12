@@ -9,6 +9,7 @@ import { get_popup } from "../../utils/popup.js";
 import { get_game_state, is_blue, is_clue, is_guess } from "../../utils/state_handler.js";
 import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
+import { get_input } from "../../utils/input.js";
 
 
 export const main_loop = () => {
@@ -18,6 +19,8 @@ export const main_loop = () => {
     const menu = get_menu();
     const role = get_game_state().role_state.role;
     const turn = get_game_state().turn_state.turn;
+    const input = get_input();
+
 
     //////// Buttons ////////
     buttons_flush();
@@ -27,6 +30,11 @@ export const main_loop = () => {
         buttons_add(popup.x_button);
     }
 
+    // input box
+    else if (input.is_active) {
+        console.log("input is active");
+    }
+    
     // menu
     else if (menu.is_showing) {
         buttons_add(menu.x_button);        
@@ -34,6 +42,9 @@ export const main_loop = () => {
         buttons_add(menu.toggle_walkthrough_button);        
     } else {
 
+        console.log("input is not active");
+
+        
         // menu button
         buttons_add(menu.open_button);
 
@@ -59,7 +70,7 @@ export const main_loop = () => {
             }
         }
     }
-    
+
     //////// Drawables ////////
     // board
     if (board.bg) {
@@ -80,7 +91,7 @@ export const main_loop = () => {
             }
         }
     }
-    
+
     // topbar (including key buttons)
     drawablesAdd(menu.open_sprite);
     drawablesAdd(board.topbar.text);
@@ -101,9 +112,9 @@ export const main_loop = () => {
     // selector
     if (get_game_state().turn_state.proposed_guess.exists && board.role === get_game_state().turn_state.turn) {
         if (board.selector.red) {
-            drawablesAdd(board.selector.red_sprite);         
+            drawablesAdd(board.selector.red_sprite);
         } else {
-            drawablesAdd(board.selector.blue_sprite);            
+            drawablesAdd(board.selector.blue_sprite);
         }
     }
 
