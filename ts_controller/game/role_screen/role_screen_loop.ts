@@ -17,13 +17,15 @@ export const role_screen_loop = () => {
     //////// Buttons ////////
     buttons_flush();
     // popup
-    if (popup.show) {
+    if (popup.is_showing) {
         buttons_add(popup.x_button);
     }
 
     // menu
-    else if (menu.show) {
-        buttons_add(menu.x_button);
+    else if (menu.is_showing) {
+        buttons_add(menu.x_button);        
+        buttons_add(menu.end_game_button);        
+        buttons_add(menu.toggle_walkthrough_button);        
     } else {
 
         // menu open button
@@ -57,7 +59,7 @@ export const role_screen_loop = () => {
     drawablesAdd(role_screen.redTeam.guesserSprite);
 
     // popup
-    if (popup.show) {
+    if (popup.is_showing) {
         drawablesAdd(popup.base_sprite);
         drawablesAdd(popup.x_sprite);
         drawablesAdd(popup.header);
@@ -65,9 +67,16 @@ export const role_screen_loop = () => {
     }
 
     // menu
-    else if (menu.show) {
+    else if (menu.is_showing) {
         drawablesAdd(menu.container_sprite);
         drawablesAdd(menu.x_sprite);
         drawablesAdd(menu.header);
+        drawablesAdd(menu.end_game_sprite);
+        drawablesAdd(menu.toggle_walkthrough_sprite);
+        if (menu.is_tut_enabled) {
+            drawablesAdd(menu.tut_enabled_sprite);
+        } else {
+            drawablesAdd(menu.tut_disabled_sprite);
+        }            
     }
 }

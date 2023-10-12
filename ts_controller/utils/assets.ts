@@ -11,6 +11,7 @@ const assetsSrc = [
     `keywords_background.png`,
     `popup.png`,
     `x.png`,
+    `tut_enable.png`,
     `loading.png`,
     `roles.png`,
     `sword.png`,

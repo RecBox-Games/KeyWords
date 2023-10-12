@@ -20,8 +20,6 @@ export interface RoleScreen {
     text: DrawableText,
     blueTeam: Team,
     redTeam: Team,
-    exitBtn: Button,
-    exit: DrawableImage,
 }
 
 let role_screen:RoleScreen;
@@ -73,15 +71,6 @@ export const size_role_screen = () => {
     box.x += box.w + ctx.dimensions.x * 0.33
     size_team(role_screen.blueTeam, box)
 
-    role_screen.exit.image = get_asset(`buttons`)
-    role_screen.exit.dst = {
-        x: ctx.dimensions.x * 0.005,
-        y: ctx.dimensions.y * 0.005,
-        w: ctx.dimensions.y * 0.2,
-        h: ctx.dimensions.y * 0.1,
-    }
-    role_screen.exitBtn._boundingBox = role_screen.exit.dst;
-
 }
 
 
@@ -105,10 +94,6 @@ export const init_role_screen = () => {
             giverSprite: {...DEFAULT_DRAWABLE_IMG, src: {x:54 * 3 + 0.5,y:0, h:49, w:54}}
         },
         text: {...DEFAULT_DRAWABLE_TEXT, text:"Choose your team !", font: '40px arial'},
-        exitBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {
-				 get_context().ws.send('kill');
-			}),
-        exit: {...DEFAULT_DRAWABLE_IMG, dst: {x:0, y:0, h:0, w:0}, src: {x:0, y:0, h:32, w:64}},
     }
 
     size_role_screen();

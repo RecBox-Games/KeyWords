@@ -15,18 +15,18 @@ export const loading_loop = () => {
     //////// Buttons ////////
     buttons_flush();
     // popup
-    if (popup.show) {
+    if (popup.is_showing) {
         buttons_add(popup.x_button);
     }
 
     //////// Drawables ////////
-    if (!popup.show) {
+    if (!popup.is_showing) {
         drawablesAdd(popup.base_sprite);
     }
     drawablesAdd(loading.title);
     drawablesAdd(loading.barBG);
     drawablesAdd(loading.bar);
-    if (popup.show) {
+    if (popup.is_showing) {
         drawablesAdd(popup.base_sprite);
         drawablesAdd(popup.x_sprite);
         drawablesAdd(popup.header);

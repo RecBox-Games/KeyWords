@@ -1,3 +1,4 @@
+import { initialize_menu, resize_menu } from "../utils/menu.js";
 import { Context } from "./types/context.js";
 import { handleTouchCancel, handleClick, handleTouchEnd, handleTouchMove, handleTouchStart } from "./utils.js";
 let context:Context;
@@ -70,10 +71,11 @@ function handleOrientationChange() {
 }
 
 function screenChange() {
-  context.canvas.width = window.innerWidth;
-  context.canvas.height = window.innerHeight;
-  context.dimensions.x = window.innerWidth;
-  context.dimensions.y = window.innerHeight;
+    context.canvas.width = window.innerWidth;
+    context.canvas.height = window.innerHeight;
+    context.dimensions.x = window.innerWidth;
+    context.dimensions.y = window.innerHeight;
+    resize_menu();
 }
 
 
