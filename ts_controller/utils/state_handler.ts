@@ -6,6 +6,7 @@ import { fill_board, init_main_screen } from "../game/main/init.js";
 import { init_role_screen } from "../game/role_screen/init.js";
 import { set_role_screen_state, set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
+import { init_input } from "./input.js";
 import { init_popup, post_popup, try_post_popup } from "./popup.js";
 import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_CHOOSING, INSTRUCTIONS_CHOOSING,         
@@ -21,14 +22,14 @@ export const get_game_state = (): GameState => { return game_state };
 
 // combine turn and role because it's convenient (we can use if turn == role)
 export enum TurnRole {
-    Starting,
-    Over,
-    Choosing,
-    RedClue,
-    RedGuess,
-    BlueClue,
-    BlueGuess,
-    None,
+    Starting, // turn
+    Over, // turn
+    Choosing, // role
+    RedClue, //turn + role
+    RedGuess, //turn + role
+    BlueClue, //turn + role
+    BlueGuess, //turn + role
+    None, // neither
 }
 
 let last_turnrole = TurnRole.None;
@@ -86,7 +87,7 @@ export function is_playing(turnrole: TurnRole): boolean {
 }
 
 
-export interface None {}
+export interface None { }
 
 export interface GameState {
     role_state: RoleState,
@@ -268,6 +269,7 @@ export const load_app = () => {
     init_role_screen();
     init_main_screen();
     init_end();
+    init_input();
 }
 
 

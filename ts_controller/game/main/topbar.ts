@@ -4,8 +4,9 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableTex
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
+import { confirm_clue } from "../../utils/input.js";
 import { is_guess, TurnRole } from "../../utils/state_handler.js";
-import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
+import { confirm_guess, deny_guess } from "../../utils/utils.js";
 
 
 export interface TopBar {
