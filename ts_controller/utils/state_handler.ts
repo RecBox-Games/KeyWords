@@ -6,7 +6,7 @@ import { fill_board, init_main_screen } from "../game/main/init.js";
 import { init_role_screen } from "../game/role_screen/init.js";
 import { set_role_screen_state, set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
-import { init_popup, post_popup } from "./popup.js";
+import { init_popup, post_popup, try_post_popup } from "./popup.js";
 import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_CHOOSING, INSTRUCTIONS_CHOOSING,         
          HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE,
@@ -293,21 +293,17 @@ function handle_new_state() {
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();
-        if (last_turnrole !== TurnRole.Over) {
-            post_popup(HEADER_SD, INSTRUCTIONS_SD);
-            last_turnrole = TurnRole.Over
-        }
     } else if (game_state.turn_state.turn === TurnRole.Starting) {
         set_state(STARTING);
         if (last_turnrole !== TurnRole.Starting) {
-            post_popup(HEADER_STARTING, INSTRUCTIONS_STARTING);
+            try_post_popup(HEADER_STARTING, INSTRUCTIONS_STARTING);
             last_turnrole = TurnRole.Starting;
         }
     } else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
         set_state(MENU);
         set_role_screen_state(game_state.role_state);
         if (last_turnrole !== TurnRole.Choosing) {
-            post_popup(HEADER_CHOOSING, INSTRUCTIONS_CHOOSING);
+            try_post_popup(HEADER_CHOOSING, INSTRUCTIONS_CHOOSING);
             last_turnrole = TurnRole.Choosing;
         }
     } else {
@@ -319,10 +315,10 @@ function handle_new_state() {
             start_turn(game_state.turn_state);
             if (game_state.turn_state.turn != last_turnrole) {
                 if (is_clue(game_state.role_state.role) && is_clue(game_state.turn_state.turn)) {
-                    post_popup(HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE);
+                    try_post_popup(HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE);
                 } else if (is_guess(game_state.role_state.role) && is_guess(game_state.turn_state.turn)) {
                     const guesses = game_state.turn_state.guesses_remaining;
-                    post_popup(HEADER_MAKE_GUESS.replace('<num>', String(guesses)),
+                    try_post_popup(HEADER_MAKE_GUESS.replace('<num>', String(guesses)),
                                INSTRUCTIONS_MAKE_GUESS.replace('<num>', String(guesses)));
                 }
                 last_turnrole = game_state.turn_state.turn;

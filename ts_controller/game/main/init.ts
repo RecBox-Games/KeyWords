@@ -56,13 +56,9 @@ const size_board = () => {
     const ctx = get_context();
     const cw = ctx.dimensions.x;
     const ch = ctx.dimensions.y;
-    const startx = cw* 0.12;
-    const dst: Rectangle = {
-        x: startx,
-        y: ch * 0.08,
-        w: cw * 0.172,
-        h: ch * 0.180,
-    };
+    const startx = cw* 0.122;
+    const dst: Rectangle = { x: startx,    y: ch * 0.11,
+                             w: cw * 0.15, h: ch * 0.175};
     for (let y = 0; y < BOARD_H; y += 1) {
         for (let x = 0; x < BOARD_W; x += 1) {
             board.chests[y][x].sprite.dst = {...dst}

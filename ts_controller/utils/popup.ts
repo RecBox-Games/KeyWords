@@ -4,13 +4,14 @@ import { get_context } from "../controller_lib/init.js";
 import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { get_asset } from "./assets.js";
+import { get_menu } from "./menu.js";
 
 let popup:Popup;
 export const get_popup = ():Popup => {return popup};
 
 // Popup //
 export interface Popup {
-    show: boolean,
+    is_showing: boolean,
     header: DrawableText,
     message: DrawableText,
     base_sprite: DrawableImage,
@@ -19,23 +20,29 @@ export interface Popup {
 }
 
 // opening and closing popup //
+export function try_post_popup(header: string, message: string) {
+    if (get_menu().is_tut_enabled) {
+        post_popup(header, message);
+    }
+}
+
 export function post_popup(header: string, message: string) {
     fill_popup();
     size_popup();
     popup.header.text = header;
     popup.message.text = message;
-    popup.show = true;
+    popup.is_showing = true;
 }
 
 export const exit_popup_clicked = (_self:Button) => {
-    popup.show = false;
+    popup.is_showing = false;
 }
 
 // setting data for popup //
 export function init_popup() {
     var button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
     popup =  {
-        show: false,
+        is_showing: false,
         header: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "30px times"},
         message: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "26px times", center: false, wrap: true},
         base_sprite: {...DEFAULT_DRAWABLE_IMG},

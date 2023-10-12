@@ -4,7 +4,6 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableTex
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
-import { post_menu } from "../../utils/menu.js";
 import { is_guess, TurnRole } from "../../utils/state_handler.js";
 import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
 
@@ -18,8 +17,6 @@ export interface TopBar {
     denyButton: Button;
     keyButtons: Button[];
     keySprites: DrawableImage[];
-    exitBtn: Button;
-    exit: DrawableText;
 }
 
 export const size_topbar= (topBar:TopBar) => {
@@ -50,12 +47,6 @@ export const size_topbar= (topBar:TopBar) => {
         topBar.keyButtons[x]._boundingBox = {...dst};
         dst.y += dst.h + ctx.dimensions.y * 0.05;
     }
-    topBar.exit.boundingBox = {
-        x: ctx.dimensions.x * 0.002,
-        y: ctx.dimensions.y * 0.002,
-        w: ctx.dimensions.x * 0.1,
-        h: ctx.dimensions.y * 0.05,
-    }
 }
 
 export const construct_topbar = ():TopBar => {
@@ -68,8 +59,6 @@ export const construct_topbar = ():TopBar => {
         denyButton:   new Button({x:0, y:0, w:0, h: 0}, undefined, undefined, undefined),
         keyButtons:[],
         keySprites:[],
-        exitBtn: new Button(<Rectangle> {x:0,y:0,h:0,w:0}, undefined, undefined, (self:Button) => {get_context().ws.send('kill')}),
-        exit: {...DEFAULT_DRAWABLE_TEXT, text:"EXIT GAME", font: '20px arial', color: '#FF1111'},
     };
     size_topbar(topBar);
     return topBar
