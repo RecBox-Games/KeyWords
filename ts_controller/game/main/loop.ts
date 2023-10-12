@@ -32,6 +32,7 @@ export const main_loop = () => {
 
     // input box
     else if (input.is_active) {
+        console.log("input is active");
     }
     
     // menu
@@ -39,6 +40,9 @@ export const main_loop = () => {
         buttons_add(menu.x_button);        
     } else {
 
+        console.log("input is not active");
+
+        
         // menu button
         buttons_add(menu.open_button);
 

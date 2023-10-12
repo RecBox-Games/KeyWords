@@ -4,7 +4,7 @@ import { Board, get_board } from "../game/main/init.js";
 import { BOARD_H, BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
-import { Input, get_input, show_input, hide_input, deactivate_input, activate_input } from "./input.js";
+import { Input, get_input, show_input, hide_input, clear_input, set_red_input_border, set_blue_input_border } from "./input.js";
 
 export const chest_clicked_guessser = (self: Button) => {
     const board: Board = get_board();
@@ -23,7 +23,6 @@ export const start_turn = (turn_state: TurnState) => {
     board.currentGuesses = turn_state.guesses_remaining;
     board.clue = turn_state.clue;
     if (is_guess(board.role)) {
-        deactivate_input();
         console.log("active input:" + input.is_active);
         if (board.role === turn_state.turn) {
             if (turn_state.proposed_guess.exists) {
@@ -65,12 +64,11 @@ export const start_turn = (turn_state: TurnState) => {
     }
     else if (is_clue(board.role)) {
         if (board.role === turn_state.turn) {
-            board.topbar.text.text = 'Your turn. Give you team some keys.';
-            if (input) {
-                show_input();
-                add_textbox_handlers(input);
-                //                add_textbox_handlers(input);
-            }
+            board.topbar.text.text = 'Your turn. Give your team some keys.';
+            if(is_blue(board.role)) set_blue_input_border();
+            else set_red_input_border();                        
+            clear_input();
+            show_input();            
         }
         else {
             board.topbar.subText.text = '';
@@ -114,28 +112,4 @@ export const deny_guess = () => {
     board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
     board.guessedWord = undefined;
     console.log("deny")
-}
-
-export const confirm_clue = (amount: number) => {
-    const board: Board = get_board();
-    const ctx = get_context();
-    let keyText = amount == 1 ? "key" : "keys"
-    board.topbar.subText.text = "Clue " + board.clue + " - You gave your team " + amount.toString() + ' ' + keyText;
-    board.topbar.acceptButton._active = false;
-    ctx.ws.send("input:clue," + board.clue + "," + amount.toString());
-}
-
-function add_textbox_handlers(input: Input) {
-    input.element.onchange = activate_input;
-    input.element.addEventListener("blur", handle_input);
-}
-
-function handle_input(e: Event) {
-    deactivate_input();
-
-    console.log("rectivate");
-    if ((e.target as HTMLInputElement).value != "") {
-        get_board().clue = (e.target as HTMLInputElement).value;
-    }
-    console.log((e.target as HTMLInputElement).value);
 }
