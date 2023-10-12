@@ -4,9 +4,15 @@ import { GAME, MENU, STARTING, OVER } from "../game/interfaces.js";
 import { init_loading } from "../game/loading/init.js";
 import { fill_board, init_main_screen } from "../game/main/init.js";
 import { init_menu } from "../game/menu/init.js";
-import { set_menu_state } from "../game/menu/menu_loop.js";
-import { set_state } from "../main.js";
+import { set_menu_state, set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
+import { init_popup, post_popup } from "./popup.js";
+import { HEADER_STARTING, INSTRUCTIONS_STARTING,
+         HEADER_CHOOSING, INSTRUCTIONS_CHOOSING,         
+         HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE,
+         HEADER_MAKE_GUESS, INSTRUCTIONS_MAKE_GUESS,
+         HEADER_SD, INSTRUCTIONS_SD,
+       } from "./popup_messages.js";
 
 
 let game_state: GameState;
@@ -16,13 +22,15 @@ export const get_game_state = (): GameState => { return game_state };
 export enum TurnRole {
     Starting, // turn
     Over, // turn
-    Choosing, // turn
-    RedClue, // role
-    RedGuess, //role
-    BlueClue, //role
-    BlueGuess, //role
+    Choosing, // role
+    RedClue, //turn + role
+    RedGuess, //turn + role
+    BlueClue, //turn + role
+    BlueGuess, //turn + role
     None, // neither
 }
+
+let last_turnrole = TurnRole.None;
 
 export function is_red(turnrole: TurnRole): boolean {
     switch (turnrole) {
@@ -252,6 +260,7 @@ const parse_chest_state = (msg: string): ChestState => {
 }
 
 export const load_app = () => {
+    init_popup();
     init_context();
     init_loading();
     init_menu();
@@ -260,9 +269,7 @@ export const load_app = () => {
 }
 
 
-
-
-export const state_handler = () => {
+export const handle_message = () => {
     const ctx = get_context();
     if (ctx.wsMessage) {
         const msg = ctx.wsMessage;
@@ -279,28 +286,46 @@ export const state_handler = () => {
     }
 }
 
-
 function handle_new_state() {
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();
-    }
-    else if (game_state.turn_state.turn === TurnRole.Starting) {
+        if (last_turnrole !== TurnRole.Over) {
+            post_popup(HEADER_SD, INSTRUCTIONS_SD);
+            last_turnrole = TurnRole.Over
+        }
+    } else if (game_state.turn_state.turn === TurnRole.Starting) {
         set_state(STARTING);
-    }
-    else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
+        if (last_turnrole !== TurnRole.Starting) {
+            post_popup(HEADER_STARTING, INSTRUCTIONS_STARTING);
+            last_turnrole = TurnRole.Starting;
+        }
+    } else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
         set_state(MENU);
         set_menu_state(game_state.role_state);
-    }
-    else {
+        if (last_turnrole !== TurnRole.Choosing) {
+            post_popup(HEADER_CHOOSING, INSTRUCTIONS_CHOOSING);
+            last_turnrole = TurnRole.Choosing;
+        }
+    } else {
         set_state(GAME);
         fill_board(game_state.role_state.role, game_state.chests_5x5_state);
         const turnTeam = is_red(game_state.turn_state.turn) ? 'red' : 'blue';
         const roleTeam = is_red(game_state.role_state.role) ? 'red' : 'blue';
-        if (turnTeam != roleTeam) {
-            end_turn();
-        } else {
+        if (turnTeam == roleTeam) {
             start_turn(game_state.turn_state);
+            if (game_state.turn_state.turn != last_turnrole) {
+                if (is_clue(game_state.role_state.role) && is_clue(game_state.turn_state.turn)) {
+                    post_popup(HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE);
+                } else if (is_guess(game_state.role_state.role) && is_guess(game_state.turn_state.turn)) {
+                    const guesses = game_state.turn_state.guesses_remaining;
+                    post_popup(HEADER_MAKE_GUESS.replace('<num>', String(guesses)),
+                               INSTRUCTIONS_MAKE_GUESS.replace('<num>', String(guesses)));
+                }
+                last_turnrole = game_state.turn_state.turn;
+            }
+        } else {
+            end_turn();
         }
     }
 }
