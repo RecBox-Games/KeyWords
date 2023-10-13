@@ -83,7 +83,7 @@ export function resize_menu() {
     const ctxh = ctx.dimensions.y;;
     const open_box: Rectangle = {
         x: ctxw * 0.008,  y: ctxh * 0.015,
-        w: ctxw * 0.10,   h: ctxw * 0.05
+        w: ctxw * 0.112,   h: ctxw * 0.05
     };
     const container_box: Rectangle = {
         x: ctxw * 0.16,  y: ctxh * 0.16,

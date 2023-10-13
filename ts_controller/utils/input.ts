@@ -64,7 +64,7 @@ export function style_input() {
     input.element.style.fontWeight = 'bold';
 
     input.element.style.top = '-.1v';
-    input.element.style.left = "75%";
+    input.element.style.left = "77%";
     input.element.style.width = '19%';
 }
 

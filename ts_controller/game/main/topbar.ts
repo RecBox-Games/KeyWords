@@ -11,6 +11,7 @@ import { confirm_guess, deny_guess } from "../../utils/utils.js";
 
 export interface TopBar {
     text: DrawableText;
+    //textBg: DrawableImage;
     subText: DrawableText;
     accept: DrawableImage;
     deny: DrawableImage;
@@ -23,7 +24,7 @@ export interface TopBar {
 
 export const size_topbar= (topBar:TopBar) => {
     const ctx = get_context();
-    const boundingBox:Rectangle = {x:0, y:0, w: ctx.dimensions.x, h: ctx.dimensions.y * 0.06};
+    const boundingBox:Rectangle = {x:0, y: ctx.dimensions.y * 0.025,  w: ctx.dimensions.x, h: ctx.dimensions.y * 0.06};
     topBar.text.boundingBox = {...boundingBox};
     topBar.subText.boundingBox = {...boundingBox};
     //
@@ -40,16 +41,16 @@ export const size_topbar= (topBar:TopBar) => {
     topBar.denyButton._boundingBox = topBar.deny.dst;
     //
     const dst: Rectangle = {
-        x: ctxw * 0.018, y: ctxh * 0.135,
-        w: ctxw * 0.09, h: ctxh * 0.16,
+        x: ctxw * 0.018, y: ctxh * 0.14,
+        w: ctxw * 0.09,  h: ctxh * 0.16,
     };
     const margin = ctxh * 0.03;
     const yspace = ctxh * 0.015
     for (let x = 0; x < topBar.keyButtons.length; x += 1) {
         topBar.keyBgSprites[x].dst = {...dst};
         topBar.keyBgSprites[x].src = {x: 0, y: 0, w: 30, h: 30};
-        topBar.keySprites[x].dst = {x: dst.x + margin,   y: dst.y + margin*.8,
-                                    w: dst.w - margin*2, h: dst.h - margin*2};
+        topBar.keySprites[x].dst = {x: dst.x + margin*1.3,   y: dst.y + margin*.8,
+                                    w: dst.w - margin*2.6, h: dst.h - margin*2};
         topBar.keySprites[x].src = {x: x* 22,y: 0, w: 22, h: 26};
         topBar.keyButtons[x]._boundingBox = {...dst};
         dst.y += dst.h + yspace;
