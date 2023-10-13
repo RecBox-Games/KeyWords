@@ -7,6 +7,7 @@ import { get_asset } from "../../utils/assets.js";
 import { confirm_clue } from "../../utils/input.js";
 import { is_guess, TurnRole } from "../../utils/state_handler.js";
 import { confirm_guess, deny_guess } from "../../utils/utils.js";
+import { get_board } from "./init.js";
 
 
 export interface TopBar {
@@ -20,6 +21,9 @@ export interface TopBar {
     keyButtons: Button[];
     keySprites: DrawableImage[];
     keyBgSprites: DrawableImage[];
+    keyBgSpritesSelected: DrawableImage[];
+    isAKeySelected: boolean;
+    selectedKey: number;
 }
 
 export const size_topbar= (topBar:TopBar) => {
@@ -49,6 +53,8 @@ export const size_topbar= (topBar:TopBar) => {
     const margin = ctxh * 0.03;
     const yspace = ctxh * 0.015
     for (let x = 0; x < topBar.keyButtons.length; x += 1) {
+        topBar.keyBgSpritesSelected[x].dst = {...dst};
+        topBar.keyBgSpritesSelected[x].src = {x: 0, y: 0, w: 30, h: 30};
         topBar.keyBgSprites[x].dst = {...dst};
         topBar.keyBgSprites[x].src = {x: 0, y: 0, w: 30, h: 30};
         topBar.keySprites[x].dst = {x: dst.x + margin*1.3,   y: dst.y + margin*.8,
@@ -68,9 +74,12 @@ export const construct_topbar = ():TopBar => {
         deny:   { ...DEFAULT_DRAWABLE_IMG, src: {x:64 * 1, y:0, w:64, h: 32} },
         acceptButton: new Button({x:0, y:0, w:0, h: 0}, undefined, undefined,undefined),
         denyButton:   new Button({x:0, y:0, w:0, h: 0}, undefined, undefined, undefined),
-        keyButtons:[],
-        keySprites:[],
-        keyBgSprites:[],
+        keyButtons: [],
+        keySprites: [],
+        keyBgSprites: [],
+        keyBgSpritesSelected: [],
+        isAKeySelected: false,
+        selectedKey: 0,
     };
     size_topbar(topBar);
     return topBar
@@ -88,6 +97,7 @@ export const fill_topbar = (topbar: TopBar, role: TurnRole) => {
         const ctx: Context = get_context();
         const key: DrawableImage = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keys') };
         const keyBg: DrawableImage = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('key_bg') };
+        const keyBgSelected: DrawableImage = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('key_bg_selected') };
         const dst: Rectangle = {
             x: ctx.dimensions.x * 0.005,
             y: ctx.dimensions.y * 0.05,
@@ -96,12 +106,20 @@ export const fill_topbar = (topbar: TopBar, role: TurnRole) => {
         };
         topbar.keySprites.length = 0;
         topbar.keyBgSprites.length = 0;
+        topbar.keyBgSpritesSelected.length = 0;
         for (let x = 0; x < 4; x += 1) {
             topbar.keySprites.push({...key});
             topbar.keyBgSprites.push({...keyBg});
-            topbar.keyButtons.push(new Button({ ...dst }, undefined, undefined,
-                                             () => { confirm_clue(x + 1); }));
+            topbar.keyBgSpritesSelected.push({...keyBgSelected});
+            topbar.keyButtons.push(new Button({ ...dst }, undefined, undefined, key_button_clicked));
+            topbar.keyButtons[x].data = x;
             dst.y += dst.h + ctx.dimensions.y * 0.01;
         }
     }
 };
+
+const key_button_clicked = (b: Button) => {
+    var topbar = get_board().topbar;
+    topbar.isAKeySelected = true;
+    topbar.selectedKey = b.data;
+}

@@ -9,6 +9,7 @@ const assetsSrc = [
     `heal.png`,
     `keys.png`,
     `key_bg.png`,
+    `key_bg_selected.png`,
     `header.png`,
     `keywords_background.png`,
     `popup.png`,

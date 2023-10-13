@@ -95,8 +95,12 @@ export const main_loop = () => {
 
     // key buttons
     if (is_clue(role) && role === turn) {
-        for (let i in board.topbar.keyButtons) {
-            drawablesAdd(board.topbar.keyBgSprites[i]);
+        for (let i = 0; i < board.topbar.keySprites.length; i++) {
+            if (board.topbar.isAKeySelected && board.topbar.selectedKey == i) {
+                drawablesAdd(board.topbar.keyBgSpritesSelected[i]);
+            } else {
+                drawablesAdd(board.topbar.keyBgSprites[i]);
+            }
             drawablesAdd(board.topbar.keySprites[i]);
         }
     }
