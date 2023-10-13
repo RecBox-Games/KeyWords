@@ -222,6 +222,9 @@ impl GameState {
                     *self = Playing(PlayingState::new());
                     return TickEvent::NeedsUpdate;
                 }
+                if tick_event.needs_update() {
+                    return TickEvent::NeedsUpdate;
+                }
             }
             Playing(playing_state) => {
                 let tick_event = playing_state.tick();
@@ -261,6 +264,7 @@ impl IntroState {
         if let Title(p) = self {
             if p.tick().is_done() {
                 *self = Self::new_chest_fall();
+                return TickEvent::NeedsUpdate;
             }
         } else if let ChestFall(p) = self {
             return p.tick();
@@ -585,13 +589,13 @@ pub enum TurnState {
     RedCluingEnd(Progress, Clue),
     //
     RedGuessing(Clue, Option<(usize, usize)>/* proposed guess */),
-    RedGuessingEnd(Progress),
+    RedGuessingEnd(Clue),
     //
     BlueCluing,
     BlueCluingEnd(Progress, Clue),
     //
     BlueGuessing(Clue, Option<(usize, usize)>/* proposed guess */),
-    BlueGuessingEnd(Progress),
+    BlueGuessingEnd(Clue),
 }
 
 impl TurnState {
@@ -608,17 +612,11 @@ impl TurnState {
                     return TickEvent::NeedsUpdate;
                 }
             }
-            RedGuessingEnd(prg) => {
-                prg.tick();
-            }
             BlueCluingEnd(prg, clue) => {
                 if prg.tick().is_done() {
                     *self = BlueGuessing(take(clue), None);
                     return TickEvent::NeedsUpdate;
                 }
-            }
-            BlueGuessingEnd(prg) => {
-                prg.tick();
             }
             _ => ()
         }
@@ -670,7 +668,7 @@ impl TurnState {
                 if current_guess.is_some() {
                     clue.num -= 1;
                     if clue.num == 0 {
-                        *self = RedGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
+                        *self = RedGuessingEnd(take(clue));
                     }
                 }
             }
@@ -682,7 +680,7 @@ impl TurnState {
                 if current_guess.is_some() {
                     clue.num -= 1;
                     if clue.num == 0 {
-                        *self = BlueGuessingEnd(Progress::new(TICKS_TURN_TRANSITION));
+                        *self = BlueGuessingEnd(take(clue));
                     }
                 }
             }
@@ -887,27 +885,33 @@ impl std::fmt::Display for TurnState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use TurnState::*;
         let s = match &self {
-            RedCluing | BlueGuessingEnd(_) => String::from("redcluing"),
-            BlueCluing | RedGuessingEnd(_) => String::from("bluecluing"),
+            RedCluing => String::from("redcluing"),
+            BlueCluing => String::from("bluecluing"),
             RedCluingEnd(_,clue) => {
-                format!("redguessing,{},{},{}",clue.word, clue.num, "none")
+                format!("redguessing,{},{},{}", clue.word, clue.num, "none")
             }
             RedGuessing(clue, proposed_guess) => {
                 let pg_str = match proposed_guess {
                     Some((row,col)) => format!("{}{}", row, col),
                     None => format!("none"),
                 };
-                format!("redguessing,{},{},{}",clue.word, clue.num, pg_str)
+                format!("redguessing,{},{},{}", clue.word, clue.num, pg_str)
+            }
+            RedGuessingEnd(clue) => {
+                format!("redguessing,{},{},{}", clue.word, clue.num, "none")
             }
             BlueCluingEnd(_,clue) => {
-                format!("blueguessing,{},{},{}",clue.word, clue.num, "none")
+                format!("blueguessing,{},{},{}", clue.word, clue.num, "none")
             }
             BlueGuessing(clue, proposed_guess) => {
                 let pg_str = match proposed_guess {
                     Some((row,col)) => format!("{}{}", row, col),
                     None => format!("none"),
                 };
-                format!("blueguessing,{},{},{}",clue.word, clue.num, pg_str)
+                format!("blueguessing,{},{},{}", clue.word, clue.num, pg_str)
+            }
+            BlueGuessingEnd(clue) => {
+                format!("blueguessing,{},{},{}", clue.word, clue.num, "none")
             }
         };
         println!("TurnState {}", s); //TODO: remove
