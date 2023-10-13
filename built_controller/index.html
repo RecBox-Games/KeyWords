@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RecBox Control Pad</title>
+    <style>
+
+      @media (orientation: landscape) {
+         #fullscreen {
+            z-index:42;
+            position:absolute;
+            display:flex;
+            right: 8px;
+        }
+
+		#canvas {
+                /* display: flex; */
+                top:0px;
+                right:0px;
+                position:absolute;
+                width: 100%;
+                height: 100%;
+            }
+		#restrict_view {display: none}
+	}
+	  @media (orientation: portrait) {
+         #fullscreen {
+            display:none;
+        }
+		#canvas {display: none}
+		#restrict_view {
+			display: flex;
+			width: 100vw;
+			height: 100vh;
+			background: #363c42;
+			align-items: center;
+			justify-content: center;
+			color: blanchedalmond;
+			font-size: xx-large;
+			}
+          }
+    </style>
+  </head>
+  <body>
+    <div id="restrict_view"> Please turn your phone sideways </div>    
+    <canvas id="canvas"  oncontextmenu="return false;"></canvas>
+<!--    <input type="text" placeholder="Input your clue" id="clue_input"> -->
+    <script type="module" src="main.js"></script>
+    <!-- <button id="fullscreen" onclick=
+     "
+        console.log( document.getElementById('canvas'));
+        if (document.getElementById('canvas').requestFullscreen) {
+            document.getElementById('canvas').requestFullscreen();
+        } else if (document.getElementById('canvas').webkitRequestFullscreen()) { /* Safari */
+            consoele.log(`If you can read this, know that Safari is a pain`)
+        }
+     ">
+      Click to fullscreen</button>
+      -->
+</body>
+</html>
+
