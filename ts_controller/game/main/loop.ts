@@ -94,6 +94,7 @@ export const main_loop = () => {
 
     // topbar (including key buttons)
     drawablesAdd(menu.open_sprite);
+    drawablesAdd(board.topbar.textBg);
     drawablesAdd(board.topbar.text);
     if (is_clue(role) && role === turn) {
         for (let i in board.topbar.keyButtons) {

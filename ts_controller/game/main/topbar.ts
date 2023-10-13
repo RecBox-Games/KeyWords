@@ -11,7 +11,7 @@ import { confirm_guess, deny_guess } from "../../utils/utils.js";
 
 export interface TopBar {
     text: DrawableText;
-    //textBg: DrawableImage;
+    textBg: DrawableImage;
     subText: DrawableText;
     accept: DrawableImage;
     deny: DrawableImage;
@@ -24,17 +24,19 @@ export interface TopBar {
 
 export const size_topbar= (topBar:TopBar) => {
     const ctx = get_context();
-    const boundingBox:Rectangle = {x:0, y: ctx.dimensions.y * 0.025,  w: ctx.dimensions.x, h: ctx.dimensions.y * 0.06};
-    topBar.text.boundingBox = {...boundingBox};
+    const boundingBox:Rectangle = {x: ctx.dimensions.x * 0.25, y: ctx.dimensions.y * 0.013,
+                                   w: ctx.dimensions.x * 0.5, h: ctx.dimensions.y * 0.11};
+    topBar.textBg.dst = {...boundingBox};
+    topBar.text.boundingBox = {...boundingBox, h: ctx.dimensions.y * 0.07};
     topBar.subText.boundingBox = {...boundingBox};
     //
     const ctxw = ctx.dimensions.x;
     const ctxh = ctx.dimensions.y;
-    boundingBox.x = ctxw * 0.23;
-    boundingBox.y = ctxh * 0.013;
-    boundingBox.w = ctxw * 0.13;
-    boundingBox.h = ctxh * 0.13;
-    topBar.accept.dst = {...boundingBox, x: (ctxw * 0.77) - boundingBox.w }
+    boundingBox.x = ctxw * 0.24;
+    boundingBox.y = ctxh * 0.01;
+    boundingBox.w = ctxw * 0.12;
+    boundingBox.h = ctxh * 0.12;
+    topBar.accept.dst = {...boundingBox, x: (ctxw * 0.76) - boundingBox.w }
     topBar.deny.dst = {...boundingBox};
     //
     topBar.acceptButton._boundingBox = topBar.accept.dst;
@@ -60,6 +62,7 @@ export const size_topbar= (topBar:TopBar) => {
 export const construct_topbar = ():TopBar => {
     const topBar:TopBar = {
         text: { ...DEFAULT_DRAWABLE_TEXT, text: "" },
+        textBg: { ...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:200, h: 30} },
         subText: { ...DEFAULT_DRAWABLE_TEXT, text: "" },
         accept: { ...DEFAULT_DRAWABLE_IMG, src: {x:64 * 2, y:0, w:64, h: 32} },
         deny:   { ...DEFAULT_DRAWABLE_IMG, src: {x:64 * 1, y:0, w:64, h: 32} },
@@ -75,6 +78,7 @@ export const construct_topbar = ():TopBar => {
 
 export const fill_topbar = (topbar: TopBar, role: TurnRole) => {
     const button = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('buttons') };
+    topbar.textBg = { ...DEFAULT_DRAWABLE_IMG, src: { x: 0, y: 0, w: 200, h: 30 }, image: get_asset('header') };
     if (is_guess(role)) {
         topbar.accept = { ...button, src: { x: 64 * 2, y: 0, w: 64, h: 32 } };
         topbar.deny =   { ...button, src: { x: 64 * 1, y: 0, w: 64, h: 32 } };

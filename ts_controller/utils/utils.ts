@@ -51,7 +51,7 @@ export const start_turn = (turn_state: TurnState) => {
             } else {
                 let clueText = typeof board.clue === "string" ? board.clue : '';
                 let guessesText = board.currentGuesses.toString();
-                board.topbar.text.text = "Your clue: " + clueText + ' | ' + "Keys: " + guessesText;
+                board.topbar.text.text = "Your clue: " + clueText + '   ' + "Keys: " + guessesText;
             }
         }
         else {
@@ -72,8 +72,10 @@ export const start_turn = (turn_state: TurnState) => {
             show_input();            
         }
         else {
+            const guesses = board.currentGuesses.toString();
+            const plur = guesses == '1' ? "key" : "keys";
             board.topbar.subText.text = '';
-            board.topbar.text.text = 'Your team has ' + board.currentGuesses.toString() + ' guesses remaining';
+            board.topbar.text.text = 'Your team has ' + guesses + ' ' + plur + ' left';
             if (input) hide_input();
         }
     }
