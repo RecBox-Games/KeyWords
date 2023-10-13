@@ -1,3 +1,4 @@
+import { resize_confirmation } from "../utils/confirmation.js";
 import { resize_menu } from "../utils/menu.js";
 import { handleTouchCancel, handleClick, handleTouchEnd, handleTouchMove, handleTouchStart } from "./utils.js";
 let context;
@@ -65,6 +66,7 @@ function screenChange() {
     context.dimensions.x = window.innerWidth;
     context.dimensions.y = window.innerHeight;
     resize_menu();
+    resize_confirmation();
 }
 window.addEventListener("resize", (_event) => {
     screenChange();

@@ -3,6 +3,11 @@ import { get_board } from "../game/main/init.js";
 import { BOARD_W } from "../game/interfaces.js";
 import { is_guess, is_blue, is_clue } from "./state_handler.js";
 import { get_input, show_input, hide_input, clear_input } from "./input.js";
+import { get_popup } from "./popup.js";
+import { get_menu } from "./menu.js";
+import { get_confirmation } from "./confirmation.js";
+import { drawablesAdd } from "../controller_lib/draw.js";
+import { buttons_add } from "../controller_lib/button.js";
 export const chest_clicked_guessser = (self) => {
     const board = get_board();
     const ctx = get_context();
@@ -23,7 +28,10 @@ export const start_turn = (turn_state) => {
         if (board.role === turn_state.turn) {
             if (turn_state.proposed_guess.exists) {
                 board.topbar.subText.text = "";
-                board.topbar.text.text = "Validate guess ?";
+                const chosen_x = turn_state.proposed_guess.x;
+                const chosen_y = turn_state.proposed_guess.y;
+                const chosen_word = board.chests[chosen_x][chosen_y].text.text;
+                board.topbar.text.text = "'" + chosen_word + "' chosen";
                 const x = turn_state.proposed_guess.x;
                 const y = turn_state.proposed_guess.y;
                 board.selector.xIndex = x;
@@ -105,3 +113,65 @@ export const deny_guess = () => {
     board.guessedWord = undefined;
     console.log("deny");
 };
+// returns true iff a menu/popup is open or input box is active
+export function buttons_add_menus() {
+    let popup = get_popup();
+    let menu = get_menu();
+    let confirmation = get_confirmation();
+    let input = get_input();
+    // confirmation
+    if (confirmation.is_showing) {
+        buttons_add(confirmation.confirm_button);
+        buttons_add(confirmation.cancel_button);
+        return true;
+    }
+    // popup
+    if (popup.is_showing) {
+        buttons_add(popup.x_button);
+        return true;
+    }
+    // input box
+    if (input.is_active) {
+        return true;
+    }
+    // menu
+    if (menu.is_showing) {
+        buttons_add(menu.x_button);
+        buttons_add(menu.end_game_button);
+        buttons_add(menu.toggle_walkthrough_button);
+        return true;
+    }
+}
+export function drawables_add_menus() {
+    let popup = get_popup();
+    let menu = get_menu();
+    let confirmation = get_confirmation();
+    // popup
+    if (popup.is_showing) {
+        drawablesAdd(popup.base_sprite);
+        drawablesAdd(popup.x_sprite);
+        drawablesAdd(popup.header);
+        drawablesAdd(popup.message);
+    }
+    // menu
+    if (menu.is_showing) {
+        drawablesAdd(menu.container_sprite);
+        drawablesAdd(menu.x_sprite);
+        drawablesAdd(menu.header);
+        drawablesAdd(menu.end_game_sprite);
+        drawablesAdd(menu.toggle_walkthrough_sprite);
+        if (menu.is_tut_enabled) {
+            drawablesAdd(menu.tut_enabled_sprite);
+        }
+        else {
+            drawablesAdd(menu.tut_disabled_sprite);
+        }
+    }
+    // confirmation
+    if (confirmation.is_showing) {
+        drawablesAdd(confirmation.container_sprite);
+        drawablesAdd(confirmation.message);
+        drawablesAdd(confirmation.confirm_sprite);
+        drawablesAdd(confirmation.cancel_sprite);
+    }
+}

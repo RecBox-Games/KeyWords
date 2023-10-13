@@ -1,8 +1,9 @@
+import { buttons_add } from "../../controller_lib/button.js";
 import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
-import { is_guess } from "../../utils/state_handler.js";
+import { TurnRole } from "../../utils/state_handler.js";
 import { confirm_clue, confirm_guess, deny_guess } from "../../utils/utils.js";
 export const size_topbar = (topBar) => {
     const ctx = get_context();
@@ -41,12 +42,14 @@ export const size_topbar = (topBar) => {
     // topBar.exitBtn._boundingBox = topBar.exit.boundingBox;
 };
 export const fill_topbar = (topbar, role) => {
-    if (is_guess(role)) {
+    buttons_add(topbar.exitBtn);
+    if (role == TurnRole.RedGuess || role == TurnRole.BlueGuess) {
         const button = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('buttons') };
         topbar.accept = { ...button, src: { x: 64 * 2, y: 0, w: 64, h: 32 } };
         topbar.deny = { ...button, src: { x: 64 * 1, y: 0, w: 64, h: 32 } };
         topbar.acceptButton._touchEndCallback = confirm_guess;
         topbar.denyButton._touchEndCallback = deny_guess;
+        buttons_add(topbar.denyButton);
     }
     else if (topbar.clueCount.length == 0) {
         const ctx = get_context();
@@ -68,6 +71,9 @@ export const fill_topbar = (topbar, role) => {
         }
         // topbar.acceptButton._touchEndCallback = confirm_clue;
     }
+    for (let item of topbar.clueCount)
+        buttons_add(item);
+    buttons_add(topbar.acceptButton);
 };
 export const construct_topbar = () => {
     const topBar = {
@@ -83,5 +89,6 @@ export const construct_topbar = () => {
         exit: { ...DEFAULT_DRAWABLE_TEXT, text: "EXIT GAME", font: '20px arial', color: '#FF1111' },
     };
     size_topbar(topBar);
+    // buttons_add(topBar.acceptButton);
     return topBar;
 };

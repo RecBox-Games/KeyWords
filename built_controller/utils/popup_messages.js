@@ -14,7 +14,7 @@ export const INSTRUCTIONS_GIVE_CLUE = "Take a look at the chests and their conte
     "the left of your screen.";
 export const HEADER_MAKE_GUESS = "Your Turn: Open <num> Chests";
 export const INSTRUCTIONS_MAKE_GUESS = "Your Clue Master has given you a clue. Based on that one word you have to " +
-    "pick <num> chests to open whose labels are associated with the clue. If " +
+    "pick <num> chest(s) to open whose labels are associated with the clue. If " +
     "you pick a chest containing swords you will do damage to the other team. " +
     "But be careful. If you pick a chest with bombs you will do damage to your " +
     "own team";

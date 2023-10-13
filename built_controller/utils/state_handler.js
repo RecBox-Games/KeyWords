@@ -10,6 +10,7 @@ import { init_input } from "./input.js";
 import { init_popup, try_post_popup } from "./popup.js";
 import { HEADER_STARTING, INSTRUCTIONS_STARTING, HEADER_CHOOSING, INSTRUCTIONS_CHOOSING, HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE, HEADER_MAKE_GUESS, INSTRUCTIONS_MAKE_GUESS, } from "./popup_messages.js";
 import { construct_menu, initialize_menu } from "./menu.js";
+import { construct_confirmation, initialize_confirmation } from "./confirmation.js";
 let game_state;
 export const get_game_state = () => { return game_state; };
 // combine turn and role because it's convenient (we can use if turn == role)
@@ -200,6 +201,7 @@ const parse_chest_state = (msg) => {
 export const load_app = () => {
     init_popup();
     construct_menu();
+    construct_confirmation();
     init_context();
     init_loading();
     init_role_screen();
@@ -227,6 +229,7 @@ export const handle_message = () => {
 };
 function handle_new_state() {
     initialize_menu();
+    initialize_confirmation();
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();

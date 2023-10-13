@@ -2,8 +2,8 @@ import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
-let role_screen;
-export const get_role_screen = () => role_screen;
+let menu;
+export const get_menu = () => menu;
 const size_team = (team, box) => {
     const ctx = get_context();
     team.name.dst = { ...box };
@@ -27,31 +27,31 @@ const size_team = (team, box) => {
     team.guesserBtn.active = false;
     team.giverBtn.active = false;
 };
-export const size_role_screen = () => {
+export const size_menu = () => {
     const ctx = get_context();
-    ctx.ctx.font = role_screen.text.font;
-    role_screen.text.boundingBox.h = ctx.dimensions.y * 0.2;
-    role_screen.text.boundingBox.w = ctx.dimensions.x;
+    ctx.ctx.font = menu.text.font;
+    menu.text.boundingBox.h = ctx.dimensions.y * 0.2;
+    menu.text.boundingBox.w = ctx.dimensions.x;
     let box = {
         x: ctx.dimensions.x * 0.05,
         y: ctx.dimensions.y * 0.15,
         w: ctx.dimensions.x * 0.30,
         h: ctx.dimensions.y * 0.8,
     };
-    size_team(role_screen.redTeam, box);
+    size_team(menu.redTeam, box);
     box.x += box.w + ctx.dimensions.x * 0.33;
-    size_team(role_screen.blueTeam, box);
-    role_screen.exit.image = get_asset(`buttons`);
-    role_screen.exit.dst = {
+    size_team(menu.blueTeam, box);
+    menu.exit.image = get_asset(`buttons`);
+    menu.exit.dst = {
         x: ctx.dimensions.x * 0.005,
         y: ctx.dimensions.y * 0.005,
         w: ctx.dimensions.y * 0.2,
         h: ctx.dimensions.y * 0.1,
     };
-    role_screen.exitBtn._boundingBox = role_screen.exit.dst;
+    menu.exitBtn._boundingBox = menu.exit.dst;
 };
-export const init_role_screen = () => {
-    role_screen = {
+export const init_menu = () => {
+    menu = {
         role: 0,
         blueTeam: {
             cluegiver: false,
@@ -75,5 +75,5 @@ export const init_role_screen = () => {
         }),
         exit: { ...DEFAULT_DRAWABLE_IMG, dst: { x: 0, y: 0, h: 0, w: 0 }, src: { x: 0, y: 0, h: 32, w: 64 } },
     };
-    size_role_screen();
+    size_menu();
 };
