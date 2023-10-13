@@ -2,9 +2,10 @@ import { get_context, } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT } from "../../controller_lib/types/drawables.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
-import { confirm_clue } from "../../utils/input.js";
 import { is_guess } from "../../utils/state_handler.js";
+import { activate_button } from "../../utils/submit_button.js";
 import { confirm_guess, deny_guess } from "../../utils/utils.js";
+import { get_board } from "./init.js";
 export const size_topbar = (topBar) => {
     const ctx = get_context();
     const boundingBox = { x: ctx.dimensions.x * 0.25, y: ctx.dimensions.y * 0.013,
@@ -30,8 +31,10 @@ export const size_topbar = (topBar) => {
         w: ctxw * 0.09, h: ctxh * 0.16,
     };
     const margin = ctxh * 0.03;
-    const yspace = ctxh * 0.015;
+    const yspace = ctxh * 0.01;
     for (let x = 0; x < topBar.keyButtons.length; x += 1) {
+        topBar.keyBgSpritesSelected[x].dst = { ...dst };
+        topBar.keyBgSpritesSelected[x].src = { x: 0, y: 0, w: 30, h: 30 };
         topBar.keyBgSprites[x].dst = { ...dst };
         topBar.keyBgSprites[x].src = { x: 0, y: 0, w: 30, h: 30 };
         topBar.keySprites[x].dst = { x: dst.x + margin * 1.3, y: dst.y + margin * .8,
@@ -53,6 +56,9 @@ export const construct_topbar = () => {
         keyButtons: [],
         keySprites: [],
         keyBgSprites: [],
+        keyBgSpritesSelected: [],
+        isAKeySelected: false,
+        selectedKey: 0,
     };
     size_topbar(topBar);
     return topBar;
@@ -70,6 +76,7 @@ export const fill_topbar = (topbar, role) => {
         const ctx = get_context();
         const key = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('keys') };
         const keyBg = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('key_bg') };
+        const keyBgSelected = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('key_bg_selected') };
         const dst = {
             x: ctx.dimensions.x * 0.005,
             y: ctx.dimensions.y * 0.05,
@@ -78,11 +85,20 @@ export const fill_topbar = (topbar, role) => {
         };
         topbar.keySprites.length = 0;
         topbar.keyBgSprites.length = 0;
+        topbar.keyBgSpritesSelected.length = 0;
         for (let x = 0; x < 4; x += 1) {
             topbar.keySprites.push({ ...key });
             topbar.keyBgSprites.push({ ...keyBg });
-            topbar.keyButtons.push(new Button({ ...dst }, undefined, undefined, () => { confirm_clue(x + 1); }));
+            topbar.keyBgSpritesSelected.push({ ...keyBgSelected });
+            topbar.keyButtons.push(new Button({ ...dst }, undefined, undefined, key_button_clicked));
+            topbar.keyButtons[x].data = x;
             dst.y += dst.h + ctx.dimensions.y * 0.01;
         }
     }
+};
+const key_button_clicked = (b) => {
+    var topbar = get_board().topbar;
+    topbar.isAKeySelected = true;
+    activate_button();
+    topbar.selectedKey = b.data;
 };

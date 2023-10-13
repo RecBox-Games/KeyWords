@@ -4,6 +4,7 @@ import { get_role_screen } from "./init.js";
 import { get_game_state } from "../../utils/state_handler.js";
 import { get_popup } from "../../utils/popup.js";
 import { get_menu } from "../../utils/menu.js";
+import { buttons_add_menus, drawables_add_menus } from "../../utils/utils.js";
 // TODO set button bounding box to be a bit bigge than text
 export const role_screen_loop = () => {
     const role_screen = get_role_screen();
@@ -12,15 +13,8 @@ export const role_screen_loop = () => {
     const menu = get_menu();
     //////// Buttons ////////
     buttons_flush();
-    // popup
-    if (popup.is_showing) {
-        buttons_add(popup.x_button);
-    }
-    // menu
-    else if (menu.is_showing) {
-        buttons_add(menu.x_button);
-        buttons_add(menu.end_game_button);
-        buttons_add(menu.toggle_walkthrough_button);
+    if (buttons_add_menus()) {
+        // pass
     }
     else {
         // menu open button
@@ -48,25 +42,5 @@ export const role_screen_loop = () => {
     drawablesAdd(role_screen.blueTeam.guesserSprite);
     drawablesAdd(role_screen.redTeam.giverSprite);
     drawablesAdd(role_screen.redTeam.guesserSprite);
-    // popup
-    if (popup.is_showing) {
-        drawablesAdd(popup.base_sprite);
-        drawablesAdd(popup.x_sprite);
-        drawablesAdd(popup.header);
-        drawablesAdd(popup.message);
-    }
-    // menu
-    else if (menu.is_showing) {
-        drawablesAdd(menu.container_sprite);
-        drawablesAdd(menu.x_sprite);
-        drawablesAdd(menu.header);
-        drawablesAdd(menu.end_game_sprite);
-        drawablesAdd(menu.toggle_walkthrough_sprite);
-        if (menu.is_tut_enabled) {
-            drawablesAdd(menu.tut_enabled_sprite);
-        }
-        else {
-            drawablesAdd(menu.tut_disabled_sprite);
-        }
-    }
+    drawables_add_menus();
 };
