@@ -64,7 +64,7 @@ export const start_turn = (turn_state: TurnState) => {
     }
     else if (is_clue(board.role)) {
         if (board.role === turn_state.turn) {
-            board.topbar.text.text = 'Your turn. Give your team some keys.';
+            board.topbar.text.text = 'Give your team some keys.';
             //if(is_blue(board.role)) set_blue_input_border();
             //else set_red_input_border();
             
