@@ -38,12 +38,16 @@
 			font-size: xx-large;
 			}
           }
+          :root {
+              touch-action: pan-x pan-y;
+              height: 100%
+          }
+
     </style>
   </head>
   <body>
     <div id="restrict_view"> Please turn your phone sideways </div>    
     <canvas id="canvas"  oncontextmenu="return false;"></canvas>
-<!--    <input type="text" placeholder="Input your clue" id="clue_input"> -->
     <script type="module" src="main.js"></script>
     <!-- <button id="fullscreen" onclick=
      "
