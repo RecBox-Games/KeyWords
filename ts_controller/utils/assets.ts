@@ -13,6 +13,7 @@ const assetsSrc = [
     `header.png`,
     `keywords_background.png`,
     `popup.png`,
+    `confirmation.png`,
     `x.png`,
     `tut_enable.png`,
     `loading.png`,

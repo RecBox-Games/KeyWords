@@ -5,7 +5,7 @@ import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 import { is_guess, TurnRole } from "../../utils/state_handler.js";
-import { activate_button, show_submit_button } from "../../utils/submit_button_inactive.js";
+import { activate_button } from "../../utils/submit_button.js";
 import { confirm_guess, deny_guess } from "../../utils/utils.js";
 import { get_board } from "./init.js";
 
@@ -116,7 +116,6 @@ export const fill_topbar = (topbar: TopBar, role: TurnRole) => {
             dst.y += dst.h + ctx.dimensions.y * 0.01;
         }
     }
-    show_submit_button();
 };
 
 const key_button_clicked = (b: Button) => {

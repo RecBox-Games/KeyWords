@@ -4,22 +4,15 @@ import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { get_board } from "../game/main/init.js";
 import { get_asset } from "./assets.js";
+import { post_confirmation } from "./confirmation.js";
 import { confirm_clue, get_input } from "./input.js";
+
 
 let submit_button : SubmiButton;
 
 export const get_submit_button = () => { return submit_button };
 
-export function show_submit_button(){
-    submit_button.is_showing = true;
-}
-
-export function hide_submit_button() {
-    submit_button.is_showing = false;
-}
-
 export interface SubmiButton {
-    is_showing: boolean;
     is_active: boolean;
     sprite: DrawableImage,
     button: Button
@@ -28,7 +21,6 @@ export interface SubmiButton {
 export function init_submit_button() {
     var button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
     submit_button =  {
-        is_showing : false,
         sprite: {...DEFAULT_DRAWABLE_IMG},
         button: button,
         is_active: false
@@ -53,14 +45,26 @@ export function define_submit_button_properties() {
 } 
 
 export function try_submit() {
-    if(get_input().clue.trim() != "")
-        confirm_clue(get_board().topbar.selectedKey + 1);
+    if(get_input().clue.trim() != "" && submit_button.is_active) {
+        submit();
+    }
+    else {
+        post_confirmation("Submit without clue?", submit);
+    }
 }
 
 export function activate_button() {
     submit_button.is_active = true;
     submit_button.sprite.src = {x: 64*2, y: 0, w: 64, h: 32};    
 }
+
+export function submit() {
+    confirm_clue(get_board().topbar.selectedKey + 1);    
+    get_input().clue = "";
+    get_board().topbar.isAKeySelected = false;
+    submit_button.is_active = false;
+}
+
 
 
 

@@ -4,6 +4,7 @@ import { get_context } from "../controller_lib/init.js";
 import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { get_asset } from "./assets.js";
+import { post_confirmation } from "./confirmation.js";
 
 let menu:Menu;
 export const get_menu = ():Menu => {return menu};
@@ -131,7 +132,6 @@ export function resize_menu() {
 // callbacks //
 
 export const post_menu = (_self: Button) => {
-    console.log("--- menu post");
     menu.is_showing = true;
 }
 
@@ -140,7 +140,9 @@ export const exit_menu_clicked = (_self: Button) => {
 }
 
 export const end_game_clicked = (_self: Button) => {
-    get_context().ws.send('kill');
+    post_confirmation("End the game for everybody?", () => {
+        get_context().ws.send('kill');
+    });
 }
 
 export const toggle_walkthrough_clicked = (_self: Button) => {
