@@ -10,6 +10,7 @@ const assetsSrc = [
     `keys.png`,
     `key_bg.png`,
     `key_bg_selected.png`,
+    `submit.png`,
     `header.png`,
     `keywords_background.png`,
     `popup.png`,
