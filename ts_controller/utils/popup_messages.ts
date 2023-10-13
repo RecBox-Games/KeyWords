@@ -12,19 +12,19 @@ export const INSTRUCTIONS_CHOOSING =
 export const HEADER_GIVE_CLUE = "Your Turn: Give a Clue";
 export const INSTRUCTIONS_GIVE_CLUE =
     "Take a look at the chests and their contents. You need to come up " +
-    "with a single-word clue to give your team to get them to open " +
-    "chests with swords which damage the enemy team (and avoid chests with " +
-    "bombs). When you're ready, type the word in the top right box (or say it aloud) then choose " +
-    "how many chests you want them to open by tapping that number of keys on " +
-    "the left of your screen.";
+    "with a single-word clue to give your team. Based on that clue they will " +
+    "open one to four chests. Chests with swords are good and will damage the " +
+    "enemy. Chests with bombs are bad, avoid those! When you're ready, enter " +
+    "your clue in the top right box (or say it aloud) then choose how many keys " +
+    "to give them, then submit your clue.";
 
 export const HEADER_MAKE_GUESS = "Your Turn: Open <num> Chests";
 export const INSTRUCTIONS_MAKE_GUESS =
-    "Your Clue Master has given you a clue. Based on that one word you have to " +
-    "pick <num> chest(s) to open whose labels are associated with the clue. If " +
+    "Your Clue Master has given you a clue. Take a good look at the chests. " +
+    "Based on the clue you have to pick <num> chest(s). If " +
     "you pick a chest containing swords you will do damage to the other team. " +
     "But be careful. If you pick a chest with bombs you will do damage to your " +
-    "own team";
+    "own team. Good luck!";
 
 export const HEADER_SD_APPROACHES = "Sudden Death Approaches";
 export const INSTRUCTIONS_SD_APPROACHES =
