@@ -8,11 +8,11 @@ import { post_confirmation } from "./confirmation.js";
 import { confirm_clue, get_input } from "./input.js";
 
 
-let submit_button : SubmiButton;
+let submit_button : SubmitButton;
 
 export const get_submit_button = () => { return submit_button };
 
-export interface SubmiButton {
+export interface SubmitButton {
     is_active: boolean;
     sprite: DrawableImage,
     button: Button
@@ -58,7 +58,7 @@ export function activate_button() {
     submit_button.sprite.src = {x: 48, y: 0, w: 48, h: 32};    
 }
 
-export function submit() {
+function submit() {
     confirm_clue(get_board().topbar.selectedKey + 1);    
     get_input().clue = "";
     get_board().topbar.isAKeySelected = false;
