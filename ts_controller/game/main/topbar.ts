@@ -51,7 +51,7 @@ export const size_topbar= (topBar:TopBar) => {
         w: ctxw * 0.09,  h: ctxh * 0.16,
     };
     const margin = ctxh * 0.03;
-    const yspace = ctxh * 0.015
+    const yspace = ctxh * 0.01;
     for (let x = 0; x < topBar.keyButtons.length; x += 1) {
         topBar.keyBgSpritesSelected[x].dst = {...dst};
         topBar.keyBgSpritesSelected[x].src = {x: 0, y: 0, w: 30, h: 30};
