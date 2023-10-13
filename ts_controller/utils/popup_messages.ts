@@ -12,11 +12,11 @@ export const INSTRUCTIONS_CHOOSING =
 export const HEADER_GIVE_CLUE = "Your Turn: Give a Clue";
 export const INSTRUCTIONS_GIVE_CLUE =
     "Take a look at the chests and their contents. You need to come up " +
-    "with a single-word clue to give your team. Based on that clue they will " +
-    "open one to four chests. Chests with swords are good and will damage the " +
-    "enemy. Chests with bombs are bad, avoid those! When you're ready, enter " +
+    "with a single-word clue to give your team. Based on that clue your teammates will " +
+    "open one to four chests. You want them to guess chests with swords which will damage " +
+    "the enemy team and avoid chests with bombs which damage yourself. When you're ready, enter " +
     "your clue in the top right box (or say it aloud) then choose how many keys " +
-    "to give them, then submit your clue.";
+    "to give them before pressing submit.";
 
 export const HEADER_MAKE_GUESS = "Your Turn: Open <num> Chests";
 export const INSTRUCTIONS_MAKE_GUESS =
