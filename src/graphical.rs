@@ -16,26 +16,26 @@ const CHEST_WORD_OFFSET_Y: f32 = 40.0;
 const SCALE_CONTENTS: f32 = 6.0;
 const SCALE_HEART_X: f32 = 6.0;
 const SCALE_HEART_Y: f32 = 6.0;
-const SCALE_CHEST_X: f32 = 7.5;
+const SCALE_CHEST_X: f32 = 7.0;
 const SCALE_CHEST_Y: f32 = 6.0;
 const SCALE_SPARKLE_X: f32 = 4.0;
 const SCALE_SPARKLE_Y: f32 = 4.0;
 const SCALE_NOTIFYBOX_X: f32 = 2.5;
 const SCALE_NOTIFYBOX_Y: f32 = 2.5;
 // Chest Placement
-const CHESTS_START_X: f32 = 86.0;
-const CHESTS_SPACING_X: f32 = 352.0;
-const CHESTS_START_Y: f32 = 80.0;
-const CHESTS_SPACING_Y: f32 = 186.0;
+const CHESTS_START_X: f32 = 172.0;
+const CHESTS_SPACING_X: f32 = 313.0;
+const CHESTS_START_Y: f32 = 140.0;
+const CHESTS_SPACING_Y: f32 = 178.0;
 const CHESTS_VERTICAL_OFFSET_FACTOR: f32 = 2.0;
 // Chest Fall
 const CHESTS_DROP_HEIGHT_BASE: f32 = -600.0;
 const CHESTS_DROP_ROW_DIFFERENCE: f32 = 40.0;
 const SIMULTANEOUS_FALLS: usize = 6;
 // Hearts
-const HEARTS_START_X: f32 = 6.0;
-const HEARTS_SPACING_X: f32 = 80.0;
-const HEARTS_START_Y: f32 = 2.0;
+const HEARTS_START_X: f32 = 40.0;
+const HEARTS_START_Y: f32 = 952.0;
+const HEARTS_SPACING_Y: f32 = 80.0;
 const HEARTS_DROP_HEIGHT: f32 = 70.0;
 // Chest Opening
 const CHEST_LIFT_OFFSET: Point = Point{x: 0.0, y:-500.0};
@@ -45,7 +45,11 @@ const CONTENTS_Y: f32 = 370.0;
 const CONTENTS_SPACING_X: f32 = 100.0;
 // Select
 const SELECTION_OFFSET: Point = Point{x:4.0, y:20.0};
-//
+// Header
+const SCALE_HEADER_X: f32 = 6.0;
+const SCALE_HEADER_Y: f32 = 5.0;
+const HEADER_START_X: f32 = 192.0;
+const HEADER_START_Y: f32 = 15.0;
 
 type GR = GameResult<()>;
 type Ctx<'a> = &'a mut Context;
@@ -74,6 +78,8 @@ pub struct Graphical {
     // select
     select_red: SpriteElem,
     select_blue: SpriteElem,
+    // header
+    header_board: SpriteElem,
 }
 
 impl Graphical {
@@ -95,12 +101,14 @@ impl Graphical {
             heal: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/heal.png"),
             select_red: SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y, "/select_red.png"),
             select_blue: SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y, "/select_blue.png"),
+            header_board: SpriteElem::new(ctx, SCALE_HEADER_X, SCALE_HEADER_Y, "/game_header.png"),
         }
     }
 
     pub fn draw(&mut self, ctx: Ctx, state: &StateManager) -> GR {
-	let p = Point{x:0.0, y:0.0};
-	self.background.draw(ctx,p)?;
+	    let p = Point{x:0.0, y:0.0};
+	    self.background.draw(ctx,p)?;
+        self.header_board.draw(ctx, Point{x: HEADER_START_X, y: HEADER_START_Y})?;
         match &state.game_state {
             GameState::Intro(IntroState::Title(prg)) => {
                 self.draw_intro_title(ctx, prg)?;
@@ -116,9 +124,7 @@ impl Graphical {
                                &red_health_state, &blue_health_state,
                                progress.as_decimal())?;
             }
-            //_ => (),
         }
-        //
         Ok(())
     }
 
@@ -526,15 +532,15 @@ impl Graphical {
         match team {
             Team::Red => {
                 Point {
-                    x: HEARTS_START_X + HEARTS_SPACING_X*(i as f32),
-                    y: HEARTS_START_Y,
+                    x: HEARTS_START_X,
+                    y: HEARTS_START_Y - HEARTS_SPACING_Y*(i as f32),
                 }
             }
             Team::Blue => {
                 Point {
                     x: SCREEN_WIDTH - self.heart_blue.width() -
-                        HEARTS_START_X - HEARTS_SPACING_X*(i as f32),
-                    y: HEARTS_START_Y,
+                        HEARTS_START_X,
+                    y: HEARTS_START_Y - HEARTS_SPACING_Y*(i as f32),
                 }
             }
         }
