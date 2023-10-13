@@ -59,9 +59,11 @@ export const start_turn = (turn_state: TurnState) => {
 
                 }
             } else {
-                let clueText = typeof board.clue === "string" ? board.clue : '';
+                let clueText = "Your clue: " + board.clue;
                 let guessesText = board.currentGuesses.toString();
-                board.topbar.text.text = "Your clue: " + clueText + '   ' + "Keys: " + guessesText;
+                let keysText = "Keys: " + guessesText;
+                let verbalClueText = "Verbal clue   ";                
+                board.topbar.text.text =  board.clue ? clueText + '   ' + keysText : verbalClueText + keysText;
             }
         }
         else {
