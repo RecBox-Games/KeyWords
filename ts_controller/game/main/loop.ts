@@ -10,35 +10,22 @@ import { get_game_state, is_blue, is_clue, is_guess } from "../../utils/state_ha
 import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 import { get_input } from "../../utils/input.js";
+import { get_confirmation } from "../../utils/confirmation.js";
+import { buttons_add_menus, drawables_add_menus } from "../../utils/utils.js";
 
 
 export const main_loop = () => {
-    const board:Board = get_board();
-    const ctx:Context = get_context();
-    const popup = get_popup();
+    const board: Board = get_board();
+    const ctx: Context = get_context();
     const menu = get_menu();
     const role = get_game_state().role_state.role;
     const turn = get_game_state().turn_state.turn;
-    const input = get_input();
-
 
     //////// Buttons ////////
     buttons_flush();
 
-    // popup
-    if (popup.is_showing) {
-        buttons_add(popup.x_button);
-    }
-
-    // input box
-    else if (input.is_active) {
-    }
-    
-    // menu
-    else if (menu.is_showing) {
-        buttons_add(menu.x_button);        
-        buttons_add(menu.end_game_button);        
-        buttons_add(menu.toggle_walkthrough_button);        
+    if (buttons_add_menus()) {
+        // pass
     } else {
 
         // menu button
@@ -116,25 +103,5 @@ export const main_loop = () => {
         }
     }
 
-    // popup
-    if (popup.is_showing) {
-        drawablesAdd(popup.base_sprite);
-        drawablesAdd(popup.x_sprite);
-        drawablesAdd(popup.header);
-        drawablesAdd(popup.message);
-    }
-
-    // menu
-    else if (menu.is_showing) {
-        drawablesAdd(menu.container_sprite);
-        drawablesAdd(menu.x_sprite);
-        drawablesAdd(menu.header);
-        drawablesAdd(menu.end_game_sprite);
-        drawablesAdd(menu.toggle_walkthrough_sprite);
-        if (menu.is_tut_enabled) {
-            drawablesAdd(menu.tut_enabled_sprite);
-        } else {
-            drawablesAdd(menu.tut_disabled_sprite);
-        }            
-    }
+    drawables_add_menus();
 }

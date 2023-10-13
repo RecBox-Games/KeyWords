@@ -5,6 +5,11 @@ import { BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
 import { Input, get_input, show_input, hide_input, clear_input } from "./input.js";
+import { get_popup } from "./popup.js";
+import { get_menu } from "./menu.js";
+import { get_confirmation } from "./confirmation.js";
+import { drawablesAdd } from "../controller_lib/draw.js";
+import { buttons_add } from "../controller_lib/button.js";
 
 export const chest_clicked_guessser = (self: Button) => {
     const board: Board = get_board();
@@ -118,4 +123,76 @@ export const deny_guess = () => {
     board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
     board.guessedWord = undefined;
     console.log("deny")
+}
+
+
+// returns true iff a menu/popup is open or input box is active
+export function buttons_add_menus() {
+    let popup = get_popup();
+    let menu = get_menu();
+    let confirmation = get_confirmation();
+    let input = get_input();
+
+    // confirmation
+    if (confirmation.is_showing) {
+        buttons_add(confirmation.confirm_button);
+        buttons_add(confirmation.cancel_button);
+        return true;
+    }
+    
+    // popup
+    if (popup.is_showing) {
+        buttons_add(popup.x_button);
+        return true;
+    }
+
+    // input box
+    if (input.is_active) {
+        return true;
+    }
+    
+    // menu
+    if (menu.is_showing) {
+        buttons_add(menu.x_button);        
+        buttons_add(menu.end_game_button);        
+        buttons_add(menu.toggle_walkthrough_button);
+        return true;
+    }
+}
+
+export function drawables_add_menus() {
+    let popup = get_popup();
+    let menu = get_menu();
+    let confirmation = get_confirmation();
+
+    // popup
+    if (popup.is_showing) {
+        drawablesAdd(popup.base_sprite);
+        drawablesAdd(popup.x_sprite);
+        drawablesAdd(popup.header);
+        drawablesAdd(popup.message);
+    }
+
+    // menu
+    if (menu.is_showing) {
+        drawablesAdd(menu.container_sprite);
+        drawablesAdd(menu.x_sprite);
+        drawablesAdd(menu.header);
+        drawablesAdd(menu.end_game_sprite);
+        drawablesAdd(menu.toggle_walkthrough_sprite);
+        if (menu.is_tut_enabled) {
+            drawablesAdd(menu.tut_enabled_sprite);
+        } else {
+            drawablesAdd(menu.tut_disabled_sprite);
+        }
+    }
+
+    // confirmation
+    if (confirmation.is_showing) {
+        drawablesAdd(confirmation.container_sprite);
+        drawablesAdd(confirmation.message);
+        drawablesAdd(confirmation.confirm_sprite);
+        drawablesAdd(confirmation.cancel_sprite);
+    }
+
 }
