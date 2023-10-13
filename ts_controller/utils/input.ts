@@ -62,7 +62,6 @@ export function style_input() {
     input.element.style.border = '2px solid black';
     input.element.style.color = 'black';
     input.element.style.fontWeight = 'bold';
-
     input.element.style.top = '-.1v';
     input.element.style.left = "77%";
     input.element.style.width = '19%';

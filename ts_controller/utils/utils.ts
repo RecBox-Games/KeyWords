@@ -6,6 +6,7 @@ import { Chest } from "../game/main/init_chest.js";
 import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
 import { Input, get_input, show_input, hide_input, clear_input } from "./input.js";
 
+
 export const chest_clicked_guessser = (self: Button) => {
     const board: Board = get_board();
     const ctx = get_context();
@@ -69,10 +70,9 @@ export const start_turn = (turn_state: TurnState) => {
         if (board.role === turn_state.turn) {
             board.topbar.text.text = 'Give your team some keys.';
             //if(is_blue(board.role)) set_blue_input_border();
-            //else set_red_input_border();
-            
+            //else set_red_input_border();            
             clear_input();
-            show_input();            
+            show_input();
         }
         else {
             const guesses = board.currentGuesses.toString();

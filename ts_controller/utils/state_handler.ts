@@ -15,6 +15,7 @@ import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_SD, INSTRUCTIONS_SD,
        } from "./popup_messages.js";
 import { construct_menu, initialize_menu } from "./menu.js";
+import { define_input_button_properties, init_input_button } from "./input_button.js";
 
 
 let game_state: GameState;
@@ -270,6 +271,7 @@ export const load_app = () => {
     init_main_screen();
     init_end();
     init_input();
+    init_input_button();
 }
 
 
@@ -292,6 +294,7 @@ export const handle_message = () => {
 
 function handle_new_state() {
     initialize_menu();
+    define_input_button_properties();
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();

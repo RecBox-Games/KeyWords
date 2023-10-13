@@ -10,6 +10,7 @@ import { get_game_state, is_blue, is_clue, is_guess } from "../../utils/state_ha
 import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 import { get_input } from "../../utils/input.js";
+import { get_input_button } from "../../utils/input_button.js";
 
 
 export const main_loop = () => {
@@ -20,20 +21,21 @@ export const main_loop = () => {
     const role = get_game_state().role_state.role;
     const turn = get_game_state().turn_state.turn;
     const input = get_input();
+    const input_button = get_input_button();
 
 
     //////// Buttons ////////
     buttons_flush();
-
     // popup
     if (popup.is_showing) {
         buttons_add(popup.x_button);
     }
-
     // input box
     else if (input.is_active) {
     }
-    
+    //else if (input_button.is_showing) {
+    //    buttons_add(input_button.button);
+    //}    
     // menu
     else if (menu.is_showing) {
         buttons_add(menu.x_button);        
@@ -122,6 +124,10 @@ export const main_loop = () => {
         drawablesAdd(popup.x_sprite);
         drawablesAdd(popup.header);
         drawablesAdd(popup.message);
+    }
+
+    if (true) {
+        drawablesAdd(input_button.sprite);
     }
 
     // menu

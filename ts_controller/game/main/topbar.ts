@@ -5,6 +5,7 @@ import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { Button } from "../../controller_lib/types/triggerable.js";
 import { get_asset } from "../../utils/assets.js";
 import { confirm_clue } from "../../utils/input.js";
+import { InputButton, define_input_button_properties, get_input_button, show_input_button } from "../../utils/input_button.js";
 import { is_guess, TurnRole } from "../../utils/state_handler.js";
 import { confirm_guess, deny_guess } from "../../utils/utils.js";
 import { get_board } from "./init.js";
@@ -86,6 +87,7 @@ export const construct_topbar = ():TopBar => {
 }
 
 export const fill_topbar = (topbar: TopBar, role: TurnRole) => {
+    let inputButton = get_input_button();
     const button = { ...DEFAULT_DRAWABLE_IMG, image: get_asset('buttons') };
     topbar.textBg = { ...DEFAULT_DRAWABLE_IMG, src: { x: 0, y: 0, w: 200, h: 30 }, image: get_asset('header') };
     if (is_guess(role)) {
@@ -116,6 +118,9 @@ export const fill_topbar = (topbar: TopBar, role: TurnRole) => {
             dst.y += dst.h + ctx.dimensions.y * 0.01;
         }
     }
+    console.log("before calling show_input_button" + inputButton.is_showing);
+    show_input_button();
+    console.log("after calling show_input_button" + inputButton.is_showing);
 };
 
 const key_button_clicked = (b: Button) => {
