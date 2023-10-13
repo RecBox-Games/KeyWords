@@ -36,7 +36,7 @@ export function initialize_submit() {
 export function resize_submit() {
     const ctx = get_context();
     const base_box: Rectangle = {
-        x: ctx.dimensions.x * 0.008,
+        x: ctx.dimensions.x * 0.011,
         y: ctx.dimensions.y * 0.825,
         w: ctx.dimensions.x * 0.112,
         h: ctx.dimensions.y * 0.155,
