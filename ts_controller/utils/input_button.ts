@@ -3,7 +3,9 @@ import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT, DrawableImage,
          DrawableText } from "../controller_lib/types/drawables.js";
 import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
+import { get_board } from "../game/main/init.js";
 import { get_asset } from "./assets.js";
+import { confirm_clue } from "./input.js";
 
 let input_button : InputButton;
 
@@ -34,15 +36,15 @@ export function init_input_button() {
 
 export function define_input_button_properties() {
     input_button.sprite.image = get_asset("buttons");
-    input_button.sprite.src = {x: 64*4, y: 0, w: 64, h: 32};
+    input_button.sprite.src = {x: 64*2, y: 0, w: 64, h: 32};
     const ctx = get_context();
     console.log("context dimensions x: " + ctx.dimensions.x);
 
     const base_box: Rectangle = {
-        x: 0,
-        y: 0,
-        w: ctx.dimensions.x,
-        h: ctx.dimensions.y,
+        x: ctx.dimensions.x * 0.008,
+        y: ctx.dimensions.y * 0.88,
+        w: ctx.dimensions.x * 0.112,
+        h: ctx.dimensions.y * 0.1,
     };
     
     const button_box: Rectangle = {
@@ -52,7 +54,11 @@ export function define_input_button_properties() {
         h: base_box.h * (1/100),
     }
     input_button.sprite.dst = base_box;
-    input_button.button._boundingBox = base_box;    
+    input_button.button._boundingBox = base_box;
+}
+
+export function submit() {
+    confirm_clue(get_board().topbar.selectedKey);
 }
 
 

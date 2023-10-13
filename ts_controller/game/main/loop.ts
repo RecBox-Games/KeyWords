@@ -10,18 +10,18 @@ import { get_game_state, is_blue, is_clue, is_guess } from "../../utils/state_ha
 import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 import { get_input } from "../../utils/input.js";
-import { get_input_button } from "../../utils/input_button.js";
+import { activate_button, get_submit_button } from "../../utils/submit_button_inactive.js";
 
 
 export const main_loop = () => {
-    const board:Board = get_board();
-    const ctx:Context = get_context();
+    const board: Board = get_board();
+    const ctx: Context = get_context();
     const popup = get_popup();
     const menu = get_menu();
     const role = get_game_state().role_state.role;
     const turn = get_game_state().turn_state.turn;
     const input = get_input();
-    const input_button = get_input_button();
+    const submit_button = get_submit_button();
 
 
     //////// Buttons ////////
@@ -33,14 +33,19 @@ export const main_loop = () => {
     // input box
     else if (input.is_active) {
     }
-    //else if (input_button.is_showing) {
-    //    buttons_add(input_button.button);
-    //}    
+    else if (submit_button.is_showing) {
+        for (let i in board.topbar.keyButtons) {
+            buttons_add(board.topbar.keyButtons[i]);
+        }
+        if (submit_button.is_active) {
+            buttons_add(submit_button.button);
+        }
+    }
     // menu
     else if (menu.is_showing) {
-        buttons_add(menu.x_button);        
-        buttons_add(menu.end_game_button);        
-        buttons_add(menu.toggle_walkthrough_button);        
+        buttons_add(menu.x_button);
+        buttons_add(menu.end_game_button);
+        buttons_add(menu.toggle_walkthrough_button);
     } else {
 
         // menu button
@@ -74,8 +79,8 @@ export const main_loop = () => {
     if (board.bg) {
         drawablesAdd(board.bg);
     }
-    const rect: Rectangle = {x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y};
-    drawablesAdd({...DEFAULT_DRAWABLE_RECT, boundingBox: rect, color: is_blue(board.role) ? '#0000FF' : '#FF0000', stroke: 6})
+    const rect: Rectangle = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y };
+    drawablesAdd({ ...DEFAULT_DRAWABLE_RECT, boundingBox: rect, color: is_blue(board.role) ? '#0000FF' : '#FF0000', stroke: 6 })
 
     // chests
     for (let i = 0; i < BOARD_H; i += 1) {
@@ -105,6 +110,7 @@ export const main_loop = () => {
             }
             drawablesAdd(board.topbar.keySprites[i]);
         }
+        drawablesAdd(submit_button.sprite);
     }
 
     // selector and deny/accept buttons
@@ -126,10 +132,6 @@ export const main_loop = () => {
         drawablesAdd(popup.message);
     }
 
-    if (true) {
-        drawablesAdd(input_button.sprite);
-    }
-
     // menu
     else if (menu.is_showing) {
         drawablesAdd(menu.container_sprite);
@@ -141,6 +143,6 @@ export const main_loop = () => {
             drawablesAdd(menu.tut_enabled_sprite);
         } else {
             drawablesAdd(menu.tut_disabled_sprite);
-        }            
+        }
     }
 }
