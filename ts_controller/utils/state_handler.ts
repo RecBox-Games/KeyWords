@@ -14,7 +14,7 @@ import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_MAKE_GUESS, INSTRUCTIONS_MAKE_GUESS,
        } from "./popup_messages.js";
 import { construct_menu, initialize_menu } from "./menu.js";
-import { define_submit_button_properties, init_submit_button } from "./submit_button.js";
+import { initialize_submit, construct_submit } from "./submit_button.js";
 import { construct_confirmation, initialize_confirmation } from "./confirmation.js";
 
 
@@ -266,13 +266,13 @@ export const load_app = () => {
     init_popup();
     construct_menu();
     construct_confirmation();
+    construct_submit();
     init_context();
     init_loading();
     init_role_screen();
     init_main_screen();
     init_end();
     init_input();
-    init_submit_button();
 }
 
 
@@ -295,7 +295,7 @@ export const handle_message = () => {
 
 function handle_new_state() {
     initialize_menu();
-    define_submit_button_properties();
+    initialize_submit();
     initialize_confirmation();
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
