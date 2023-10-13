@@ -57,7 +57,7 @@ export function size_popup() {
         x: ctx.dimensions.x * 0.16,
         y: ctx.dimensions.y * 0.16,
         w: ctx.dimensions.x * 0.68,
-        h: ctx.dimensions.y * 0.70,
+        h: ctx.dimensions.y * 0.80,
     };
     popup.base_sprite.dst = base_box;
     const x_box: Rectangle = {
