@@ -18,7 +18,7 @@ export interface SubmitButton {
     button: Button
 }
 
-export function init_submit_button() {
+export function construct_submit() {
     var button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
     submit_button =  {
         sprite: {...DEFAULT_DRAWABLE_IMG},
@@ -27,22 +27,24 @@ export function init_submit_button() {
     }
 }
 
-export function define_submit_button_properties() {    
+export function initialize_submit() {    
     submit_button.sprite.image = get_asset("submit");
     submit_button.sprite.src = {x: 0, y: 0, w: 48, h: 32};
-    const ctx = get_context();
-    console.log("context dimensions x: " + ctx.dimensions.x);
+    resize_submit();
+}
 
+export function resize_submit() {
+    const ctx = get_context();
     const base_box: Rectangle = {
-        x: ctx.dimensions.x * 0.0125,
-        y: ctx.dimensions.y * 0.85,
+        x: ctx.dimensions.x * 0.011,
+        y: ctx.dimensions.y * 0.825,
         w: ctx.dimensions.x * 0.112,
-        h: ctx.dimensions.y * 0.1,
+        h: ctx.dimensions.y * 0.155,
     };    
     submit_button.sprite.dst = base_box;
     submit_button.button._boundingBox = base_box;
     submit_button.button._touchEndCallback = try_submit;
-} 
+}
 
 export function try_submit() {
     if(get_input().clue.trim() != "" && submit_button.is_active) {
@@ -55,7 +57,7 @@ export function try_submit() {
 
 export function activate_button() {
     submit_button.is_active = true;
-    submit_button.sprite.src = {x: 48, y: 0, w: 48, h: 32};    
+    submit_button.sprite.src = {x: 48, y: 0, w: 48, h: 32};
 }
 
 function submit() {
