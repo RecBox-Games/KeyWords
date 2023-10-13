@@ -32,7 +32,6 @@ export const main_loop = () => {
 
     // input box
     else if (input.is_active) {
-        console.log("input is active");
     }
     
     // menu
@@ -42,14 +41,11 @@ export const main_loop = () => {
         buttons_add(menu.toggle_walkthrough_button);        
     } else {
 
-        console.log("input is not active");
-
-        
         // menu button
         buttons_add(menu.open_button);
 
         // guess accept/deny
-        if (get_game_state().turn_state.proposed_guess.exists) {
+        if (turn === role && get_game_state().turn_state.proposed_guess.exists) {
             buttons_add(board.topbar.acceptButton);
             buttons_add(board.topbar.denyButton);
         }
@@ -92,26 +88,23 @@ export const main_loop = () => {
         }
     }
 
-    // topbar (including key buttons)
+    // top text
     drawablesAdd(menu.open_sprite);
     drawablesAdd(board.topbar.textBg);
     drawablesAdd(board.topbar.text);
+
+    // key buttons
     if (is_clue(role) && role === turn) {
         for (let i in board.topbar.keyButtons) {
             drawablesAdd(board.topbar.keyBgSprites[i]);
             drawablesAdd(board.topbar.keySprites[i]);
         }
     }
-    if (get_game_state().turn_state.proposed_guess.exists) {
+
+    // selector and deny/accept buttons
+    if (role === turn && get_game_state().turn_state.proposed_guess.exists) {
         drawablesAdd(board.topbar.accept);
         drawablesAdd(board.topbar.deny);
-    }
-    if (!board.guessedWord) {
-        drawablesAdd(board.topbar.subText);
-    }
-
-    // selector
-    if (get_game_state().turn_state.proposed_guess.exists && board.role === get_game_state().turn_state.turn) {
         if (board.selector.red) {
             drawablesAdd(board.selector.red_sprite);
         } else {

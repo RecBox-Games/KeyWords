@@ -1,10 +1,10 @@
 import { get_context } from "../controller_lib/init.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { Board, get_board } from "../game/main/init.js";
-import { BOARD_H, BOARD_W } from "../game/interfaces.js";
+import { BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
-import { Input, get_input, show_input, hide_input, clear_input, set_red_input_border, set_blue_input_border } from "./input.js";
+import { Input, get_input, show_input, hide_input, clear_input } from "./input.js";
 
 export const chest_clicked_guessser = (self: Button) => {
     const board: Board = get_board();
@@ -27,7 +27,10 @@ export const start_turn = (turn_state: TurnState) => {
         if (board.role === turn_state.turn) {
             if (turn_state.proposed_guess.exists) {
                 board.topbar.subText.text = "";
-                board.topbar.text.text = "Validate guess ?";
+                const chosen_x = turn_state.proposed_guess.x;
+                const chosen_y = turn_state.proposed_guess.y
+                const chosen_word = board.chests[chosen_x][chosen_y].text.text;
+                board.topbar.text.text = "'" + chosen_word + "' chosen";
                 const x = turn_state.proposed_guess.x;
                 const y = turn_state.proposed_guess.y;
                 board.selector.xIndex = x;
