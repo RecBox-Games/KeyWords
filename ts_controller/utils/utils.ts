@@ -1,225 +1,206 @@
-
 import { get_context } from "../controller_lib/init.js";
-import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { Board, get_board } from "../game/main/init.js";
-import { BOARD_H, BOARD_W, GIVER, GUESSER } from "../game/interfaces.js";
+import { BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
-import { buttons_add, buttons_len, buttons_log } from "../controller_lib/button.js";
-import { assetsDic, get_asset } from "./assets.js";
+import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
+import { Input, get_input, show_input, hide_input, clear_input } from "./input.js";
+import { get_popup } from "./popup.js";
+import { get_menu } from "./menu.js";
+import { get_confirmation } from "./confirmation.js";
+import { drawablesAdd } from "../controller_lib/draw.js";
+import { buttons_add } from "../controller_lib/button.js";
+import { get_submit_button } from "./submit_button.js";
 
 
-export const set_chests_status = (status:boolean) =>
-{
-    const board:Board = get_board();
-    console.log("sets status", status, buttons_len())
-    for (let i = 0; i < BOARD_W; i += 1)
-        for (let j = 0; j < BOARD_W; j += 1)
-        {
-            if (!board.chests[i][j].open)
-                board.buttons[i][j]._active = status;
-        }
-}
-
-export const chest_clicked_giver = (self:Button) =>
-{
-    const board:Board = get_board();
-    const x = (self.data as Chest).id % BOARD_W;
-    const y = (self.data as Chest).id / BOARD_W;
-    board.overlay.shadow = undefined;
-    board.overlay.box.dst = {
-        x: self._boundingBox.x + (x < BOARD_W / 2 ? (self._boundingBox as Rectangle).w : -(self._boundingBox as Rectangle).w) ,
-        y: self._boundingBox.y + (y < BOARD_H / 2 ? (self._boundingBox as Rectangle).h : -(self._boundingBox as Rectangle).h),
-        w: (self._boundingBox as Rectangle).w * 1.5,
-        h: (self._boundingBox as Rectangle).h * 1.8,
-    }
-
-    if ((self.data as Chest).contents == 'empty'){
-        board.overlay.subtext.text = 'There is nothing here :) '
-         board.overlay.item.image = null;
-    }
-    else {
-        board.overlay.item.image = get_asset((self.data as Chest).contents.slice(0, -1));
-        board.overlay.subtext.text = (self.data as Chest).contents.at(-1) + assetsDic[(self.data as Chest).contents.slice(0, -1)];
-    }
-    board.overlay.subtext.font = `15px serif`
-    board.overlay.subtext.boundingBox = {...board.overlay.box.dst, y:  board.overlay.box.dst.y + board.overlay.box.dst.h * 0.7, h:  board.overlay.box.dst.h * 0.3};
-    board.overlay.item.dst = {
-        x: board.overlay.box.dst.x + board.overlay.box.dst.w * 0.40,
-        y: board.overlay.box.dst.y + board.overlay.box.dst.h * 0.45,
-        w: board.overlay.box.dst.w * 0.3,
-        h: board.overlay.box.dst.h * 0.3,
-    }
-    board.showOverlay = true;
-}
-
-export const chest_clicked_guessser = (self:Button) =>
-{
-    const board:Board = get_board();
+export const chest_clicked_guessser = (self: Button) => {
+    const board: Board = get_board();
     const ctx = get_context();
-    if (!board.clue)
-    {
-        console.log("No clue");
+    if (board.guessedWord) {
+        console.log("Someone already guessed a word, accept or deny ", board.guessedWord);
         return;
     }
-
-    if (board.guessedWord)
-    {
-        console.log("Someone already guessed a word, accept or deny ", board.guessedWord);
-        return ;
-    }
-    ctx.ws.send('input:guess' + ',' + (((self.data as Chest).id / BOARD_W) | 0).toString() +  ',' +  (((self.data as Chest).id % BOARD_W) | 0).toString())
+    ctx.ws.send('input:guess' + ',' + (((self.data as Chest).x) | 0).toString() +
+        ',' + (((self.data as Chest).y) | 0).toString())
 }
 
-export const start_turn = (turnRole:number, clue:string, guessRemain:number, guess:string, guessState:boolean) =>
-{
-    const board:Board = get_board();
-
-    board.currentGuesses = guessRemain;
-    board.clue = clue;
-    board.guessedWord = guess;
-    if (board.role == GUESSER)
-    {
-        if (turnRole == board.role)
-        {
-
-                if (guessState)
-                {
-                    board.topbar.acceptButton._active = true;
-                    board.topbar.denyButton._active = true;
-                    board.topbar.subText.text = "";
-                    board.topbar.text.text = "Validate guess ?";
+export const start_turn = (turn_state: TurnState) => {
+    const board: Board = get_board();
+    const input: Input = get_input();
+    board.currentGuesses = turn_state.guesses_remaining;
+    board.clue = turn_state.clue;
+    if (is_guess(board.role)) {
+        console.log("active input:" + input.is_active);
+        if (board.role === turn_state.turn) {
+            if (turn_state.proposed_guess.exists) {
+                board.topbar.subText.text = "";
+                const chosen_x = turn_state.proposed_guess.x;
+                const chosen_y = turn_state.proposed_guess.y
+                const chosen_word = board.chests[chosen_x][chosen_y].text.text;
+                board.topbar.text.text = "'" + chosen_word + "' chosen";
+                const x = turn_state.proposed_guess.x;
+                const y = turn_state.proposed_guess.y;
+                board.selector.xIndex = x;
+                board.selector.yIndex = y;
+                var selector_dst = Object.assign({}, board.chests[x][y].sprite.dst);
+                if (selector_dst && selector_dst.w) {
+                    selector_dst.x -= 2;
+                    selector_dst.y += 5;
+                    selector_dst.w += 13;
+                    selector_dst.h += 7;
                 }
-            else
-            {
-                board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
-                board.topbar.acceptButton._active = false;
-                board.topbar.denyButton._active = false;
+                if (is_blue(board.role)) {
+                    board.selector.red = false;
+                    board.selector.blue_sprite.dst = selector_dst;
+                }
+                else {
+                    board.selector.red = true;
+                    board.selector.red_sprite.dst = selector_dst;
+
+                }
+            } else {
+                let clueText = "Your clue: " + board.clue;
+                let guessesText = board.currentGuesses.toString();
+                let keysText = "Keys: " + guessesText;
+                let verbalClueText = "Verbal clue   ";                
+                board.topbar.text.text =  board.clue ? clueText + '   ' + keysText : verbalClueText + keysText;
             }
         }
-        else
-        {
-            board.topbar.text.text = "Waiting for a clue...";
+        else {
+            board.topbar.text.text = "Waiting for a clue";
             board.currentGuesses = 0;
             board.totalGuesses = 0;
-            board.clue = undefined;
+            board.clue = {};
             board.topbar.subText.text = "";
         }
     }
-    else if (board.role == GIVER) {
-        if (turnRole == board.role)
-        {
-            board.topbar.text.text = 'Say a clue to your team, then choose how many chests they must open by giving them keys';
-            for (let button of board.topbar.clueCount)
-            {
-                button._active = true;
-            }
-        // board.topbar.acceptButton._active = true;
-        //    add buttons
+    else if (is_clue(board.role)) {
+        if (board.role === turn_state.turn) {
+            board.topbar.text.text = 'Give your team some keys';
+            //if(is_blue(board.role)) set_blue_input_border();
+            //else set_red_input_border();            
+            clear_input();
+            show_input();
         }
         else {
-            board.topbar.subText.text  = '';
-            board.topbar.text.text  = 'Your team has ' + board.currentGuesses.toString() + ' guesses remaining';
-            for (let button of board.topbar.clueCount)
-            {
-                button._active = false;
-            }
+            const guesses = board.currentGuesses.toString();
+            const plur = guesses == '1' ? "key" : "keys";
+            board.topbar.subText.text = '';
+            board.topbar.text.text = 'Your team has ' + guesses + ' ' + plur + ' left';
+            if (input) hide_input();
         }
-    }
-    if (!get_board().showOverlay)
-    {
-        console.log("No overlay")
-        set_chests_status(true);
     }
 }
 
-export const end_turn = () =>
-{
-    const board:Board = get_board();
+export const end_turn = () => {
+    const board: Board = get_board();
     board.topbar.text.text = "Other team's turn";
     board.topbar.subText.text = "";
     board.currentGuesses = 0;
     board.totalGuesses = 0;
-    set_chests_status(false);
-     for (let button of board.topbar.clueCount)
-    {
-        button._active = false;
-    }
 }
 
-export const open_chest = (id:number) => {
-    const board:Board = get_board();
+export const open_chest = (id: number) => {
+    const board: Board = get_board();
     const x = id % BOARD_W;
     const y = (id / BOARD_W) | 0; // | 0 to take the integer part, more efficient than floor or ceil
 
     // add_animation({object: board.chests[y][x].sprite, animate_fn: (object:Animation) => {object = }})
-    board.chests[y][x].open = true;
-}
-
-export const open_overlay_guesser = (guess:string) =>{
-    const board:Board = get_board();
-
-    board.topbar.acceptButton._active = false;
-    board.topbar.denyButton._active = false;
-    board.guessedWord = undefined;
-    board.showOverlay = true;
-    set_chests_status(false);
-    (board.overlay.exit as Button)._active = true;
-    for (let y = 0; y < BOARD_H; y += 1)
-    {
-        for (let x = 0; x < BOARD_W; x += 1)
-        {
-            if (board.chests[y][x].text.text == guess)
-            {
-                board.overlay.subtext.text = "This chest contains {{contents}}";
-                break ;
-            }
-        }
-    }
-
-}
-export const close_overlay = () =>{
-    const board:Board = get_board();
-
-    console.log("close overlay");
-    board.showOverlay = false;
-    (board.overlay.exit as Button)._active = false;
-    set_chests_status(true);
-    board.guessedWord = undefined;
+    board.chests[y][x].state.open = true;
 }
 
 export const confirm_guess = () => {
-    const board:Board = get_board();
+    const board: Board = get_board();
     const ctx = get_context();
 
     ctx.ws.send('input:second,support');
     board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
-    board.topbar.acceptButton._active = false;
-    board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
-    // board.showOverlay = true;
-    set_chests_status(false);
-    // (board.overlay.exit as Button)._active = true;
-    console.log("confirm",board.overlay.exit)
 }
 
 export const deny_guess = () => {
-    const board:Board = get_board();
+    const board: Board = get_board();
     const ctx = get_context();
 
     ctx.ws.send('input:second,dissent');
     board.topbar.text.text = "Remaining Guesses " + board.currentGuesses.toString();
-    board.topbar.acceptButton._active = false;
-    board.topbar.denyButton._active = false;
     board.guessedWord = undefined;
     console.log("deny")
 }
 
-export const confirm_clue = (amount:number) => {
-    const board:Board = get_board();
-    const ctx = get_context();
 
-    board.topbar.text.text = "You gave your team " + amount.toString() + ' keys';
-    board.topbar.acceptButton._active = false;
-    ctx.ws.send("input:clue," + 'none' + "," + amount.toString());
+// returns true iff a menu/popup is open or input box is active
+export function buttons_add_menus() {
+    let popup = get_popup();
+    let menu = get_menu();
+    let confirmation = get_confirmation();
+    let input = get_input();
+    let submit_button = get_submit_button();
+
+    if (submit_button.is_active && !input.is_active) {
+        buttons_add(submit_button.button);
+    }
+
+    // confirmation
+    if (confirmation.is_showing) {
+        buttons_add(confirmation.confirm_button);
+        buttons_add(confirmation.cancel_button);
+        return true;
+    }
+    
+    // popup
+    if (popup.is_showing) {
+        buttons_add(popup.x_button);
+        return true;
+    }
+
+    // input box
+    if (input.is_active) {
+        return true;
+    }
+    
+    // menu
+    if (menu.is_showing) {
+        buttons_add(menu.x_button);        
+        buttons_add(menu.end_game_button);        
+        buttons_add(menu.toggle_walkthrough_button);
+        return true;
+    }
+}
+
+export function drawables_add_menus() {
+    let popup = get_popup();
+    let menu = get_menu();
+    let confirmation = get_confirmation();
+
+    // popup
+    if (popup.is_showing) {
+        drawablesAdd(popup.base_sprite);
+        drawablesAdd(popup.x_sprite);
+        drawablesAdd(popup.header);
+        drawablesAdd(popup.message);
+    }
+
+    // menu
+    if (menu.is_showing) {
+        drawablesAdd(menu.container_sprite);
+        drawablesAdd(menu.x_sprite);
+        drawablesAdd(menu.header);
+        drawablesAdd(menu.end_game_sprite);
+        drawablesAdd(menu.toggle_walkthrough_sprite);
+        if (menu.is_tut_enabled) {
+            drawablesAdd(menu.tut_enabled_sprite);
+        } else {
+            drawablesAdd(menu.tut_disabled_sprite);
+        }
+    }
+
+    // confirmation
+    if (confirmation.is_showing) {
+        drawablesAdd(confirmation.container_sprite);
+        drawablesAdd(confirmation.message);
+        drawablesAdd(confirmation.confirm_sprite);
+        drawablesAdd(confirmation.cancel_sprite);
+    }
+
 }

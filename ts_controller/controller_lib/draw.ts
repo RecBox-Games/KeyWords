@@ -83,10 +83,39 @@ export const drawableRenderSingle = (ctx:Context, drawable:DrawableImage | Drawa
         // let oldFont = ctx.ctx.font;
 		ctx.ctx.fillStyle = text.color;
         ctx.ctx.font = text.font;
-        if (text.center)
+        if (text.center) {
             text.coords = center_text(text.text,text.font, text.boundingBox);
-
-		ctx.ctx.fillText(text.text as string, text.coords.x, text.coords.y);
+        }
+        if (text.wrap) {
+            const match = text.font.match(/^(\d+)px/);
+            var line_height = 4;
+            if (match) {
+                line_height += parseInt(match[1]);
+            }
+            wrapText(ctx.ctx, text.text, text.boundingBox.x, text.boundingBox.y, text.boundingBox.w, line_height);
+        } else {
+		    ctx.ctx.fillText(text.text as string, text.coords.x, text.coords.y);
+        }
 	}
 	else throw "Drawable types matches none"
+}
+
+function wrapText(context, text, x, y, maxWidth, lineHeight) {
+    var words = text.split(' ');
+    var line = '';
+
+    for (var n = 0; n < words.length; n++) {
+        var testLine = line + words[n] + ' ';
+        var metrics = context.measureText(testLine);
+        var testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+            context.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+        }
+        else {
+            line = testLine;
+        }
+    }
+    context.fillText(line, x, y);
 }
