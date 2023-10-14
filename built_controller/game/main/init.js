@@ -33,7 +33,7 @@ const size_board = () => {
     const ch = ctx.dimensions.y;
     const startx = cw * 0.122;
     const dst = { x: startx, y: ch * 0.11,
-        w: cw * 0.15, h: ch * 0.175 };
+        w: cw * 0.15, h: ch * 0.167 };
     for (let y = 0; y < BOARD_H; y += 1) {
         for (let x = 0; x < BOARD_W; x += 1) {
             board.chests[y][x].sprite.dst = { ...dst };

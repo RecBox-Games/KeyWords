@@ -11,12 +11,19 @@ export function init_input() {
     style_input();
     inputElement.classList.add('uniqueInput'); // Add unique class
     input.element.onfocus = activate_input;
-    input.element.onblur = handle_input;
+    input.element.onblur = set_input;
     document.body.appendChild(inputElement);
     style_placeholder();
 }
 export function activate_input() { console.log("input is now active"); input.is_active = true; }
-export function deactivate_input() { console.log("input is now inactive"); input.is_active = false; }
+export function deactivate_input() {
+    console.log("input is now inactive");
+    input.is_active = false;
+    if (input.clue != "")
+        input.element.style.background = '#fffdc1';
+    else
+        input.element.style.background = '#eaeae8';
+}
 export function show_input() { input.element.style.display = 'flex'; }
 export function hide_input() { input.element.style.display = 'none'; }
 export function clear_input() { input.element.value = ""; }
@@ -53,10 +60,8 @@ export const confirm_clue = (amount) => {
     const ctx = get_context();
     ctx.ws.send("input:clue," + input.clue + "," + amount.toString());
 };
-export function handle_input(e) {
+export function set_input(e) {
+    input.clue = e.target.value;
     deactivate_input();
-    if (e.target.value != "") {
-        input.clue = e.target.value;
-    }
     console.log(input.clue);
 }

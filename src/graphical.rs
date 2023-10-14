@@ -16,26 +16,26 @@ const CHEST_WORD_OFFSET_Y: f32 = 40.0;
 const SCALE_CONTENTS: f32 = 6.0;
 const SCALE_HEART_X: f32 = 6.0;
 const SCALE_HEART_Y: f32 = 6.0;
-const SCALE_CHEST_X: f32 = 7.5;
+const SCALE_CHEST_X: f32 = 7.0;
 const SCALE_CHEST_Y: f32 = 6.0;
 const SCALE_SPARKLE_X: f32 = 4.0;
 const SCALE_SPARKLE_Y: f32 = 4.0;
 const SCALE_NOTIFYBOX_X: f32 = 2.5;
 const SCALE_NOTIFYBOX_Y: f32 = 2.5;
 // Chest Placement
-const CHESTS_START_X: f32 = 86.0;
-const CHESTS_SPACING_X: f32 = 352.0;
-const CHESTS_START_Y: f32 = 80.0;
-const CHESTS_SPACING_Y: f32 = 186.0;
+const CHESTS_START_X: f32 = 172.0;
+const CHESTS_SPACING_X: f32 = 313.0;
+const CHESTS_START_Y: f32 = 140.0;
+const CHESTS_SPACING_Y: f32 = 178.0;
 const CHESTS_VERTICAL_OFFSET_FACTOR: f32 = 2.0;
 // Chest Fall
 const CHESTS_DROP_HEIGHT_BASE: f32 = -600.0;
 const CHESTS_DROP_ROW_DIFFERENCE: f32 = 40.0;
 const SIMULTANEOUS_FALLS: usize = 6;
 // Hearts
-const HEARTS_START_X: f32 = 6.0;
-const HEARTS_SPACING_X: f32 = 80.0;
-const HEARTS_START_Y: f32 = 2.0;
+const HEARTS_START_X: f32 = 40.0;
+const HEARTS_START_Y: f32 = 952.0;
+const HEARTS_SPACING_Y: f32 = 78.0;
 const HEARTS_DROP_HEIGHT: f32 = 70.0;
 // Chest Opening
 const CHEST_LIFT_OFFSET: Point = Point{x: 0.0, y:-500.0};
@@ -45,7 +45,21 @@ const CONTENTS_Y: f32 = 370.0;
 const CONTENTS_SPACING_X: f32 = 100.0;
 // Select
 const SELECTION_OFFSET: Point = Point{x:4.0, y:20.0};
-//
+// Containers
+const SCALE_HEADER_X: f32 = 6.0;
+const SCALE_HEADER_Y: f32 = 5.0;
+const HEADER_START_X: f32 = 192.0;
+const HEADER_START_Y: f32 = 15.0;
+const TALL_SCROLL_POINT: Point = Point{x: 1766.0, y: 42.0};
+const SHORT_SCROLL_POINT: Point = Point{x: 23.0, y: 204.0};
+
+// Header Text
+const HEADER_TEXT_SIZE: f32 = 70.0;
+const HEADER_TEXT_Y: f32 = 60.0;
+const HEADER_TEXT_POINT: Point = Point{x: 470.0, y: HEADER_TEXT_Y};
+const HEADER_TEXT_COLOR: Color = Color::new(0.0, 0.0, 0.0, 1.0);
+const CLUE_TEXT_POINT: Point = Point{x: 300.0, y: HEADER_TEXT_Y};
+const KEYS_TEXT_POINT: Point = Point{x: 1300.0, y: HEADER_TEXT_Y};
 
 type GR = GameResult<()>;
 type Ctx<'a> = &'a mut Context;
@@ -74,6 +88,14 @@ pub struct Graphical {
     // select
     select_red: SpriteElem,
     select_blue: SpriteElem,
+    // containers
+    header_board: SpriteElem,
+    tall_scroll: SpriteElem,
+    short_scroll: SpriteElem,
+    // header
+    header_text: TextElem,
+    clue_text: TextElem,
+    keys_text: TextElem,
 }
 
 impl Graphical {
@@ -95,12 +117,18 @@ impl Graphical {
             heal: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/heal.png"),
             select_red: SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y, "/select_red.png"),
             select_blue: SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y, "/select_blue.png"),
+            header_board: SpriteElem::new(ctx, SCALE_HEADER_X, SCALE_HEADER_Y, "/game_header.png"),
+            tall_scroll: SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, "/tall_scroll.png"),
+            short_scroll: SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, "/short_scroll.png"),
+            header_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
+            clue_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
+            keys_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
         }
     }
 
     pub fn draw(&mut self, ctx: Ctx, state: &StateManager) -> GR {
-	let p = Point{x:0.0, y:0.0};
-	self.background.draw(ctx,p)?;
+	    let p = Point{x:0.0, y:0.0};
+	    self.background.draw(ctx,p)?;
         match &state.game_state {
             GameState::Intro(IntroState::Title(prg)) => {
                 self.draw_intro_title(ctx, prg)?;
@@ -116,9 +144,7 @@ impl Graphical {
                                &red_health_state, &blue_health_state,
                                progress.as_decimal())?;
             }
-            //_ => (),
         }
-        //
         Ok(())
     }
 
@@ -155,6 +181,7 @@ impl Graphical {
 
     fn draw_intro_chestfall(&mut self, ctx: Ctx, progress: &Progress,
                             chest_states: &Vec<Vec<ChestState>>) -> GR {
+        self.draw_containers(ctx)?;
         self.draw_hearts_forming(ctx, progress.as_decimal())?;
         self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
         //
@@ -173,7 +200,6 @@ impl Graphical {
         for k in 0..next_to_land.min(num_chests) {
             let j = k/COLUMNS;  let i = k%COLUMNS;
             //
-            
             let destination = self.get_chest_location(j,i);
             self.draw_chest(ctx, destination, &chest_states[j][i])?;
         }
@@ -211,7 +237,7 @@ impl Graphical {
         if nth_heart < MAX_HEALTH_RED {
             let sub_prg = (prg - (nth_heart as f32)*slice_len)/slice_len;
             let destination = self.get_heart_location(Team::Red, nth_heart);
-            let start = destination.minus(Point{x:0.0, y:HEARTS_DROP_HEIGHT});
+            let start = destination.minus(Point{x:HEARTS_DROP_HEIGHT, y: 0.0});
             let location = interpolate(start, destination, Interpolation::RoundEnd, sub_prg);
             self.heart_red.animate(ctx, location, 0.99)?;
         }
@@ -226,7 +252,7 @@ impl Graphical {
         if nth_heart < MAX_HEALTH_BLUE {
             let sub_prg = (prg - (nth_heart as f32)*slice_len)/slice_len;
             let destination = self.get_heart_location(Team::Blue, nth_heart);
-            let start = destination.minus(Point{x:0.0, y:HEARTS_DROP_HEIGHT});
+            let start = destination.plus(Point{x:HEARTS_DROP_HEIGHT, y: 0.0});
             let location = interpolate(start, destination, Interpolation::RoundEnd, sub_prg);
             self.heart_blue.animate(ctx, location, 0.99)?;
         }
@@ -237,6 +263,8 @@ impl Graphical {
 //        ======================= Draw Playing =======================        //
     fn draw_playing(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
                     playing_state: &PlayingState) -> GR {
+        self.draw_containers(ctx)?;
+        self.draw_info_text(ctx, &playing_state.turn_state)?;
         self.draw_static_chests(ctx, chest_states)?;
         self.draw_selection(ctx, &playing_state.turn_state)?;
         self.draw_health(ctx, &playing_state.red_health_state, &playing_state.blue_health_state )?;
@@ -252,6 +280,62 @@ impl Graphical {
         Ok(())
     }
 
+    fn draw_containers(&mut self, ctx: Ctx,) -> GR {
+        self.header_board.draw(ctx, Point{x: HEADER_START_X, y: HEADER_START_Y})?;
+        self.tall_scroll.draw(ctx, TALL_SCROLL_POINT)?;
+        self.short_scroll.draw(ctx, SHORT_SCROLL_POINT)?;
+        //
+        Ok(())
+    }
+
+    fn draw_info_text(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
+        match turn_state {
+            TurnState::RedCluing => {
+                self.draw_header_text(ctx, "Red Clue Giver is Thinking")?;
+            },
+            TurnState::RedCluingEnd(_, clue) => {
+                self.draw_clue_text(ctx, clue, true)?;
+            },
+            TurnState::RedGuessing(clue, _) => {
+                self.draw_clue_text(ctx, clue, true)?;
+            },
+            TurnState::RedGuessingEnd(clue) => {
+                self.draw_clue_text(ctx, clue, true)?;
+            },
+            //
+            TurnState::BlueCluing => {
+                self.draw_header_text(ctx, "Blue Clue Giver is Thinking")?;
+            },
+            TurnState::BlueCluingEnd(_, clue) => {
+                self.draw_clue_text(ctx, clue, false)?;
+            },
+            TurnState::BlueGuessing(clue, _) => {
+                self.draw_clue_text(ctx, clue, false)?;
+            },
+            TurnState::BlueGuessingEnd(clue) => {
+                self.draw_clue_text(ctx, clue, false)?;
+            },
+        }
+        //
+        Ok(())
+    }
+
+    fn draw_header_text(&mut self, ctx: Ctx, message: &str) -> GR {
+        self.header_text = TextElem::new(message, HEADER_TEXT_SIZE, 1.0, 1.0);
+        self.header_text.draw(ctx, HEADER_TEXT_COLOR, HEADER_TEXT_POINT)?;
+        //
+        Ok(())
+    }
+    
+    fn draw_clue_text(&mut self, ctx: Ctx, clue: &Clue, _is_red: bool) -> GR {
+        self.clue_text = TextElem::new(&format!("Clue: {}", clue.word), HEADER_TEXT_SIZE, 1.0, 1.0);
+        self.keys_text = TextElem::new(&format!("Keys: {}", clue.num), HEADER_TEXT_SIZE, 1.0, 1.0);
+        self.clue_text.draw(ctx, HEADER_TEXT_COLOR, CLUE_TEXT_POINT)?;
+        self.keys_text.draw(ctx, HEADER_TEXT_COLOR, KEYS_TEXT_POINT)?;
+        //
+        Ok(())
+    }
+    
     fn draw_health(&mut self, ctx: Ctx, red_health: &HealthState, blue_health: &HealthState) -> GR {
         // red
         for i in 0..MAX_HEALTH_RED {
@@ -526,15 +610,15 @@ impl Graphical {
         match team {
             Team::Red => {
                 Point {
-                    x: HEARTS_START_X + HEARTS_SPACING_X*(i as f32),
-                    y: HEARTS_START_Y,
+                    x: HEARTS_START_X,
+                    y: HEARTS_START_Y - HEARTS_SPACING_Y*(i as f32),
                 }
             }
             Team::Blue => {
                 Point {
                     x: SCREEN_WIDTH - self.heart_blue.width() -
-                        HEARTS_START_X - HEARTS_SPACING_X*(i as f32),
-                    y: HEARTS_START_Y,
+                        HEARTS_START_X,
+                    y: HEARTS_START_Y - HEARTS_SPACING_Y*(i as f32),
                 }
             }
         }
