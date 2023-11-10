@@ -150,7 +150,7 @@ export function buttons_add_menus() {
     
     // popup
     if (popup.is_showing) {
-        buttons_add(popup.x_button);
+        buttons_add(popup.gotit_button);
         return true;
     }
 
@@ -176,7 +176,7 @@ export function drawables_add_menus() {
     // popup
     if (popup.is_showing) {
         drawablesAdd(popup.base_sprite);
-        drawablesAdd(popup.x_sprite);
+        drawablesAdd(popup.gotit_sprite);
         drawablesAdd(popup.header);
         drawablesAdd(popup.message);
     }

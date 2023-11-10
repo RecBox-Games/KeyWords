@@ -16,6 +16,7 @@ const assetsSrc = [
     `popup.png`,
     `confirmation.png`,
     `x.png`,
+    `gotit.png`,
     `tut_enable.png`,
     `loading.png`,
     `roles.png`,

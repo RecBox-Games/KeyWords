@@ -15,8 +15,8 @@ export interface Popup {
     header: DrawableText,
     message: DrawableText,
     base_sprite: DrawableImage,
-    x_sprite: DrawableImage,
-    x_button: Button,
+    gotit_sprite: DrawableImage,
+    gotit_button: Button,
 }
 
 // opening and closing popup //
@@ -46,8 +46,8 @@ export function init_popup() {
         header: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "30px times"},
         message: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "26px times", center: false, wrap: true},
         base_sprite: {...DEFAULT_DRAWABLE_IMG},
-        x_sprite: {...DEFAULT_DRAWABLE_IMG},
-        x_button: button,
+        gotit_sprite: {...DEFAULT_DRAWABLE_IMG},
+        gotit_button: button,
     }
 }
 
@@ -60,14 +60,14 @@ export function size_popup() {
         h: ctx.dimensions.y * 0.80,
     };
     popup.base_sprite.dst = base_box;
-    const x_box: Rectangle = {
-        x: base_box.x + base_box.w * (186/200),
-        y: base_box.y + base_box.h * (3/100),
-        w: base_box.w * (11/200),
-        h: base_box.h * (11/100),
+    const gotit_box: Rectangle = {
+        x: base_box.x + base_box.w * (78/200),
+        y: base_box.y + base_box.h * (85/100),
+        w: base_box.w * (44/200),
+        h: base_box.h * (14/100),
     }
-    popup.x_sprite.dst = x_box;
-    popup.x_button._boundingBox = x_box;
+    popup.gotit_sprite.dst = gotit_box;
+    popup.gotit_button._boundingBox = gotit_box;
     const header_box: Rectangle = {
         x: base_box.x,
         y: base_box.y,
@@ -87,7 +87,7 @@ export function size_popup() {
 export function fill_popup() {
     popup.base_sprite.image = get_asset('popup');
     popup.base_sprite.src = {x:0, y:0, w:200, h:100};
-    popup.x_sprite.image = get_asset('x');
-    popup.x_sprite.src = {x:0, y:0, w:11, h:11};
-    popup.x_button._touchEndCallback = exit_popup_clicked;
+    popup.gotit_sprite.image = get_asset('gotit');
+    popup.gotit_sprite.src = {x:0, y:0, w:44, h:16};
+    popup.gotit_button._touchEndCallback = exit_popup_clicked;
 }
