@@ -8,10 +8,12 @@ if [[ ! "$os_name" =~ "Debian GNU/Linux 11 (bullseye)" ]]; then
     exit
 fi
 
+branch=${1-development}
+
 (cd ts_controller && tsc)
 cargo build --release
 cp target/release/keywords ./
 tar -czf game.tar controller/ resources/ keywords meta.txt
-gsutil cp game.tar gs://gamenite-games-testing/keywords/game
-gsutil setmeta -h "Cache-Control:no-cache, max-age=10" gs://gamenite-games-testing/keywords/game
-#gsutil setmeta -h "Cache-Control:no-store" gs://gamenite-games-testing/keywords/game
+gsutil cp game.tar gs://gamenite-games-$branch/keywords/game
+gsutil setmeta -h "Cache-Control:no-cache, max-age=10" gs://gamenite-games-$branch/keywords/game
+#gsutil setmeta -h "Cache-Control:no-store" gs://gamenite-games-$branch/keywords/game
