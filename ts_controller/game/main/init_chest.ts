@@ -64,10 +64,9 @@ export const fill_chest = (chest: Chest, state: ChestState, role: TurnRole) => {
         const count = parseInt(chest.state.content.at(-1) as string);
         const img =  {...DEFAULT_DRAWABLE_IMG};
         img.image = get_asset(chest.state.content.slice(0, -1));
-        if (chest.contentimg.length == 0) {
-            for (let x = 0; x < count; x += 1) {
-                chest.contentimg.push({...img});
-            }
+        chest.contentimg = [];
+        for (let x = 0; x < count; x += 1) {
+            chest.contentimg.push({ ...img });
         }
     }
     size_chest(chest);
