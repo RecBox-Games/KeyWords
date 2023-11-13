@@ -27,9 +27,14 @@ export function try_post_popup(header: string, message: string) {
 }
 
 export function post_popup(header: string, message: string) {
+    var scr_height = get_context().dimensions.y;
     fill_popup();
     size_popup();
+    var text_size = Math.floor(12 + scr_height*0.04);
+    popup.header.font = `${text_size}px times`;
     popup.header.text = header;
+    text_size = Math.floor(5 + scr_height*0.045);
+    popup.message.font = `${text_size}px times`;
     popup.message.text = message;
     popup.is_showing = true;
 }
@@ -44,7 +49,7 @@ export function init_popup() {
     popup =  {
         is_showing: false,
         header: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "30px times"},
-        message: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "26px times", center: false, wrap: true},
+        message: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "24px times", center: false, wrap: true},
         base_sprite: {...DEFAULT_DRAWABLE_IMG},
         gotit_sprite: {...DEFAULT_DRAWABLE_IMG},
         gotit_button: button,
@@ -75,9 +80,9 @@ export function size_popup() {
         h: base_box.h * (12/100),
     }
     const message_box: Rectangle = {
-        x: base_box.x + base_box.w * (18/200),
+        x: base_box.x + base_box.w * (10/200),
         y: base_box.y + base_box.h * (23/100),
-        w: base_box.w * (170/200),
+        w: base_box.w * (185/200),
         h: base_box.h * (70/100),
     }
     popup.header.boundingBox = header_box;
