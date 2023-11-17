@@ -783,7 +783,7 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
     let mut chest_states = vec![];
     let mut rng = thread_rng();
     // choose words from file
-    let s = std::fs::read_to_string("./resources/game_words.txt").unwrap(); // TODO
+    let s = std::fs::read_to_string("./resources/words/game_words.txt").unwrap(); // TODO
     let all_words_ = s.split("\n").collect::<Vec<&str>>(); 
     let all_words = all_words_[..all_words_.len()-1].iter(); // always a newline at the end so last element is empty
     let chosen_words = all_words.choose_multiple(&mut rng, 25);
