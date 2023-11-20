@@ -7,7 +7,7 @@ import { init_role_screen } from "../game/role_screen/init.js";
 import { set_role_screen_state, set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
 import { init_input } from "./input.js";
-import { init_popup, try_post_popup } from "./popup.js";
+import { init_popup, post_popup, try_post_popup } from "./popup.js";
 import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_CHOOSING, INSTRUCTIONS_CHOOSING,         
          HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE,
@@ -293,6 +293,8 @@ export const handle_message = () => {
     }
 }
 
+var first_turn = true;
+
 function handle_new_state() {
     initialize_menu();
     initialize_submit();
@@ -320,7 +322,7 @@ function handle_new_state() {
         const roleTeam = is_red(game_state.role_state.role) ? 'red' : 'blue';
         if (turnTeam == roleTeam) {
             start_turn(game_state.turn_state);
-            if (game_state.turn_state.turn != last_turnrole) {
+            if (game_state.turn_state.turn != last_turnrole && first_turn) {
                 if (is_clue(game_state.role_state.role) && is_clue(game_state.turn_state.turn)) {
                     try_post_popup(HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE);
                 } else if (is_guess(game_state.role_state.role) && is_guess(game_state.turn_state.turn)) {
@@ -329,9 +331,73 @@ function handle_new_state() {
                                INSTRUCTIONS_MAKE_GUESS.replace('<num>', String(guesses)));
                 }
                 last_turnrole = game_state.turn_state.turn;
+                first_turn = false;
+            }
+        } else {
+            end_turn();
+        }
+    }
+if (game_state.turn_state.turn === TurnRole.Starting) {
+        set_state(STARTING);
+        if (last_turnrole !== TurnRole.Starting) {
+            try_post_popup(HEADER_STARTING, INSTRUCTIONS_STARTING);
+            last_turnrole = TurnRole.Starting;
+        }
+    } else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
+        set_state(MENU);
+        set_role_screen_state(game_state.role_state);
+        if (last_turnrole !== TurnRole.Choosing) {
+            try_post_popup(HEADER_CHOOSING, INSTRUCTIONS_CHOOSING);
+            last_turnrole = TurnRole.Choosing;
+        }
+    } else {
+        set_state(GAME);
+        fill_board(game_state.role_state.role, game_state.chests_5x5_state);
+        const turnTeam = is_red(game_state.turn_state.turn) ? 'red' : 'blue';
+        const roleTeam = is_red(game_state.role_state.role) ? 'red' : 'blue';
+        if (turnTeam == roleTeam) {
+            start_turn(game_state.turn_state);
+            if (game_state.turn_state.turn != last_turnrole && first_turn) {
+                if (is_clue(game_state.role_state.role) && is_clue(game_state.turn_state.turn)) {
+                    try_post_popup(HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE);
+                } else if (is_guess(game_state.role_state.role) && is_guess(game_state.turn_state.turn)) {
+                    const guesses = game_state.turn_state.guesses_remaining;
+                    try_post_popup(HEADER_MAKE_GUESS.replace('<num>', String(guesses)),
+                               INSTRUCTIONS_MAKE_GUESS.replace('<num>', String(guesses)));
+                }
+                last_turnrole = game_state.turn_state.turn;
+                first_turn = false;
             }
         } else {
             end_turn();
         }
     }
 }
+
+/*
+export function post_current_popup() {
+    if (game_state.turn_state.turn === TurnRole.Starting) {
+        post_popup(HEADER_STARTING, INSTRUCTIONS_STARTING);
+    } else if (game_state.role_state.role === TurnRole.Choosing) { // TODO: same shit as above
+        post_popup(HEADER_CHOOSING, INSTRUCTIONS_CHOOSING);
+    } else {
+        if (is_clue(game_state.role_state.role)) {
+            if (is_clue(game_state.turn_state.turn)) {
+                post_popup(HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE);
+            } else {
+                post_popup(HEADER_CLUE_WAITING, INSTRUCTIONS_CLUE_WAITING);
+            }
+        } else if (is_guess(game_state.role_state.role)) {
+            if (is_guess(game_state.turn_state.turn) {
+                const guesses = game_state.turn_state.guesses_remaining;
+                post_popup(HEADER_MAKE_GUESS.replace('<num>', String(guesses)),
+                    INSTRUCTIONS_MAKE_GUESS.replace('<num>', String(guesses)));
+            } else {
+                post_popup(HEADER_GUESS_WAITING, INSTRUCTIONS_GUESS_WAITING);
+            }
+        }
+        last_turnrole = game_state.turn_state.turn;
+        first_turn = false;
+    }
+}
+*/

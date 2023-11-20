@@ -137,6 +137,13 @@ export function buttons_add_menus() {
     let input = get_input();
     let submit_button = get_submit_button();
 
+    /*let help = get_help();
+
+    // help
+    drawablesAdd(help.help_sprite);
+*/
+    
+    // submit
     if (submit_button.is_active && !input.is_active) {
         buttons_add(submit_button.button);
     }
@@ -151,6 +158,7 @@ export function buttons_add_menus() {
     // popup
     if (popup.is_showing) {
         buttons_add(popup.gotit_button);
+        buttons_add(popup.exit_button);
         return true;
     }
 
@@ -173,6 +181,12 @@ export function drawables_add_menus() {
     let menu = get_menu();
     let confirmation = get_confirmation();
 
+    /*let help = get_help();
+
+    // help
+    drawablesAdd(help.help_sprite);
+    */
+    
     // popup
     if (popup.is_showing) {
         drawablesAdd(popup.base_sprite);

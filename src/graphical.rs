@@ -107,8 +107,8 @@ impl Graphical {
             sparkle: new_sparkle(ctx),
             chest: new_chest(ctx),
             word_meshes: HashMap::new(),
-            heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4], true),
-            heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4], false),
+            heart_red: new_heart(ctx, vec![0, 1, 2, 3, 4, 5], true),
+            heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4, 5], false),
             red_win: new_win_box(ctx, true),
             blue_win: new_win_box(ctx, false),
             sudden_death: new_sudden_death(ctx),
@@ -231,7 +231,7 @@ impl Graphical {
             let destination = self.get_heart_location(Team::Red, i);
             let formations_since_i = (prg - ((i+1) as f32)*slice_len)/slice_len;
             let formation_prg = (formations_since_i-1.0).max(0.0).min(0.99);
-            self.heart_red.animate(ctx, destination, 0.99-formation_prg)?;
+            self.heart_red.animate(ctx, destination, 0.7*(0.99-formation_prg))?;
         }
         // dropping red heart
         if nth_heart < MAX_HEALTH_RED {
@@ -239,14 +239,14 @@ impl Graphical {
             let destination = self.get_heart_location(Team::Red, nth_heart);
             let start = destination.minus(Point{x:HEARTS_DROP_HEIGHT, y: 0.0});
             let location = interpolate(start, destination, Interpolation::RoundEnd, sub_prg);
-            self.heart_red.animate(ctx, location, 0.99)?;
+            self.heart_red.animate(ctx, location, 0.7)?;
         }
         // blue hearts that have landed
         for i in 0..nth_heart.min(MAX_HEALTH_BLUE) {
             let destination = self.get_heart_location(Team::Blue, i);
             let formations_since_i = (prg - ((i+1) as f32)*slice_len)/slice_len;
             let formation_prg = (formations_since_i-1.0).max(0.0).min(0.99);
-            self.heart_blue.animate(ctx, destination, 0.99-formation_prg)?;
+            self.heart_blue.animate(ctx, destination, 0.7*(0.99-formation_prg))?;
         }
         // dropping blue heart
         if nth_heart < MAX_HEALTH_BLUE {
@@ -254,7 +254,7 @@ impl Graphical {
             let destination = self.get_heart_location(Team::Blue, nth_heart);
             let start = destination.plus(Point{x:HEARTS_DROP_HEIGHT, y: 0.0});
             let location = interpolate(start, destination, Interpolation::RoundEnd, sub_prg);
-            self.heart_blue.animate(ctx, location, 0.99)?;
+            self.heart_blue.animate(ctx, location, 0.7)?;
         }
         //
         Ok(())
@@ -328,7 +328,11 @@ impl Graphical {
     }
     
     fn draw_clue_text(&mut self, ctx: Ctx, clue: &Clue, _is_red: bool) -> GR {
-        self.clue_text = TextElem::new(&format!("Clue: {}", clue.word), HEADER_TEXT_SIZE, 1.0, 1.0);
+        let clue_str = match clue.word.as_ref() {
+            "" => "~spoken clue~",
+            _ => &clue.word,
+        };
+        self.clue_text = TextElem::new(&format!("Clue: {}", clue_str), HEADER_TEXT_SIZE, 1.0, 1.0);
         self.keys_text = TextElem::new(&format!("Keys: {}", clue.num), HEADER_TEXT_SIZE, 1.0, 1.0);
         self.clue_text.draw(ctx, HEADER_TEXT_COLOR, CLUE_TEXT_POINT)?;
         self.keys_text.draw(ctx, HEADER_TEXT_COLOR, KEYS_TEXT_POINT)?;
@@ -681,7 +685,7 @@ fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
     let mut heart = SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, path);
     let mut anim: Vec<Rect> = vec![];
     for f in frames {
-        anim.push(Rect::new((f as f32)*0.2, 0.0, 0.2, 1.0));
+        anim.push(Rect::new((f as f32)/6.0, 0.0, 1.0/6.0, 1.0));
     }
     heart.set_animation(anim);
     heart

@@ -17,6 +17,7 @@ export interface Popup {
     base_sprite: DrawableImage,
     gotit_sprite: DrawableImage,
     gotit_button: Button,
+    exit_button: Button,
 }
 
 // opening and closing popup //
@@ -43,21 +44,29 @@ export const exit_popup_clicked = (_self:Button) => {
     popup.is_showing = false;
 }
 
+export const read_ins_clicked = (self:Button) => {
+    get_popup().gotit_sprite.image = get_asset('read_ins2');
+
+}
+
 // setting data for popup //
 export function init_popup() {
-    var button = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
+    var button1 = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
+    var button2 = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
     popup =  {
         is_showing: false,
         header: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "30px times"},
         message: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "24px times", center: false, wrap: true},
         base_sprite: {...DEFAULT_DRAWABLE_IMG},
         gotit_sprite: {...DEFAULT_DRAWABLE_IMG},
-        gotit_button: button,
+        gotit_button: button1,
+        exit_button: button2,
     }
 }
 
 export function size_popup() {
     const ctx = get_context();
+    // base
     const base_box: Rectangle = {
         x: ctx.dimensions.x * 0.16,
         y: ctx.dimensions.y * 0.16,
@@ -65,14 +74,16 @@ export function size_popup() {
         h: ctx.dimensions.y * 0.80,
     };
     popup.base_sprite.dst = base_box;
+    // gotit
     const gotit_box: Rectangle = {
-        x: base_box.x + base_box.w * (78/200),
+        x: base_box.x + base_box.w * (50/200),
         y: base_box.y + base_box.h * (85/100),
-        w: base_box.w * (44/200),
+        w: base_box.w * (100/200),
         h: base_box.h * (14/100),
     }
     popup.gotit_sprite.dst = gotit_box;
     popup.gotit_button._boundingBox = gotit_box;
+    // text
     const header_box: Rectangle = {
         x: base_box.x,
         y: base_box.y,
@@ -87,12 +98,21 @@ export function size_popup() {
     }
     popup.header.boundingBox = header_box;
     popup.message.boundingBox = message_box;
+    // exit (invisible)
+    const exit_box: Rectangle = {
+        x: base_box.x + base_box.w * (0/200),
+        y: base_box.y + base_box.h * (80/100),
+        w: base_box.w * (13/200),
+        h: base_box.h * (13/100),
+    }
+    popup.exit_button._boundingBox = exit_box;
 }
 
 export function fill_popup() {
     popup.base_sprite.image = get_asset('popup');
     popup.base_sprite.src = {x:0, y:0, w:200, h:100};
-    popup.gotit_sprite.image = get_asset('gotit');
-    popup.gotit_sprite.src = {x:0, y:0, w:44, h:16};
-    popup.gotit_button._touchEndCallback = exit_popup_clicked;
+    popup.gotit_sprite.image = get_asset('read_ins');
+    popup.gotit_sprite.src = {x:0, y:0, w:100, h:16};
+    popup.gotit_button._touchEndCallback = read_ins_clicked;
+    popup.exit_button._touchEndCallback = exit_popup_clicked;
 }
