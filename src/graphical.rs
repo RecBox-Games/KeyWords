@@ -52,7 +52,11 @@ const HEADER_START_X: f32 = 192.0;
 const HEADER_START_Y: f32 = 15.0;
 const TALL_SCROLL_POINT: Point = Point{x: 1766.0, y: 42.0};
 const SHORT_SCROLL_POINT: Point = Point{x: 23.0, y: 204.0};
-
+// Team Indicator
+const SCALE_TEAM_INDICATOR_X: f32 = 6.0;
+const SCALE_TEAM_INDICATOR_Y: f32 = 5.0;
+const TEAM_INDICATOR_START_X: f32 = 18.0;
+const TEAM_INDICATOR_START_Y: f32 = 25.0;
 // Header Text
 const HEADER_TEXT_SIZE: f32 = 70.0;
 const HEADER_TEXT_Y: f32 = 60.0;
@@ -80,6 +84,9 @@ pub struct Graphical {
     // notification
     red_win: SpriteElem,
     blue_win: SpriteElem,
+    // team indicator
+    red_indicator: SpriteElem,
+    blue_indicator: SpriteElem,    
     sudden_death: SpriteElem,
     // chest contents
     sword: SpriteElem,
@@ -111,6 +118,8 @@ impl Graphical {
             heart_blue: new_heart(ctx, vec![0, 1, 2, 3, 4, 5], false),
             red_win: new_win_box(ctx, true),
             blue_win: new_win_box(ctx, false),
+            red_indicator: new_indicator(ctx, true),
+            blue_indicator: new_indicator(ctx, false),
             sudden_death: new_sudden_death(ctx),
             sword: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/sword.png"),
             bomb: SpriteElem::new(ctx, SCALE_CONTENTS, SCALE_CONTENTS, "/bomb.png"),
@@ -127,8 +136,8 @@ impl Graphical {
     }
 
     pub fn draw(&mut self, ctx: Ctx, state: &StateManager) -> GR {
-	    let p = Point{x:0.0, y:0.0};
-	    self.background.draw(ctx,p)?;
+	let p = Point{x:0.0, y:0.0};
+	self.background.draw(ctx,p)?;
         match &state.game_state {
             GameState::Intro(IntroState::Title(prg)) => {
                 self.draw_intro_title(ctx, prg)?;
@@ -137,7 +146,7 @@ impl Graphical {
                 self.draw_intro_chestfall(ctx, prg, &state.chest_states)?;
             }
             GameState::Playing(playing_state) => {
-                self.draw_playing(ctx, &state.chest_states, &playing_state)?;
+                self.draw_playing(ctx, &state.chest_states, &playing_state)?;                
             }
             GameState::Over(red_health_state, blue_health_state, progress) => {
                 self.draw_over(ctx, &state.chest_states,
@@ -260,10 +269,12 @@ impl Graphical {
         Ok(())
     }
     
+    
 //        ======================= Draw Playing =======================        //
     fn draw_playing(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
                     playing_state: &PlayingState) -> GR {
         self.draw_containers(ctx)?;
+        self.draw_team_indicators(ctx, playing_state.current_team())?;
         self.draw_info_text(ctx, &playing_state.turn_state)?;
         self.draw_static_chests(ctx, chest_states)?;
         self.draw_selection(ctx, &playing_state.turn_state)?;
@@ -280,6 +291,14 @@ impl Graphical {
         Ok(())
     }
 
+    fn draw_team_indicators(&mut self, ctx: Ctx, team: Team) -> GR {
+        match team {
+            Team::Red => self.red_indicator.draw(ctx, Point {x: TEAM_INDICATOR_START_X, y: TEAM_INDICATOR_START_Y})?,
+            Team::Blue => self.blue_indicator.draw(ctx, Point {x: TEAM_INDICATOR_START_X, y: TEAM_INDICATOR_START_Y})?,
+        }
+        Ok(())
+    }
+    
     fn draw_containers(&mut self, ctx: Ctx,) -> GR {
         self.header_board.draw(ctx, Point{x: HEADER_START_X, y: HEADER_START_Y})?;
         self.tall_scroll.draw(ctx, TALL_SCROLL_POINT)?;
@@ -691,12 +710,18 @@ fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
     heart
 }
 
+fn new_indicator(ctx: Ctx, red: bool) -> SpriteElem {
+    let path = if red {"/red_team_turn.png"} else {"/blue_team_turn.png"};
+    SpriteElem::new(ctx, SCALE_TEAM_INDICATOR_X, SCALE_TEAM_INDICATOR_Y, path)   
+}
+
 fn new_win_box(ctx: Ctx, red: bool) -> SpriteElem {
     let s = if red { "/red_win.png" } else { "/blue_win.png" };
     let win_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
                                   s);
     win_box
 }
+
 fn new_sudden_death(ctx: Ctx) -> SpriteElem {
     let notify_box = SpriteElem::new(ctx, SCALE_NOTIFYBOX_X, SCALE_NOTIFYBOX_Y,
                                      "/sudden_death.png");

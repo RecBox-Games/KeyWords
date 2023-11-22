@@ -10,6 +10,8 @@ import { BOARD_H, BOARD_W } from "../interfaces.js";
 import { Board, get_board } from "./init.js";
 import { get_submit_button } from "../../utils/submit_button.js";
 import { buttons_add_menus, drawables_add_menus } from "../../utils/utils.js";
+import { get_team_indicator } from "../../utils/team_indicator.js";
+
 
 export const main_loop = () => {
     const board: Board = get_board();
@@ -18,6 +20,7 @@ export const main_loop = () => {
     const role = get_game_state().role_state.role;
     const turn = get_game_state().turn_state.turn;
     const submit_button = get_submit_button();
+    const team_indicator = get_team_indicator();
 
     //////// Buttons ////////
     buttons_flush();
@@ -59,7 +62,10 @@ export const main_loop = () => {
         drawablesAdd(board.bg);
     }
     const rect: Rectangle = { x: 0, y: 0, w: ctx.dimensions.x, h: ctx.dimensions.y };
-    drawablesAdd({ ...DEFAULT_DRAWABLE_RECT, boundingBox: rect, color: is_blue(board.role) ? '#0000FF' : '#FF0000', stroke: 6 })
+    drawablesAdd({ ...DEFAULT_DRAWABLE_RECT, boundingBox: rect, color: is_blue(board.role) ?
+        '#0000FF' : '#FF0000', stroke: 6 });
+    drawablesAdd(is_blue(board.role) ? team_indicator.blue : team_indicator.red);
+
 
     // chests
     for (let i = 0; i < BOARD_H; i += 1) {

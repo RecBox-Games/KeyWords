@@ -4,27 +4,27 @@ import { Rectangle, Point } from "./shapes.js";
 //  rect : x,y, w, h, color, outline
 
 interface DrawableRect{
-	boundingBox:Rectangle,
-	color: string;
-	stroke: number;
+    boundingBox:Rectangle,
+    color: string;
+    stroke: number;
 }
 
 interface DrawableText {
-	coords:Point;
+    coords:Point;
     boundingBox:Rectangle;
     center:boolean;
     wrap:boolean;
-	font: string;
-	color: string;
-	text:string;
+    font: string;
+    color: string;
+    text:string;
 }
 
 interface DrawableImage {
-	dst:Rectangle | null,
+    dst:Rectangle | null,
     src:Rectangle | null,
-	image: HTMLImageElement | null;
-	scale: number;
-	rotation: number;
+    image: HTMLImageElement | null;
+    scale: number;
+    rotation: number;
 }
 
 export const DEFAULT_DRAWABLE_RECT:DrawableRect = {boundingBox:{x: 0, y: 0, w : 0, h : 0}, color : '#000000', stroke : 0};
