@@ -29,14 +29,14 @@ export function initialize_team_indicator() {
 export function resize_team_indicators() {
     let ctx = get_context();    
     team_indicator.blue.dst = {
-        x: ctx.dimensions.x * 0.88,
-        y: ctx.dimensions.y * 0.75,
+        x: ctx.dimensions.x * 0.878,
+        y: ctx.dimensions.y * 0.79,
         w: ctx.dimensions.x * 0.112,
         h: ctx.dimensions.y * 0.16,
     };
     team_indicator.red.dst = {
-        x: ctx.dimensions.x * 0.88,
-        y: ctx.dimensions.y * 0.75,
+        x: ctx.dimensions.x * 0.878,
+        y: ctx.dimensions.y * 0.79,
         w: ctx.dimensions.x * 0.112,
         h: ctx.dimensions.y * 0.16,
     };
