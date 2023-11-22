@@ -26,6 +26,8 @@ const assetsSrc = [
     `tutorial.png`,
     `phone_select_red.png`,
     `phone_select_blue.png`,
+    'red_team_indicator.png',
+    'blue_team_indicator.png'
 ];
 const assets: any = {};
 
@@ -38,7 +40,7 @@ export const assetsDic = {
 
 export const assetCount = () => assetsSrc.length;
 
-export const get_asset = (name) => assets[name];
+export const get_asset = (name: string) => assets[name];
 
 const loadAsset = (loading: Loading, src: string, res, rej) => {
     const promise = new Promise((res, rej) => {

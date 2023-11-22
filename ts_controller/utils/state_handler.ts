@@ -7,7 +7,7 @@ import { init_role_screen } from "../game/role_screen/init.js";
 import { set_role_screen_state, set_state } from "../main.js";
 import { end_turn, start_turn } from "./utils.js";
 import { init_input } from "./input.js";
-import { init_popup, post_popup, try_post_popup } from "./popup.js";
+import { init_popup, try_post_popup } from "./popup.js";
 import { HEADER_STARTING, INSTRUCTIONS_STARTING,
          HEADER_CHOOSING, INSTRUCTIONS_CHOOSING,         
          HEADER_GIVE_CLUE, INSTRUCTIONS_GIVE_CLUE,
@@ -16,6 +16,7 @@ import { HEADER_STARTING, INSTRUCTIONS_STARTING,
 import { construct_menu, initialize_menu } from "./menu.js";
 import { initialize_submit, construct_submit } from "./submit_button.js";
 import { construct_confirmation, initialize_confirmation } from "./confirmation.js";
+import { construct_team_indicator, initialize_team_indicator } from "./team_indicator.js";
 
 
 let game_state: GameState;
@@ -267,6 +268,7 @@ export const load_app = () => {
     construct_menu();
     construct_confirmation();
     construct_submit();
+    construct_team_indicator();
     init_context();
     init_loading();
     init_role_screen();
@@ -299,6 +301,8 @@ function handle_new_state() {
     initialize_menu();
     initialize_submit();
     initialize_confirmation();
+    initialize_submit();
+    initialize_team_indicator();
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();
