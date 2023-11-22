@@ -19,10 +19,10 @@ export function construct_team_indicator() {
 }
 
 export function initialize_team_indicator() {
-    team_indicator.red.image = get_asset("red_team_indicator");
-    team_indicator.blue.image = get_asset("blue_team_indicator");
-    team_indicator.red.src = {x: 0, y: 0, w: 65, h: 50};
-    team_indicator.blue.src = {x: 0, y: 0, w: 65, h: 50};
+    team_indicator.red.image = get_asset("red_team");
+    team_indicator.blue.image = get_asset("blue_team");
+    team_indicator.red.src = {x: 0, y: 0, w: 42, h: 29};
+    team_indicator.blue.src = {x: 0, y: 0, w: 42, h: 29};
     resize_team_indicators();
 }
 
@@ -30,16 +30,15 @@ export function resize_team_indicators() {
     let ctx = get_context();    
     team_indicator.blue.dst = {
         x: ctx.dimensions.x * 0.88,
-        y: ctx.dimensions.y * 0.84,
+        y: ctx.dimensions.y * 0.75,
         w: ctx.dimensions.x * 0.112,
-        h: ctx.dimensions.y * 0.1,
+        h: ctx.dimensions.y * 0.16,
     };
     team_indicator.red.dst = {
         x: ctx.dimensions.x * 0.88,
-        y: ctx.dimensions.y * 0.84,
+        y: ctx.dimensions.y * 0.75,
         w: ctx.dimensions.x * 0.112,
-        h: ctx.dimensions.y * 0.1,
+        h: ctx.dimensions.y * 0.16,
     };
-
 }
 

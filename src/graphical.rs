@@ -53,9 +53,10 @@ const HEADER_START_Y: f32 = 15.0;
 const TALL_SCROLL_POINT: Point = Point{x: 1766.0, y: 42.0};
 const SHORT_SCROLL_POINT: Point = Point{x: 23.0, y: 204.0};
 // Team Indicator
-const SCALE_TEAM_INDICATOR: f32 = 2.0;
-const TEAM_INDICATOR_START_X: f32 = 25.0;
-const TEAM_INDICATOR_START_Y: f32 = 45.0;
+const SCALE_TEAM_INDICATOR_X: f32 = 4.0;
+const SCALE_TEAM_INDICATOR_Y: f32 = 5.5;
+const TEAM_INDICATOR_START_X: f32 = 10.0;
+const TEAM_INDICATOR_START_Y: f32 = 15.0;
 // Header Text
 const HEADER_TEXT_SIZE: f32 = 70.0;
 const HEADER_TEXT_Y: f32 = 60.0;
@@ -710,8 +711,8 @@ fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
 }
 
 fn new_indicator(ctx: Ctx, red: bool) -> SpriteElem {
-    let path = if red {"/red_team_indicator.png"} else {"/blue_team_indicator.png"};
-    SpriteElem::new(ctx, SCALE_TEAM_INDICATOR, SCALE_TEAM_INDICATOR, path)   
+    let path = if red {"/red_team_turn.png"} else {"/blue_team_turn.png"};
+    SpriteElem::new(ctx, SCALE_TEAM_INDICATOR_X, SCALE_TEAM_INDICATOR_Y, path)   
 }
 
 fn new_win_box(ctx: Ctx, red: bool) -> SpriteElem {

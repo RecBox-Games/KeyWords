@@ -26,8 +26,8 @@ const assetsSrc = [
     `tutorial.png`,
     `phone_select_red.png`,
     `phone_select_blue.png`,
-    'red_team_indicator.png',
-    'blue_team_indicator.png'
+    'red_team.png',
+    'blue_team.png'
 ];
 const assets: any = {};
 
