@@ -55,7 +55,7 @@ const SHORT_SCROLL_POINT: Point = Point{x: 23.0, y: 204.0};
 // Team Indicator
 const SCALE_TEAM_INDICATOR_X: f32 = 6.0;
 const SCALE_TEAM_INDICATOR_Y: f32 = 5.0;
-const TEAM_INDICATOR_START_X: f32 = -6.0;
+const TEAM_INDICATOR_START_X: f32 = 18.0;
 const TEAM_INDICATOR_START_Y: f32 = 25.0;
 // Header Text
 const HEADER_TEXT_SIZE: f32 = 70.0;
