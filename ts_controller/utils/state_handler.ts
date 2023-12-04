@@ -296,13 +296,6 @@ export const handle_message = () => {
 }
 
 var first_turn = true;
-//For handling if the game is done
-
-
-export function game_over(): boolean {
-       return game_state.turn_state.turn === TurnRole.Over;
-}
-
 
 function handle_new_state() {
     initialize_menu();
@@ -414,8 +407,4 @@ export function post_current_popup() {
         first_turn = false;
     }
 }
-
-
-
-
 */

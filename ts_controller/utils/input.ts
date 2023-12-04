@@ -1,4 +1,3 @@
-
 import { get_context } from "../controller_lib/init.js";
 
 let input: Input;
