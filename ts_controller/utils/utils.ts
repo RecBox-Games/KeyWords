@@ -67,7 +67,7 @@ export const start_turn = (turn_state: TurnState) => {
                 board.topbar.text.text =  board.clue ? clueText + '   ' + keysText : verbalClueText + keysText;
             }
         }
-        else if (turn_state.turn == TurnRole.Over) {
+        else if (get_game_state().turn_state.turn == TurnRole.Over) {
             board.topbar.text.text = "GAME OVER";
         }
         else{
@@ -87,7 +87,7 @@ export const start_turn = (turn_state: TurnState) => {
             clear_input();
             show_input();
         }
-        else if (turn_state.turn == TurnRole.Over){
+        else if (get_game_state().turn_state.turn == TurnRole.Over){
             board.topbar.text.text = "GAME OVER";
         }
         else{
