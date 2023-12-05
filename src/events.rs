@@ -2,6 +2,7 @@
 use crate::state::Projectile;
 
 //================================= TickEvent ================================//
+#[derive(PartialEq)]
 pub enum TickEvent {
     None,
     Done,
@@ -10,6 +11,7 @@ pub enum TickEvent {
     ProjectileHit(Projectile),
     DoneOpening,
     NeedsUpdate,
+    GameOver,
 }
 
 impl TickEvent {

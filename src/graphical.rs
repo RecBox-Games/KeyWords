@@ -149,9 +149,9 @@ impl Graphical {
                 self.draw_playing(ctx, &state.chest_states, &playing_state)?;                
             }
             GameState::Over(red_health_state, blue_health_state, progress) => {
-                self.draw_over(ctx, &state.chest_states,
+               self.draw_over(ctx, &state.chest_states,
                                &red_health_state, &blue_health_state,
-                               progress.as_decimal())?;
+                               progress.as_decimal())?;                 
             }
         }
         Ok(())
@@ -334,6 +334,7 @@ impl Graphical {
             TurnState::BlueGuessingEnd(clue) => {
                 self.draw_clue_text(ctx, clue, false)?;
             },
+            
         }
         //
         Ok(())
@@ -592,12 +593,14 @@ impl Graphical {
     }
 
 //        ========================= Draw Over ========================        //
-    fn draw_over(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
+    fn draw_over(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,                
                  red_health_state: &HealthState, blue_health_state: &HealthState,
                  prg: f32) -> GR {
         self.draw_static_chests(ctx, chest_states)?;
+        self.draw_containers(ctx)?;                  //Draw side bar container for health
         self.draw_health(ctx, red_health_state, blue_health_state)?;
         let red_won = blue_health_state.src_amount == 0;
+        self.draw_header_text(ctx, "         GAME OVER!")?;
         self.draw_over_dropdown(ctx, red_won, prg)?;
         Ok(())
     }
@@ -605,14 +608,13 @@ impl Graphical {
     fn draw_over_dropdown(&mut self, ctx: Ctx, red_won: bool, prg: f32) -> GR {
         let x = 220.0;
         let p1 = Point {x, y: -1000.0};
-        let p2 = Point {x, y: 100.0};
+        let p2 = Point {x, y: 400.0};
         let p = interpolate(p1, p2, Interpolation::RoundEnd, prg);
         if red_won {
             self.red_win.draw(ctx, p)?;
         } else {
             self.blue_win.draw(ctx, p)?;
         }
-        //
         Ok(())
     }
 //        =================== Graphical Helpers ======================        //

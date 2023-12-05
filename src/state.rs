@@ -54,6 +54,16 @@ impl StateManager {
         if game_tick_event.needs_update() {
             self.state_update = true;
         }
+        if game_tick_event == TickEvent::GameOver{
+            for j in 0..ROWS {
+                for i in 0.. COLUMNS {
+                    if !self.chest_states[i][j].is_static() {
+                        self.chest_states[i][j].opening_state = OpeningState::Closed;
+                    }
+                }
+            }
+            self.state_update = true;
+        }
             
         // chests
         if let GameState::Playing(playing_state) = &mut self.game_state {
@@ -228,11 +238,14 @@ impl GameState {
             }
             Playing(playing_state) => {
                 let tick_event = playing_state.tick();
+                
+                //Set to done once all boxes are static
                 if tick_event.is_done() {
+                    println!("Tick event done, calling over");
                     *self = Over(playing_state.red_health_state.clone(),
                                  playing_state.blue_health_state.clone(),
                                  Progress::new(TICKS_GAME_OVER));
-                    return TickEvent::NeedsUpdate;
+                    return TickEvent::GameOver;
                 }
                 if tick_event.needs_update() {
                     return TickEvent::NeedsUpdate;
