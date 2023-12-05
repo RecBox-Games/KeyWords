@@ -3,7 +3,7 @@ import { Button } from "../controller_lib/types/triggerable.js";
 import { Board, get_board } from "../game/main/init.js";
 import { BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
-import { TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
+import {get_game_state, TurnRole, TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
 import { Input, get_input, show_input, hide_input, clear_input } from "./input.js";
 import { get_popup } from "./popup.js";
 import { get_menu } from "./menu.js";
@@ -66,7 +66,10 @@ export const start_turn = (turn_state: TurnState) => {
                 board.topbar.text.text =  board.clue ? clueText + '   ' + keysText : verbalClueText + keysText;
             }
         }
-        else {
+        else if (get_game_state().turn_state.turn == TurnRole.Over) {
+            board.topbar.text.text = "GAME OVER";
+        }
+        else{
             board.topbar.text.text = "Waiting for a clue";
             board.currentGuesses = 0;
             board.totalGuesses = 0;
@@ -76,16 +79,21 @@ export const start_turn = (turn_state: TurnState) => {
     }
     else if (is_clue(board.role)) {
         if (board.role === turn_state.turn) {
-            board.topbar.text.text = 'Give your team some keys';
+           
+             board.topbar.text.text = 'Give your team some keys';
             //if(is_blue(board.role)) set_blue_input_border();
             //else set_red_input_border();            
             clear_input();
             show_input();
         }
-        else {
+        else if (get_game_state().turn_state.turn == TurnRole.Over){
+            board.topbar.text.text = "GAME OVER";
+        }
+        else{
             const guesses = board.currentGuesses.toString();
+            console.log(guesses);
             const plur = guesses == '1' ? "key" : "keys";
-            board.topbar.subText.text = '';
+            board.topbar.subText.text = '';            
             board.topbar.text.text = 'Your team has ' + guesses + ' ' + plur + ' left';
             if (input) hide_input();
         }
@@ -98,6 +106,13 @@ export const end_turn = () => {
     board.topbar.subText.text = "";
     board.currentGuesses = 0;
     board.totalGuesses = 0;
+    
+    if(get_game_state().turn_state.turn == TurnRole.Over){
+        board.topbar.text.text = "GAME OVER";                                
+    }
+    else{
+        board.topbar.text.text = "Other team's turn";    
+    }
 }
 
 export const open_chest = (id: number) => {

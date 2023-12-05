@@ -65,7 +65,6 @@ export function is_guess(turnrole: TurnRole): boolean {
             return false;
     }
 }
-
 export function is_clue(turnrole: TurnRole): boolean {
     switch (turnrole) {
         case TurnRole.RedClue:
@@ -76,6 +75,7 @@ export function is_clue(turnrole: TurnRole): boolean {
     }
 }
 
+//Handles if the game is over
 export function is_playing(turnrole: TurnRole): boolean {
     switch (turnrole) {
         case TurnRole.RedClue:
@@ -303,6 +303,7 @@ function handle_new_state() {
     initialize_confirmation();
     initialize_submit();
     initialize_team_indicator();
+    //Handles game over
     if (game_state.turn_state.turn === TurnRole.Over) {
         set_state(OVER);
         fill_end();

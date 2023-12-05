@@ -5,7 +5,7 @@ let input: Input;
 export interface Input {
     element: HTMLInputElement,
     is_showing: boolean,
-    is_active: boolean
+    is_active: boolean,
     clue: string,
 }
 
@@ -70,7 +70,10 @@ export function style_input() {
     input.element.style.top = '-.1v';
     input.element.style.left = "77%";
     input.element.style.width = '19%';
-}
+    input.element.maxLength = 20;       //Limit the number of characters in the clue
+    input.element.setAttribute('autocomplete', 'off'); //Disable autocomplete
+    input.element.setAttribute('autocorrect', 'off');  //Disable autocorrect
+}   
 
 
 export const confirm_clue = (amount: number) => {
@@ -78,8 +81,8 @@ export const confirm_clue = (amount: number) => {
     ctx.ws.send("input:clue," + input.clue + "," + amount.toString());
 }
 
-export function set_input(e: Event) {
-    input.clue = (e.target as HTMLInputElement).value;
-    deactivate_input();
-    console.log(input.clue);
+export function set_input(e: Event) { 
+   input.clue = (e.target as HTMLInputElement).value;
+   deactivate_input();
+   console.log(input.clue);
 }
