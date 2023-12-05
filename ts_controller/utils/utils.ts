@@ -4,7 +4,6 @@ import { Board, get_board } from "../game/main/init.js";
 import { BOARD_W } from "../game/interfaces.js";
 import { Chest } from "../game/main/init_chest.js";
 import {get_game_state, TurnRole, TurnState, is_guess, is_blue, is_clue } from "./state_handler.js";
-
 import { Input, get_input, show_input, hide_input, clear_input } from "./input.js";
 import { get_popup } from "./popup.js";
 import { get_menu } from "./menu.js";
