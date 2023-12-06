@@ -63,8 +63,7 @@ impl StateManager {
                 }
             }
             self.state_update = true;
-        }
-            
+        }            
         // chests
         if let GameState::Playing(playing_state) = &mut self.game_state {
             for j in 0..ROWS {
@@ -96,7 +95,6 @@ impl StateManager {
                 playing_state.sudden_death = true;
             }
         }
-
     }
 
 //        ======================= InputHandling ======================        //
@@ -237,8 +235,7 @@ impl GameState {
                 }
             }
             Playing(playing_state) => {
-                let tick_event = playing_state.tick();
-                
+                let tick_event = playing_state.tick();                
                 //Set to done once all boxes are static
                 if tick_event.is_done() {
                     println!("Tick event done, calling over");

@@ -333,8 +333,7 @@ impl Graphical {
             },
             TurnState::BlueGuessingEnd(clue) => {
                 self.draw_clue_text(ctx, clue, false)?;
-            },
-            
+            },            
         }
         //
         Ok(())
@@ -593,7 +592,7 @@ impl Graphical {
     }
 
 //        ========================= Draw Over ========================        //
-    fn draw_over(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,                
+    fn draw_over(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
                  red_health_state: &HealthState, blue_health_state: &HealthState,
                  prg: f32) -> GR {
         self.draw_static_chests(ctx, chest_states)?;
@@ -615,6 +614,7 @@ impl Graphical {
         } else {
             self.blue_win.draw(ctx, p)?;
         }
+        //
         Ok(())
     }
 //        =================== Graphical Helpers ======================        //
