@@ -305,7 +305,6 @@ function handle_new_state() {
     initialize_team_indicator();
     //Handles game over
     if (game_state.turn_state.turn === TurnRole.Over) {
-        console.log("Game over");
         set_state(OVER);
         fill_end();
     } else if (game_state.turn_state.turn === TurnRole.Starting) {
@@ -379,7 +378,6 @@ if (game_state.turn_state.turn === TurnRole.Starting) {
         }
     }
 }
-
 
 /*
 export function post_current_popup() {
