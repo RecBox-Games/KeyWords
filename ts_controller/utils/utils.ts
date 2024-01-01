@@ -209,6 +209,9 @@ export function drawables_add_menus() {
         drawablesAdd(popup.header);
         drawablesAdd(popup.message);
     }
+    if (popup.is_talking) {
+        drawablesAdd(popup.gotit_text);
+    }
 
     // menu
     if (menu.is_showing) {

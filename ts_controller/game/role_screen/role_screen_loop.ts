@@ -18,7 +18,6 @@ export const role_screen_loop = () => {
     //////// Buttons ////////
     buttons_flush();
 
-    
     if (buttons_add_menus()) {
         // pass
     } else {

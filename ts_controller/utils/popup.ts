@@ -5,6 +5,7 @@ import { Rectangle } from "../controller_lib/types/shapes.js";
 import { Button } from "../controller_lib/types/triggerable.js";
 import { get_asset } from "./assets.js";
 import { get_menu } from "./menu.js";
+import { BUTTON_LABELS } from "./popup_messages.js";
 
 let popup:Popup;
 export const get_popup = ():Popup => {return popup};
@@ -12,12 +13,15 @@ export const get_popup = ():Popup => {return popup};
 // Popup //
 export interface Popup {
     is_showing: boolean,
+    is_talking: boolean,
     header: DrawableText,
     message: DrawableText,
     base_sprite: DrawableImage,
+    exit_button: Button,
     gotit_sprite: DrawableImage,
     gotit_button: Button,
-    exit_button: Button,
+    gotit_text: DrawableText,
+    talk_index: number,
 }
 
 // opening and closing popup //
@@ -37,6 +41,9 @@ export function post_popup(header: string, message: string) {
     text_size = Math.floor(5 + scr_height*0.045);
     popup.message.font = `${text_size}px times`;
     popup.message.text = message;
+    text_size *= 1.3;
+    popup.gotit_text.font = `${text_size}px times`;
+    popup.gotit_text.text = BUTTON_LABELS[0];
     popup.is_showing = true;
 }
 
@@ -46,7 +53,18 @@ export const exit_popup_clicked = (_self:Button) => {
 
 export const read_ins_clicked = (self:Button) => {
     get_popup().gotit_sprite.image = get_asset('read_ins2');
-
+    get_popup().gotit_button._touchEndCallback = read_ins_clicked_2;
+}
+export const read_ins_clicked_2 = (self:Button) => {
+    get_popup().gotit_sprite.image = get_asset('read_ins3');
+    get_popup().gotit_button._touchEndCallback = read_ins_clicked_3;
+    get_popup().is_talking = true;
+}
+export const read_ins_clicked_3 = (self:Button) => {
+    if (get_popup().talk_index < BUTTON_LABELS.length - 1) {
+        get_popup().talk_index += 1;
+    }
+    get_popup().gotit_text.text = BUTTON_LABELS[get_popup().talk_index];
 }
 
 // setting data for popup //
@@ -55,12 +73,15 @@ export function init_popup() {
     var button2 = new Button( {x:0,y:0,w:0,h:0}, undefined, undefined, undefined);
     popup =  {
         is_showing: false,
+        is_talking: false,
         header: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "30px times"},
         message: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "24px times", center: false, wrap: true},
         base_sprite: {...DEFAULT_DRAWABLE_IMG},
+        exit_button: button2,
         gotit_sprite: {...DEFAULT_DRAWABLE_IMG},
         gotit_button: button1,
-        exit_button: button2,
+        gotit_text: {...DEFAULT_DRAWABLE_TEXT, color: "#220000", font: "30px times"},
+        talk_index: 0,
     }
 }
 
@@ -83,6 +104,9 @@ export function size_popup() {
     }
     popup.gotit_sprite.dst = gotit_box;
     popup.gotit_button._boundingBox = gotit_box;
+    var talk_box = {...gotit_box};
+    talk_box.h *= .75;
+    popup.gotit_text.boundingBox = talk_box;
     // text
     const header_box: Rectangle = {
         x: base_box.x,
