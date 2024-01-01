@@ -49,6 +49,7 @@ export function post_popup(header: string, message: string) {
 
 export const exit_popup_clicked = (_self:Button) => {
     popup.is_showing = false;
+    get_popup().is_talking = false;
 }
 
 export const read_ins_clicked = (self:Button) => {
