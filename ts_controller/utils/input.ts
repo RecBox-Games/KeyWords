@@ -58,11 +58,13 @@ export function style_placeholder() {
 }
 
 export function style_input() {
+    const ctx = get_context();
+
     input.element.type = 'text';
     input.element.placeholder = ' Enter clue here';
     input.element.style.display = 'none';
     input.element.style.position = 'Absolute';
-    input.element.style.fontSize = '24px';
+    input.element.style.fontSize = ctx.dimensions.y * 0.034 + 'px';
     input.element.style.background = '#eaeae8';
     input.element.style.border = '2px solid black';
     input.element.style.color = 'black';
