@@ -18,6 +18,7 @@ const assetsSrc = [
     `x.png`,
     `read_ins.png`,
     `read_ins2.png`,
+    `read_ins3.png`,
     `tut_enable.png`,
     `loading.png`,
     `roles.png`,

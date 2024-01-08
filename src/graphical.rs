@@ -333,8 +333,12 @@ impl Graphical {
             },
             TurnState::BlueGuessingEnd(clue) => {
                 self.draw_clue_text(ctx, clue, false)?;
+<<<<<<< HEAD
             },
             
+=======
+            },            
+>>>>>>> 973e3393fb3a5bafb60bd92507fa5869da4912d9
         }
         //
         Ok(())

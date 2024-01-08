@@ -30,7 +30,7 @@ pub const N_SWORD2: usize = 4;
 pub const N_BOMB1: usize = 5;
 pub const N_BOMB2: usize = 4;
 pub const N_BOMB4: usize = 1;
-pub const N_HEAL3: usize = 1;
+pub const N_HEAL2: usize = 1;
 
 
 //=============================== StateManager =================================
@@ -63,8 +63,12 @@ impl StateManager {
                 }
             }
             self.state_update = true;
+<<<<<<< HEAD
         }
             
+=======
+        }            
+>>>>>>> 973e3393fb3a5bafb60bd92507fa5869da4912d9
         // chests
         if let GameState::Playing(playing_state) = &mut self.game_state {
             for j in 0..ROWS {
@@ -96,7 +100,6 @@ impl StateManager {
                 playing_state.sudden_death = true;
             }
         }
-
     }
 
 //        ======================= InputHandling ======================        //
@@ -237,8 +240,12 @@ impl GameState {
                 }
             }
             Playing(playing_state) => {
+<<<<<<< HEAD
                 let tick_event = playing_state.tick();
                 
+=======
+                let tick_event = playing_state.tick();                
+>>>>>>> 973e3393fb3a5bafb60bd92507fa5869da4912d9
                 //Set to done once all boxes are static
                 if tick_event.is_done() {
                     println!("Tick event done, calling over");
@@ -451,7 +458,7 @@ impl ChestState {
             Bomb4 => "&".to_string(),
             Sword1 => "s".to_string(),
             Sword2 => "S".to_string(),
-            Heal3 => "H".to_string(),
+            Heal2 => "H".to_string(),
         }
     }
 
@@ -465,7 +472,7 @@ impl ChestState {
             Bomb4 => Bomb4,
             Sword1 => Sword1,
             Sword2 => Sword2,
-            Heal3 => Heal3,
+            Heal2 => Heal2,
         };
         println!("convert");
     }
@@ -548,7 +555,7 @@ impl DeployingState {
             Bomb4 => vec![Bomb, Bomb, Bomb, Bomb],
             Sword1 => vec![Sword],
             Sword2 => vec![Sword, Sword],
-            Heal3 => vec![Heart, Heart, Heart],
+            Heal2 => vec![Heart, Heart],
         };
         let total_projectiles = projectiles.len();
         Self {
@@ -585,7 +592,7 @@ pub enum ChestContent {
     Bomb4,
     Sword1,
     Sword2,
-    Heal3,
+    Heal2,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -811,10 +818,10 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
 	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2);
     let bomb4s = bomb1s.clone().into_iter()
 	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1);
-    let heal3s = bomb4s.clone().into_iter()
+    let heal2s = bomb4s.clone().into_iter()
 	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB4);
-    let emptys = heal3s.clone().into_iter()
-	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB4-N_HEAL3);
+    let emptys = heal2s.clone().into_iter()
+	.choose_multiple(&mut rng, n_total-N_SWORD2-N_SWORD1-N_BOMB2-N_BOMB1-N_BOMB4-N_HEAL2);
     // initiate chests with chosen words and contents
     for j in 0..ROWS {
         chest_states.push(vec![]);
@@ -822,8 +829,8 @@ fn new_chest_states() -> Vec<Vec<ChestState>> {
             let i_flat = j*5 + i;
             let content = if emptys.contains(&i_flat) {
                 ChestContent::Empty
-            } else if heal3s.contains(&i_flat) {
-                ChestContent::Heal3
+            } else if heal2s.contains(&i_flat) {
+                ChestContent::Heal2
             } else if bomb4s.contains(&i_flat) {
                 ChestContent::Bomb4
             } else if bomb1s.contains(&i_flat) {
@@ -949,7 +956,7 @@ impl std::fmt::Display for ChestContent {
             Bomb4 => "bomb4",
             Sword1 => "sword1",
             Sword2 => "sword2",
-            Heal3 => "heal3",
+            Heal2 => "heal2",
         };
         write!(f, "{}", s)
     }
