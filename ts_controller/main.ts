@@ -1,3 +1,4 @@
+
 import { buttons_flush } from "./controller_lib/button.js";
 import { drawablesRenderAll } from "./controller_lib/draw.js";
 import { get_context } from "./controller_lib/init.js";
@@ -42,6 +43,7 @@ window.onerror = (event, source, lineno, colno, error) => {
 window.onload = () => {
     console.log("init");
     load_app();
+
     window.addEventListener("resize", (event) => {
         size_loading();
         size_role_screen();
