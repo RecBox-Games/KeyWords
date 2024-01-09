@@ -7,6 +7,7 @@ import { get_asset } from "./assets.js";
 import { get_menu } from "./menu.js";
 import { BUTTON_LABELS } from "./popup_messages.js";
 import {INSTRUCTIONS_STARTING} from "./popup_messages.js";
+
 let popup:Popup;
 export const get_popup = ():Popup => {return popup};
 
