@@ -5,7 +5,7 @@ use crate::state::*;
 use crate::utility::*;
 use ggez::{Context, GameResult};
 use ggez::graphics::{Rect, Color};
-
+use ggez::audio::{Source, SoundSource};
 //================================= Constants ================================//
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
 const FONT_SIZE_WORDS: f32 = 36.0;
@@ -190,10 +190,13 @@ impl Graphical {
 
     fn draw_intro_chestfall(&mut self, ctx: Ctx, progress: &Progress,
                             chest_states: &Vec<Vec<ChestState>>) -> GR {
+        
+        Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).unwrap().play(ctx).unwrap();
         self.draw_containers(ctx)?;
         self.draw_hearts_forming(ctx, progress.as_decimal())?;
-        self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
+        //self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
         //
+        
         Ok(())
     }
 
@@ -401,7 +404,7 @@ impl Graphical {
         }
         Ok(())
     }
-    
+    //Insert sound here
     fn draw_opening_chests(&mut self, ctx: Ctx,
                    chest_states: &Vec<Vec<ChestState>>) -> GR {
         for j in 0..ROWS {
@@ -410,6 +413,7 @@ impl Graphical {
                 if ! chest_state.is_static() {
                     let destination = self.get_chest_location(j, i);
                     self.draw_chest(ctx, destination, chest_state)?;
+                    Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).unwrap().play(ctx).unwrap();
                 }
             }
         }

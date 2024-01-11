@@ -2,10 +2,11 @@
 use crate::utility::*;
 use crate::events::*;
 use crate::messages::*;
+use std::collections::HashMap;
 use rand::{seq::IteratorRandom, thread_rng};
 use std::mem::take;
-
-
+use ggez::audio::{Source, SoundSource};
+//Hashmap Key = audio name, value = source of the sound(file path)
 //================================= Constants ==================================
 // Ticks
 pub const TICKS_TITLE: usize = 320; //320;
@@ -32,12 +33,18 @@ pub const N_BOMB2: usize = 4;
 pub const N_BOMB4: usize = 1;
 pub const N_HEAL2: usize = 1;
 
+#[derive(Eq, Hash, PartialEq, Copy, Clone)]
+pub enum Audio {
+    Blip1,
+}
+
 
 //=============================== StateManager =================================
 pub struct StateManager {
     pub game_state: GameState,
     pub chest_states: Vec<Vec<ChestState>>,
     pub state_update: bool,
+    pub sounds: HashMap<Audio, Source>,
 }
 
 impl StateManager {
@@ -46,6 +53,7 @@ impl StateManager {
             game_state: GameState::new(),
             chest_states: new_chest_states(),
             state_update: false,
+            sounds: HashMap::new(),
         }
     }
 
@@ -73,8 +81,11 @@ impl StateManager {
                         playing_state.handle_projectile_hit(projectile);
                         self.state_update = true;
                     }
+                    //Insert sound here 
                     if let TickEvent::DoneOpening = tick_event {
                         playing_state.handle_done_opening();
+//                        Source::new("Coin03.wav").play();
+                       
                         self.state_update = true;
                     }
                 }
@@ -496,6 +507,7 @@ impl OpeningState {
                 }
             }
             Opening(prg) => {
+                //Play sound here
                 if prg.tick().is_done() {
                     return TickEvent::Deploy;
                 } 
