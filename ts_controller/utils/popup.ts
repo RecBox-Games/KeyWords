@@ -6,6 +6,7 @@ import { Button } from "../controller_lib/types/triggerable.js";
 import { get_asset } from "./assets.js";
 import { get_menu } from "./menu.js";
 import { BUTTON_LABELS } from "./popup_messages.js";
+import {INSTRUCTIONS_STARTING} from "./popup_messages.js";
 
 let popup:Popup;
 export const get_popup = ():Popup => {return popup};
@@ -38,7 +39,7 @@ export function post_popup(header: string, message: string) {
     var text_size = Math.floor(12 + scr_height*0.04);
     popup.header.font = `${text_size}px times`;
     popup.header.text = header;
-    text_size = Math.floor(5 + scr_height*0.045);
+    text_size = Math.floor(5 + scr_height*0.03);
     popup.message.font = `${text_size}px times`;
     popup.message.text = message;
     text_size *= 1.3;
@@ -53,8 +54,10 @@ export const exit_popup_clicked = (_self:Button) => {
 }
 
 export const read_ins_clicked = (self:Button) => {
-    get_popup().gotit_sprite.image = get_asset('read_ins2');
-    get_popup().gotit_button._touchEndCallback = read_ins_clicked_2;
+    if (popup.message.text != INSTRUCTIONS_STARTING){
+       get_popup().gotit_sprite.image = get_asset('read_ins2');
+       get_popup().gotit_button._touchEndCallback = read_ins_clicked_2;
+    }
 }
 export const read_ins_clicked_2 = (self:Button) => {
     get_popup().gotit_sprite.image = get_asset('read_ins3');
