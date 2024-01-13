@@ -105,8 +105,9 @@ pub struct Graphical {
     clue_text: TextElem,
     keys_text: TextElem,
     sound_source: audio::Source,
-    play_sound: bool, 
-    play_sound_selected: bool,
+    play_sound: bool,
+    prev_loc: Point,
+
 }
 
 impl Graphical {
@@ -138,7 +139,8 @@ impl Graphical {
             keys_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
             sound_source: Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).expect("Load complete"),
             play_sound: true,
-            play_sound_selected: true,
+            prev_loc: Point{x: -1.0, y:-1.0},
+
         }
     }
 
@@ -562,8 +564,14 @@ impl Graphical {
         if let Some((row, col)) = turn_state.proposed_guess() {
             let chest_loc = self.get_chest_location(row, col);
             let p = chest_loc.plus(SELECTION_OFFSET);
-            
-            self.sound_source.play_detached(ctx);
+
+            //Selection sound
+
+            if (chest_loc != self.prev_loc){
+                println!("Selected new box");
+                self.sound_source.play_detached(ctx);
+                self.prev_loc = chest_loc;
+            }
 
             match turn_state.current_team() {
                 Team::Red => {
@@ -609,7 +617,7 @@ impl Graphical {
         Ok(())
     }
 
-//        ========================= Draw Over ========================        //
+//        ========================= Draw Over ========================        //Insert sound here to mark game over
     fn draw_over(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
                  red_health_state: &HealthState, blue_health_state: &HealthState,
                  prg: f32) -> GR {

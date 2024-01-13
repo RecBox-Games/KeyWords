@@ -3,9 +3,13 @@ use crate::utility::*;
 use crate::events::*;
 use crate::messages::*;
 use std::collections::HashMap;
+use ggez::Context;
 use rand::{seq::IteratorRandom, thread_rng};
 use std::mem::take;
 use ggez::audio::{Source, SoundSource};
+
+type Ctx<'a> = &'a mut Context;
+
 //Hashmap Key = audio name, value = source of the sound(file path)
 //================================= Constants ==================================
 // Ticks
@@ -81,11 +85,8 @@ impl StateManager {
                         playing_state.handle_projectile_hit(projectile);
                         self.state_update = true;
                     }
-                    //Insert sound here 
                     if let TickEvent::DoneOpening = tick_event {
                         playing_state.handle_done_opening();
-//                        Source::new("Coin03.wav").play();
-                       
                         self.state_update = true;
                     }
                 }
@@ -109,7 +110,7 @@ impl StateManager {
     }
 
 //        ======================= InputHandling ======================        //
-    pub fn handle_input(&mut self, message: InputMessage) {
+    pub fn handle_input(&mut self, message: InputMessage, ctx: Ctx) {
         match message {
             InputMessage::PrintTurn => {
                 self.handle_print_turn();
@@ -145,7 +146,7 @@ impl StateManager {
                     println!("Warning: attempt to support before settled");
                     return;
                 }
-                self.handle_second(support);
+                self.handle_second(support, ctx);
                 self.state_update = true;
             }
             InputMessage::Restart => {
@@ -191,12 +192,12 @@ impl StateManager {
         }
     }
     
-    fn handle_second(&mut self, support: bool) {
+    fn handle_second(&mut self, support: bool, ctx: Ctx) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
             let guess = playing_state.turn_state.handle_second(support);
             if let Some((row, col)) = guess {
                 // start opening chest
-                self.chest_states[row][col].opening_state.start_opening();
+                self.chest_states[row][col].opening_state.start_opening(ctx);
             }
         } else {
             println!("Warning: bad second (1)");
@@ -530,10 +531,13 @@ impl OpeningState {
         }
         TickEvent::None
     }
+    //mark (Insert sound here: Use context?)
+    fn start_opening(&mut self, ctx: Ctx) {
+        println!("\n\n\n\n\nStart opening\n\n\n\n");
+        let mut sound_source = Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).expect("Load complete");
+        sound_source.play_detached(ctx);
 
-    fn start_opening(&mut self) {
-        println!("Start opening");
-        // Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).unwrap().play(ctx).unwrap();
+        
         use OpeningState::*;
         *self = Growing(Progress::new(TICKS_CHEST_GROW));
     }
