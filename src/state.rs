@@ -532,6 +532,8 @@ impl OpeningState {
     }
 
     fn start_opening(&mut self) {
+        println!("Start opening");
+        // Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).unwrap().play(ctx).unwrap();
         use OpeningState::*;
         *self = Growing(Progress::new(TICKS_CHEST_GROW));
     }

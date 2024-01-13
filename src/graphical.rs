@@ -5,6 +5,7 @@ use crate::state::*;
 use crate::utility::*;
 use ggez::{Context, GameResult};
 use ggez::graphics::{Rect, Color};
+use ggez::audio;
 use ggez::audio::{Source, SoundSource};
 //================================= Constants ================================//
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
@@ -103,6 +104,9 @@ pub struct Graphical {
     header_text: TextElem,
     clue_text: TextElem,
     keys_text: TextElem,
+    sound_source: audio::Source,
+    play_sound: bool, 
+    play_sound_selected: bool,
 }
 
 impl Graphical {
@@ -132,6 +136,9 @@ impl Graphical {
             header_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
             clue_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
             keys_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
+            sound_source: Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).expect("Load complete"),
+            play_sound: true,
+            play_sound_selected: true,
         }
     }
 
@@ -142,7 +149,13 @@ impl Graphical {
             GameState::Intro(IntroState::Title(prg)) => {
                 self.draw_intro_title(ctx, prg)?;
             }
+            //Play during chest fall (only once)
             GameState::Intro(IntroState::ChestFall(prg)) => {
+                if(self.play_sound){
+                    println!("Chest fall not playing");
+                    self.sound_source.play_detached(ctx);
+                    self.play_sound = false;
+                }
                 self.draw_intro_chestfall(ctx, prg, &state.chest_states)?;
             }
             GameState::Playing(playing_state) => {
@@ -190,11 +203,9 @@ impl Graphical {
 
     fn draw_intro_chestfall(&mut self, ctx: Ctx, progress: &Progress,
                             chest_states: &Vec<Vec<ChestState>>) -> GR {
-        
-        Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).unwrap().play(ctx).unwrap();
         self.draw_containers(ctx)?;
         self.draw_hearts_forming(ctx, progress.as_decimal())?;
-        //self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
+        self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
         //
         
         Ok(())
@@ -202,6 +213,7 @@ impl Graphical {
 
     fn draw_chests_falling(&mut self, ctx: Ctx, prg: f32,
                             chest_states: &Vec<Vec<ChestState>>) -> GR {
+        
         let num_chests = ROWS*COLUMNS;
         let time_slices = num_chests + SIMULTANEOUS_FALLS + 6;
         let slice_len = 1.0 / time_slices as f32;
@@ -404,7 +416,6 @@ impl Graphical {
         }
         Ok(())
     }
-    //Insert sound here
     fn draw_opening_chests(&mut self, ctx: Ctx,
                    chest_states: &Vec<Vec<ChestState>>) -> GR {
         for j in 0..ROWS {
@@ -413,7 +424,6 @@ impl Graphical {
                 if ! chest_state.is_static() {
                     let destination = self.get_chest_location(j, i);
                     self.draw_chest(ctx, destination, chest_state)?;
-                    Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).unwrap().play(ctx).unwrap();
                 }
             }
         }
@@ -481,6 +491,7 @@ impl Graphical {
 
     fn draw_deploying(&mut self, ctx: Ctx, deploying_state: &DeployingState,
                       team: Team, red_health: usize, blue_health: usize) -> GR {
+	
         let base_p = Point{x:CONTENTS_X, y:CONTENTS_Y};
         let offset = Point{x:-CONTENTS_SPACING_X, y:0.0}
         .scale(deploying_state.total_projectiles as f32 / 2.0);
@@ -551,6 +562,9 @@ impl Graphical {
         if let Some((row, col)) = turn_state.proposed_guess() {
             let chest_loc = self.get_chest_location(row, col);
             let p = chest_loc.plus(SELECTION_OFFSET);
+            
+            self.sound_source.play_detached(ctx);
+
             match turn_state.current_team() {
                 Team::Red => {
                     self.select_red.draw(ctx, p)?;
@@ -680,9 +694,14 @@ fn new_sparkle(ctx: Ctx) -> SpriteElem {
     sparkle
 }
 
+
 fn new_chest(ctx: Ctx) -> SpriteElem {
     let mut chest = SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y,
                                     "/chest_2.png");
+    //Play sound in the loading screen
+	let mut sound_source = audio::Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).expect("Load complete");
+    sound_source.play_detached(ctx);
+
     let q = 1.0/10.0;
     chest.set_animation(
 	vec![
