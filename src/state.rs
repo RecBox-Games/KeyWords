@@ -220,8 +220,8 @@ pub enum GameState {
 
 impl GameState {
     pub fn new() -> Self {
-        //Self::Intro(IntroState::new())
-        Self::Playing(PlayingState::new())
+        Self::Intro(IntroState::new())
+        //Self::Playing(PlayingState::new()) // uncomment this line for faster testing
     }
 
     pub fn tick(&mut self) -> TickEvent {
