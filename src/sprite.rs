@@ -73,11 +73,11 @@ pub struct TextElem {
 }
 
 impl TextElem {
-    pub fn new(text: &str, size: f32, x_scale: f32, y_scale: f32) -> Self {
+    pub fn new(ctx: &mut Context, text: &str, size: f32, x_scale: f32, y_scale: f32) -> Self {
         let mesh = Text::new(graphics::TextFragment {
             text: text.to_string(),
             color: None,
-            font: Some(graphics::Font::default()),
+            font: Some(graphics::Font::new(ctx, "/fonts/Minecraftia-Regular.ttf").unwrap()),
             scale: Some(graphics::PxScale::from(size)),
         });
 	TextElem {

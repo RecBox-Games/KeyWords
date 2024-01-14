@@ -219,7 +219,10 @@ pub enum GameState {
 }
 
 impl GameState {
-    pub fn new() -> Self { Self::Intro(IntroState::new()) }
+    pub fn new() -> Self {
+        //Self::Intro(IntroState::new())
+        Self::Playing(PlayingState::new())
+    }
 
     pub fn tick(&mut self) -> TickEvent {
         use GameState::*;
