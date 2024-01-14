@@ -66,6 +66,7 @@ const size_board = () => {
             board.buttons[y][x]._boundingBox = { x: dst.x + cw*.02, y: dst.y + ch*.02,
                                                  w: dst.w - cw*.04, h: dst.h - ch*.04}
             dst.x += dst.w;
+            if (board.chests[y][x].text.text.length > 9) board.chests[y][x].text.font = "19px arial"
         }
         dst.x = startx;
         dst.y += dst.h;
