@@ -59,7 +59,7 @@ const TEAM_INDICATOR_START_X: f32 = 18.0;
 const TEAM_INDICATOR_START_Y: f32 = 25.0;
 // Header Text
 const HEADER_TEXT_SIZE: f32 = 50.0;
-const HEADER_TEXT_X: f32 = 540.0;
+const HEADER_TEXT_X: f32 = 576.0;
 const HEADER_TEXT_Y: f32 = 50.0;
 const HEADER_TEXT_POINT: Point = Point{x: HEADER_TEXT_X, y: HEADER_TEXT_Y};
 const HEADER_TEXT_COLOR: Color = Color::new(0.0, 0.0, 0.0, 1.0);
