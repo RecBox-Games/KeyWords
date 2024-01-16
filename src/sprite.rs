@@ -77,7 +77,7 @@ impl TextElem {
         let mesh = Text::new(graphics::TextFragment {
             text: text.to_string(),
             color: None,
-            font: Some(graphics::Font::new(ctx, "/fonts/Minecraftia-Regular.ttf").unwrap()),
+            font: Some(graphics::Font::new(ctx, "/fonts/MinecraftRegular-Bmg3.otf").unwrap()),
             scale: Some(graphics::PxScale::from(size)),
         });
 	TextElem {

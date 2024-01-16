@@ -8,10 +8,10 @@ use ggez::graphics::{Rect, Color};
 
 //================================= Constants ================================//
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
-const FONT_SIZE_WORDS: f32 = 40.0;
+const FONT_SIZE_WORDS: f32 = 38.0;
 const COLOR_WORDS: Color = Color::new(0.9, 0.8, 0.7, 1.0);
 const COLOR_DARK_WORDS: Color = Color::new(0.10, 0.05, 0.03, 1.0);
-const CHEST_WORD_OFFSET_Y: f32 = 46.0;
+const CHEST_WORD_OFFSET_Y: f32 = 43.0;
 // Scale
 const SCALE_CONTENTS: f32 = 6.0;
 const SCALE_HEART_X: f32 = 6.0;
@@ -58,9 +58,9 @@ const SCALE_TEAM_INDICATOR_Y: f32 = 5.0;
 const TEAM_INDICATOR_START_X: f32 = 18.0;
 const TEAM_INDICATOR_START_Y: f32 = 25.0;
 // Header Text
-const HEADER_TEXT_SIZE: f32 = 55.0;
-const HEADER_TEXT_X: f32 = 402.0;
-const HEADER_TEXT_Y: f32 = 40.0;
+const HEADER_TEXT_SIZE: f32 = 50.0;
+const HEADER_TEXT_X: f32 = 540.0;
+const HEADER_TEXT_Y: f32 = 50.0;
 const HEADER_TEXT_POINT: Point = Point{x: HEADER_TEXT_X, y: HEADER_TEXT_Y};
 const HEADER_TEXT_COLOR: Color = Color::new(0.0, 0.0, 0.0, 1.0);
 const HEADER_TEXT_COLOR2: Color = Color::new(0.45, 0.3, 0.2, 1.0);
@@ -77,7 +77,8 @@ fn one_pix_shift(p: Point) -> Point {
 }
 
 fn spacify(s: String) -> String {
-    s.chars().map(|c| format!("{} ", c)).collect()
+    s
+    //s.chars().map(|c| format!("{} ", c)).collect()
 }
 
 
@@ -323,7 +324,7 @@ impl Graphical {
     fn draw_info_text(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
         match turn_state {
             TurnState::RedCluing => {
-                self.draw_header_text(ctx, &spacify("Red  Clue  Giver  is  Thinking".to_string()))?;
+                self.draw_header_text(ctx, &spacify("Red Clue Giver is Thinking".to_string()))?;
             },
             TurnState::RedCluingEnd(_, clue) => {
                 self.draw_clue_text(ctx, clue, true)?;
@@ -336,7 +337,7 @@ impl Graphical {
             },
             //
             TurnState::BlueCluing => {
-                self.draw_header_text(ctx, &spacify("Blue  Clue  Giver  is  Thinking".to_string()))?;
+                self.draw_header_text(ctx, &spacify("Blue Clue Giver is Thinking".to_string()))?;
             },
             TurnState::BlueCluingEnd(_, clue) => {
                 self.draw_clue_text(ctx, clue, false)?;
