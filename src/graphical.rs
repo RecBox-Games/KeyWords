@@ -9,10 +9,10 @@ use ggez::audio;
 use ggez::audio::{Source, SoundSource};
 //================================= Constants ================================//
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
-const FONT_SIZE_WORDS: f32 = 36.0;
+const FONT_SIZE_WORDS: f32 = 38.0;
 const COLOR_WORDS: Color = Color::new(0.9, 0.8, 0.7, 1.0);
 const COLOR_DARK_WORDS: Color = Color::new(0.10, 0.05, 0.03, 1.0);
-const CHEST_WORD_OFFSET_Y: f32 = 40.0;
+const CHEST_WORD_OFFSET_Y: f32 = 43.0;
 // Scale
 const SCALE_CONTENTS: f32 = 6.0;
 const SCALE_HEART_X: f32 = 6.0;
@@ -59,15 +59,29 @@ const SCALE_TEAM_INDICATOR_Y: f32 = 5.0;
 const TEAM_INDICATOR_START_X: f32 = 18.0;
 const TEAM_INDICATOR_START_Y: f32 = 25.0;
 // Header Text
-const HEADER_TEXT_SIZE: f32 = 70.0;
-const HEADER_TEXT_Y: f32 = 60.0;
-const HEADER_TEXT_POINT: Point = Point{x: 470.0, y: HEADER_TEXT_Y};
+const HEADER_TEXT_SIZE: f32 = 50.0;
+const HEADER_TEXT_X: f32 = 576.0;
+const HEADER_TEXT_Y: f32 = 50.0;
+const HEADER_TEXT_POINT: Point = Point{x: HEADER_TEXT_X, y: HEADER_TEXT_Y};
 const HEADER_TEXT_COLOR: Color = Color::new(0.0, 0.0, 0.0, 1.0);
-const CLUE_TEXT_POINT: Point = Point{x: 300.0, y: HEADER_TEXT_Y};
-const KEYS_TEXT_POINT: Point = Point{x: 1300.0, y: HEADER_TEXT_Y};
+const HEADER_TEXT_COLOR2: Color = Color::new(0.45, 0.3, 0.2, 1.0);
+const CLUE_TEXT_POINT: Point = Point{x: 330.0, y: HEADER_TEXT_Y};
+const KEYS_TEXT_POINT: Point = Point{x: 1320.0, y: HEADER_TEXT_Y};
 
 type GR = GameResult<()>;
 type Ctx<'a> = &'a mut Context;
+
+
+//================================== Helpers =================================//
+fn one_pix_shift(p: Point) -> Point {
+    Point { x: p.x + 5.0, y: p.y }
+}
+
+fn spacify(s: String) -> String {
+    s
+    //s.chars().map(|c| format!("{} ", c)).collect()
+}
+
 
 //================================= Graphical ================================//
 // the members of Graphical are assets used when drawing a representation of
@@ -134,12 +148,16 @@ impl Graphical {
             header_board: SpriteElem::new(ctx, SCALE_HEADER_X, SCALE_HEADER_Y, "/game_header.png"),
             tall_scroll: SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, "/tall_scroll.png"),
             short_scroll: SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, "/short_scroll.png"),
-            header_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
-            clue_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
-            keys_text: TextElem::new("Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
-            sound_source: Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).expect("Load complete"),
+
+            
+            sound_source: Source::from_data(ctx, include_bytes!("../resources/audio/select.mp3").to_vec().into()).expect("Load complete"),
             play_sound: true,
             prev_loc: Point{x: -1.0, y:-1.0},
+
+
+            header_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
+            clue_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
+            keys_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
 
         }
     }
@@ -327,7 +345,7 @@ impl Graphical {
     fn draw_info_text(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
         match turn_state {
             TurnState::RedCluing => {
-                self.draw_header_text(ctx, "Red Clue Giver is Thinking")?;
+                self.draw_header_text(ctx, &spacify("Red Clue Giver is Thinking".to_string()))?;
             },
             TurnState::RedCluingEnd(_, clue) => {
                 self.draw_clue_text(ctx, clue, true)?;
@@ -340,7 +358,7 @@ impl Graphical {
             },
             //
             TurnState::BlueCluing => {
-                self.draw_header_text(ctx, "Blue Clue Giver is Thinking")?;
+                self.draw_header_text(ctx, &spacify("Blue Clue Giver is Thinking".to_string()))?;
             },
             TurnState::BlueCluingEnd(_, clue) => {
                 self.draw_clue_text(ctx, clue, false)?;
@@ -357,7 +375,9 @@ impl Graphical {
     }
 
     fn draw_header_text(&mut self, ctx: Ctx, message: &str) -> GR {
-        self.header_text = TextElem::new(message, HEADER_TEXT_SIZE, 1.0, 1.0);
+        self.header_text = TextElem::new(ctx, message, HEADER_TEXT_SIZE, 1.2, 2.0);
+        //self.header_text.draw(ctx, HEADER_TEXT_COLOR2, HEADER_TEXT_POINT2)?;
+        self.header_text.draw(ctx, HEADER_TEXT_COLOR2, one_pix_shift(HEADER_TEXT_POINT))?;
         self.header_text.draw(ctx, HEADER_TEXT_COLOR, HEADER_TEXT_POINT)?;
         //
         Ok(())
@@ -365,12 +385,18 @@ impl Graphical {
     
     fn draw_clue_text(&mut self, ctx: Ctx, clue: &Clue, _is_red: bool) -> GR {
         let clue_str = match clue.word.as_ref() {
-            "" => "~spoken clue~",
+            "" => "~spoken  clue~",
             _ => &clue.word,
         };
-        self.clue_text = TextElem::new(&format!("Clue: {}", clue_str), HEADER_TEXT_SIZE, 1.0, 1.0);
-        self.keys_text = TextElem::new(&format!("Keys: {}", clue.num), HEADER_TEXT_SIZE, 1.0, 1.0);
+        self.clue_text = TextElem::new(
+            ctx, &spacify(format!("Clue: {}", clue_str)),
+            HEADER_TEXT_SIZE, 1.2, 2.0);
+        self.keys_text = TextElem::new(
+            ctx, &spacify(format!("Keys: {}", clue.num)),
+            HEADER_TEXT_SIZE, 1.2, 2.0);
+        self.clue_text.draw(ctx, HEADER_TEXT_COLOR2, one_pix_shift(CLUE_TEXT_POINT))?;
         self.clue_text.draw(ctx, HEADER_TEXT_COLOR, CLUE_TEXT_POINT)?;
+        self.keys_text.draw(ctx, HEADER_TEXT_COLOR2, one_pix_shift(KEYS_TEXT_POINT))?;
         self.keys_text.draw(ctx, HEADER_TEXT_COLOR, KEYS_TEXT_POINT)?;
         //
         Ok(())
@@ -481,12 +507,12 @@ impl Graphical {
                          word: &str, word_color: Color, prg: f32) -> GR {
         self.chest.animate_scaled(ctx, point, scale, prg)?;
         // word
-        let word_mesh_width = self.get_word_mesh(word).width(ctx);
+        let word_mesh_width = self.get_word_mesh(ctx, word).width(ctx);
         let offset_x = self.chest.width()*0.05 +
             (self.chest.width() - word_mesh_width)/2.0;
         let offset_y = self.chest.height() - CHEST_WORD_OFFSET_Y;
         let offset = Point{x:offset_x*scale.x, y:offset_y*scale.y};
-        self.get_word_mesh(word).draw_scaled(ctx, word_color, point.plus(offset), scale)?;
+        self.get_word_mesh(ctx, word).draw_scaled(ctx, word_color, point.plus(offset), scale)?;
         //
         Ok(())
     }
@@ -610,7 +636,7 @@ impl Graphical {
     #[allow(dead_code)]
     fn draw_debug_turn(&mut self, ctx: Ctx, turn_state: &TurnState) -> GR {
         let s = format!("{:?}", turn_state);
-        let te = TextElem::new(&s, 40.0, 1.0, 1.0);
+        let te = TextElem::new(ctx, &s, 40.0, 1.0, 1.0);
         let p = Point{x: 10.0, y: SCREEN_HEIGHT-50.0};
         te.draw(ctx, (0.0, 0.0, 0.0, 1.0).into(), p)?;
         //
@@ -644,11 +670,12 @@ impl Graphical {
         Ok(())
     }
 //        =================== Graphical Helpers ======================        //
-    fn get_word_mesh(&mut self, word: &str) -> &mut TextElem {
+    fn get_word_mesh(&mut self, ctx: Ctx, word: &str) -> &mut TextElem {
         if ! self.word_meshes.contains_key(word) {
             self.word_meshes.insert(
                 word.to_string(), // key
                 new_text_elem(    // value
+                    ctx,
                     word.to_string(),
                     FONT_SIZE_WORDS,
                 )
@@ -728,8 +755,8 @@ fn new_chest(ctx: Ctx) -> SpriteElem {
     chest
 }
 
-fn new_text_elem(text: String, font_size: f32) -> TextElem {
-    TextElem::new(&text, font_size, 1.0, 1.0)
+fn new_text_elem(ctx: Ctx, text: String, font_size: f32) -> TextElem {
+    TextElem::new(ctx, &text, font_size, 1.0, 1.0)
 }
 
 fn new_heart(ctx: Ctx, frames: Vec<usize>, red: bool) -> SpriteElem {
