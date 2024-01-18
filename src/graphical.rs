@@ -171,11 +171,6 @@ impl Graphical {
             }
             //Play during chest fall (only once)
             GameState::Intro(IntroState::ChestFall(prg)) => {
-                if(self.play_sound){
-                    println!("Chest fall not playing");
-                    self.sound_source.play_detached(ctx);
-                    self.play_sound = false;
-                }
                 self.draw_intro_chestfall(ctx, prg, &state.chest_states)?;
             }
             GameState::Playing(playing_state) => {
@@ -592,12 +587,6 @@ impl Graphical {
             let p = chest_loc.plus(SELECTION_OFFSET);
 
             //Selection sound
-
-            if (chest_loc != self.prev_loc){
-                println!("Selected new box");
-                self.sound_source.play_detached(ctx);
-                self.prev_loc = chest_loc;
-            }
 
             match turn_state.current_team() {
                 Team::Red => {
