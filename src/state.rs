@@ -197,7 +197,7 @@ impl StateManager {
     
     fn handle_second(&mut self, support: bool, ctx: Ctx) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
-            let guess = playing_state.turn_state.handle_second(support);
+            let guess = playing_state.turn_state.handle_second(support, ctx);
             if let Some((row, col)) = guess {
                 // start opening chest
                 self.chest_states[row][col].opening_state.start_opening(ctx);
@@ -287,7 +287,9 @@ pub enum IntroState {
 impl IntroState {
     fn new() -> Self {        Self::Title(Progress::new(TICKS_TITLE))     }
     fn new_chest_fall() -> Self {
+        
         Self::ChestFall(Progress::new(TICKS_CHESTFALL))
+            
     }
     fn tick(&mut self, ctx: Ctx) -> TickEvent {
         use IntroState::*;
@@ -295,8 +297,8 @@ impl IntroState {
             if p.tick().is_done() {
                 //Chest falls here
                 let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/chestfall.mp3").to_vec().into()).expect("load complete");
-                sound_source.play_detached(ctx);
                 *self = Self::new_chest_fall();
+                sound_source.play_detached(ctx);
                 return TickEvent::NeedsUpdate;
             }
         }
@@ -491,11 +493,9 @@ impl ChestState {
                 }
 
             }
-            println!("Contents: \n\n\n\n\n{}\n\n\n\n\n\n", self.two_char());
             self.opening_state = Deploying(DeployingState::new(self.contents));
             return TickEvent::None;
-        }
-        
+        }        
         tick_event
     }
 
@@ -565,12 +565,10 @@ impl OpeningState {
                     let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/unlock.mp3").to_vec().into()).expect("Load complete");
                     sound_source.play_detached(ctx);
                     *self = Opening(Progress::new(TICKS_CHEST_OPEN));
-                    
                 }
             }
             Opening(prg) => {
                 if prg.tick().is_done() {
-                    //MARK: Play hum sound here
                     return TickEvent::Deploy;
                 } 
             }
@@ -597,6 +595,10 @@ impl OpeningState {
         let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/drumroll.mp3").to_vec().into()).expect("Load complete");
         sound_source.play_detached(ctx);
 
+        //MARK: PLAY confirm here
+        let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/confirm.mp3").to_vec().into()).expect("load complete");
+        sound_source.play_detached(ctx);
+        
         use OpeningState::*;
         *self = Growing(Progress::new(TICKS_CHEST_GROW));
     }
@@ -743,7 +745,7 @@ impl TurnState {
     }
 
     // TODO: refactor
-    fn handle_second(&mut self, support: bool) -> Option<(usize, usize)> {
+    fn handle_second(&mut self, support: bool, ctx: Ctx) -> Option<(usize, usize)> {
         use TurnState::*;
         let mut current_guess = None;
         match self {
