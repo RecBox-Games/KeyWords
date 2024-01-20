@@ -592,12 +592,17 @@ impl OpeningState {
     }
     //DRUMROLL SOUND
     fn start_opening(&mut self, ctx: Ctx) {
-        let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/drumroll.mp3").to_vec().into()).expect("Load complete");
-        sound_source.play_detached(ctx);
 
         //MARK: PLAY confirm here
-        let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/confirm.mp3").to_vec().into()).expect("load complete");
+       
+        let mut drumroll = Source::from_data(ctx, include_bytes!("../resources/audio/drumroll.mp3").to_vec().into()).expect("Load complete");
+        drumroll.play_detached(ctx);
+
+         let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/confirm.mp3").to_vec().into()).expect("load complete");
         sound_source.play_detached(ctx);
+
+
+
         
         use OpeningState::*;
         *self = Growing(Progress::new(TICKS_CHEST_GROW));
