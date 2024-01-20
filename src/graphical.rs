@@ -221,8 +221,7 @@ impl Graphical {
         self.draw_containers(ctx)?;
         self.draw_hearts_forming(ctx, progress.as_decimal())?;
         self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
-        //
-        
+                
         Ok(())
     }
 
@@ -722,9 +721,7 @@ fn new_sparkle(ctx: Ctx) -> SpriteElem {
 fn new_chest(ctx: Ctx) -> SpriteElem {
     let mut chest = SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y,
                                     "/chest_2.png");
-    //Play sound in the loading screen
-	let mut sound_source = audio::Source::from_data(ctx, include_bytes!("Coin03.wav").to_vec().into()).expect("Load complete");
-    sound_source.play_detached(ctx);
+    
 
     let q = 1.0/10.0;
     chest.set_animation(

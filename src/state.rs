@@ -1,3 +1,4 @@
+use crate::state;
 //==================================<===|===>===================================
 use crate::utility::*;
 use crate::events::*;
@@ -37,9 +38,20 @@ pub const N_BOMB2: usize = 4;
 pub const N_BOMB4: usize = 1;
 pub const N_HEAL2: usize = 1;
 
+
+//DRUM ROLL, good hum, bad hum, slice, explode, select 
 #[derive(Eq, Hash, PartialEq, Copy, Clone)]
 pub enum Audio {
-    Blip1,
+    DRUM_ROLL,
+    GOOD_HUM,
+    BAD_WOMP,
+    EMPTY_SPLASH,
+    SLICE,
+    SELECT,
+    UNLOCK,
+    EXPLODE,
+    HEART_FORMS,
+    CHEST_FALL
 }
 
 
@@ -48,7 +60,7 @@ pub struct StateManager {
     pub game_state: GameState,
     pub chest_states: Vec<Vec<ChestState>>,
     pub state_update: bool,
-    pub sounds: HashMap<Audio, Source>,
+    pub chest_selected: bool,
 }
 
 impl StateManager {
@@ -57,7 +69,7 @@ impl StateManager {
             game_state: GameState::new(),
             chest_states: new_chest_states(),
             state_update: false,
-            sounds: HashMap::new(),
+            chest_selected: false,
         }
     }
 
@@ -138,6 +150,7 @@ impl StateManager {
                     println!("Warning: attempt to guess opened chest");
                     return;
                 }
+                self.chest_selected = true;
                 self.handle_guess(row, col, ctx);
                 self.state_update = true;
             }
@@ -190,7 +203,9 @@ impl StateManager {
             let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/select.mp3").to_vec().into()).expect("load complete");
             sound_source.play_detached(ctx);
             playing_state.turn_state.handle_guess(row, col);
+            //Set selected boolean to true
         } else {
+            self.chest_selected = false;
             println!("Warning: bad guess (1)");
         }
     }
@@ -201,6 +216,7 @@ impl StateManager {
             if let Some((row, col)) = guess {
                 // start opening chest
                 self.chest_states[row][col].opening_state.start_opening(ctx);
+                self.chest_selected = false;
             }
         } else {
             println!("Warning: bad second (1)");
@@ -296,9 +312,10 @@ impl IntroState {
         if let Title(p) = self {
             if p.tick().is_done() {
                 //Chest falls here
-                let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/chestfall.mp3").to_vec().into()).expect("load complete");
+                
+//                let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/chestfall.mp3").to_vec().into()).expect("load complete");
                 *self = Self::new_chest_fall();
-                sound_source.play_detached(ctx);
+  //              sound_source.play_detached(ctx);
                 return TickEvent::NeedsUpdate;
             }
         }
