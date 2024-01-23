@@ -60,7 +60,6 @@ pub struct StateManager {
     pub game_state: GameState,
     pub chest_states: Vec<Vec<ChestState>>,
     pub state_update: bool,
-    pub chest_selected: bool,
 }
 
 impl StateManager {
@@ -69,7 +68,6 @@ impl StateManager {
             game_state: GameState::new(),
             chest_states: new_chest_states(),
             state_update: false,
-            chest_selected: false,
         }
     }
 
@@ -150,7 +148,6 @@ impl StateManager {
                     println!("Warning: attempt to guess opened chest");
                     return;
                 }
-                self.chest_selected = true;
                 self.handle_guess(row, col, ctx);
                 self.state_update = true;
             }
@@ -205,7 +202,6 @@ impl StateManager {
             playing_state.turn_state.handle_guess(row, col);
             //Set selected boolean to true
         } else {
-            self.chest_selected = false;
             println!("Warning: bad guess (1)");
         }
     }
@@ -216,7 +212,6 @@ impl StateManager {
             if let Some((row, col)) = guess {
                 // start opening chest
                 self.chest_states[row][col].opening_state.start_opening(ctx);
-                self.chest_selected = false;
             }
         } else {
             println!("Warning: bad second (1)");
@@ -303,9 +298,7 @@ pub enum IntroState {
 impl IntroState {
     fn new() -> Self {        Self::Title(Progress::new(TICKS_TITLE))     }
     fn new_chest_fall() -> Self {
-        
         Self::ChestFall(Progress::new(TICKS_CHESTFALL))
-            
     }
     fn tick(&mut self, ctx: Ctx) -> TickEvent {
         use IntroState::*;
@@ -495,6 +488,7 @@ impl ChestState {
         let tick_event = self.opening_state.tick(ctx);
         if let TickEvent::Deploy = tick_event {
             //MARK:  PLAY HUMM SOUND HERE
+            /*
             match self.contents {
                 Empty => {
                     let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/empty_splash.mp3").to_vec().into()).expect("load complete");
@@ -507,9 +501,10 @@ impl ChestState {
                 Sword1 | Sword2 | Heal2 => {
                     let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/good_hum.mp3").to_vec().into()).expect("load complete");
                     sound_source.play_detached(ctx);
-                }
+                } 
 
             }
+*/
             self.opening_state = Deploying(DeployingState::new(self.contents));
             return TickEvent::None;
         }        
@@ -617,9 +612,6 @@ impl OpeningState {
 
          let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/confirm.mp3").to_vec().into()).expect("load complete");
         sound_source.play_detached(ctx);
-
-
-
         
         use OpeningState::*;
         *self = Growing(Progress::new(TICKS_CHEST_GROW));

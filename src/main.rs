@@ -76,9 +76,7 @@ impl MyRunner {
             state_manager: StateManager::new(),
             message_manager: MessageManager::new(),
             audio_manager: AudioManager::new(ctx),
-            keyboard_input: String::new(),
-          
-            
+            keyboard_input: String::new(),          
         };
         
         Ok(runner)
