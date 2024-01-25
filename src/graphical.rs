@@ -5,8 +5,6 @@ use crate::state::*;
 use crate::utility::*;
 use ggez::{Context, GameResult};
 use ggez::graphics::{Rect, Color};
-use ggez::audio;
-use ggez::audio::{Source, SoundSource};
 //================================= Constants ================================//
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
 const FONT_SIZE_WORDS: f32 = 38.0;
@@ -118,10 +116,6 @@ pub struct Graphical {
     header_text: TextElem,
     clue_text: TextElem,
     keys_text: TextElem,
-    sound_source: audio::Source,
-    play_sound: bool,
-    prev_loc: Point,
-
 }
 
 impl Graphical {
@@ -148,13 +142,6 @@ impl Graphical {
             header_board: SpriteElem::new(ctx, SCALE_HEADER_X, SCALE_HEADER_Y, "/game_header.png"),
             tall_scroll: SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, "/tall_scroll.png"),
             short_scroll: SpriteElem::new(ctx, SCALE_HEART_X, SCALE_HEART_Y, "/short_scroll.png"),
-
-            
-            sound_source: Source::from_data(ctx, include_bytes!("../resources/audio/select.mp3").to_vec().into()).expect("Load complete"),
-            play_sound: true,
-            prev_loc: Point{x: -1.0, y:-1.0},
-
-
             header_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
             clue_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
             keys_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
@@ -169,7 +156,6 @@ impl Graphical {
             GameState::Intro(IntroState::Title(prg)) => {
                 self.draw_intro_title(ctx, prg)?;
             }
-            //Play during chest fall (only once)
             GameState::Intro(IntroState::ChestFall(prg)) => {
                 self.draw_intro_chestfall(ctx, prg, &state.chest_states)?;
             }
@@ -179,7 +165,7 @@ impl Graphical {
             GameState::Over(red_health_state, blue_health_state, progress) => {
                self.draw_over(ctx, &state.chest_states,
                                &red_health_state, &blue_health_state,
-                               progress.as_decimal())?;                 
+                               progress.as_decimal())?;                
             }
         }
         Ok(())
@@ -227,7 +213,6 @@ impl Graphical {
 
     fn draw_chests_falling(&mut self, ctx: Ctx, prg: f32,
                             chest_states: &Vec<Vec<ChestState>>) -> GR {
-        
         let num_chests = ROWS*COLUMNS;
         let time_slices = num_chests + SIMULTANEOUS_FALLS + 6;
         let slice_len = 1.0 / time_slices as f32;

@@ -1,7 +1,6 @@
 //Import libraries
 use ggez::{audio, Context};
 use ggez::audio::{Source, SoundSource};
-use crate::events::TickEvent;
 use crate::state::*;
 use crate::utility::ROWS;
 use crate::utility::COLUMNS;
@@ -11,6 +10,7 @@ type Ctx<'a> = &'a mut Context;
 
 #[derive(Eq, Hash, PartialEq, Copy, Clone)]
 pub enum Audio {
+    Confirm,
     Explode,
     Hum,
     Womp,
@@ -55,7 +55,7 @@ pub struct AudioManager {
     sounds: HashMap<Audio, Source>,
 }
 impl AudioManager {
-    pub fn new(ctx: &mut Context) -> Self {
+    pub fn new(ctx: Ctx) -> Self {
         AudioManager{
             previous_states: PreviousStates::new(),
             is_audio_initialized: false,
@@ -76,7 +76,7 @@ impl AudioManager {
         self.sounds.insert(Audio::Unlock, Source::from_data(ctx, include_bytes!("../resources/audio/unlock.mp3").to_vec().into()).unwrap());
         self.sounds.insert(Audio::Drumroll, Source::from_data(ctx, include_bytes!("../resources/audio/drumroll.mp3").to_vec().into()).unwrap());
         self.sounds.insert(Audio::HeartForms, Source::from_data(ctx, include_bytes!("../resources/audio/heart_forms.mp3").to_vec().into()).unwrap());
-
+        self.sounds.insert(Audio::Confirm, Source::from_data(ctx, include_bytes!("../resources/audio/confirm.mp3").to_vec().into()).unwrap());
     }
 
 
@@ -105,8 +105,19 @@ impl AudioManager {
         if(state_manager.something_selected()  & !self.previous_states.is_chest_selected) {
             self.play_sounds(ctx, Audio::Select);            
         }
+        //Deselected
+        if(!state_manager.something_selected()  & self.previous_states.is_chest_selected) {
+            // Confirm
+            if (state_manager.is_chest_opening()) /* is chest opening */ {
+                self.play_sounds(ctx, Audio::Confirm);
+            }
+            // Reject
+            else {
+                self.play_sounds(ctx, Audio::Slice);
+            }
+        }
         //Drumroll sound
-        if(state_manager.is_chest_opening() & !self.previous_states.is_chest_opening){
+        if(state_manager.is_chest_opening() & !self.previous_states.is_chest_opening){            
             self.play_sounds(ctx, Audio::Drumroll);
         }
         //Unlocking sound

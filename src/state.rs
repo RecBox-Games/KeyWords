@@ -3,15 +3,11 @@ use crate::state;
 use crate::utility::*;
 use crate::events::*;
 use crate::messages::*;
-use std::collections::HashMap;
-use ggez::Context;
 use rand::{seq::IteratorRandom, thread_rng};
-use std::mem::take;
+use ggez::Context;
 use ggez::audio::{Source, SoundSource};
+use std::mem::take;
 
-type Ctx<'a> = &'a mut Context;
-
-//Hashmap Key = audio name, value = source of the sound(file path)
 //================================= Constants ==================================
 // Ticks
 pub const TICKS_TITLE: usize = 320; //320;
@@ -38,23 +34,7 @@ pub const N_BOMB2: usize = 4;
 pub const N_BOMB4: usize = 1;
 pub const N_HEAL2: usize = 1;
 
-
-//DRUM ROLL, good hum, bad hum, slice, explode, select 
-#[derive(Eq, Hash, PartialEq, Copy, Clone)]
-pub enum Audio {
-    DRUM_ROLL,
-    GOOD_HUM,
-    BAD_WOMP,
-    EMPTY_SPLASH,
-    SLICE,
-    SELECT,
-    UNLOCK,
-    EXPLODE,
-    HEART_FORMS,
-    CHEST_FALL
-}
-
-
+type Ctx<'a> = &'a mut Context;
 //=============================== StateManager =================================
 pub struct StateManager {
     pub game_state: GameState,
@@ -72,7 +52,7 @@ impl StateManager {
     }
 
     pub fn tick(&mut self, ctx: Ctx) {
-        let game_tick_event = self.game_state.tick(ctx);
+        let game_tick_event = self.game_state.tick();
         if game_tick_event.needs_update() {
             self.state_update = true;
         }
@@ -90,7 +70,7 @@ impl StateManager {
         if let GameState::Playing(playing_state) = &mut self.game_state {
             for j in 0..ROWS {
                 for i in 0..COLUMNS {
-                    let tick_event = self.chest_states[j][i].tick(ctx);
+                    let tick_event = self.chest_states[j][i].tick();
                     if let TickEvent::ProjectileHit(projectile) = tick_event {
                         playing_state.handle_projectile_hit(ctx, projectile);
                         self.state_update = true;
@@ -120,7 +100,7 @@ impl StateManager {
     }
 
 //        ======================= InputHandling ======================        //
-    pub fn handle_input(&mut self, message: InputMessage, ctx: Ctx) {
+    pub fn handle_input(&mut self, message: InputMessage) {
         match message {
             InputMessage::PrintTurn => {
                 self.handle_print_turn();
@@ -148,7 +128,7 @@ impl StateManager {
                     println!("Warning: attempt to guess opened chest");
                     return;
                 }
-                self.handle_guess(row, col, ctx);
+                self.handle_guess(row, col);
                 self.state_update = true;
             }
             InputMessage::Second(support) => {
@@ -156,7 +136,7 @@ impl StateManager {
                     println!("Warning: attempt to support before settled");
                     return;
                 }
-                self.handle_second(support, ctx);
+                self.handle_second(support);
                 self.state_update = true;
             }
             InputMessage::Restart => {
@@ -194,7 +174,7 @@ impl StateManager {
         }
     }
 
-    fn handle_guess(&mut self, row: usize, col: usize, ctx: Ctx) {
+    fn handle_guess(&mut self, row: usize, col: usize) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
             playing_state.turn_state.handle_guess(row, col);
             //Set selected boolean to true
@@ -203,12 +183,12 @@ impl StateManager {
         }
     }
     
-    fn handle_second(&mut self, support: bool, ctx: Ctx) {
+    fn handle_second(&mut self, support: bool) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
-            let guess = playing_state.turn_state.handle_second(support, ctx);
+            let guess = playing_state.turn_state.handle_second(support);
             if let Some((row, col)) = guess {
                 // start opening chest
-                self.chest_states[row][col].opening_state.start_opening(ctx);
+                self.chest_states[row][col].opening_state.start_opening();
             }
         } else {
             println!("Warning: bad second (1)");
@@ -247,11 +227,11 @@ impl GameState {
         //Self::Playing(PlayingState::new()) // uncomment this line for faster testing
     }
 
-    pub fn tick(&mut self, ctx: Ctx) -> TickEvent {
+    pub fn tick(&mut self) -> TickEvent {
         use GameState::*;
         match self {
             Intro(intro_state) => {
-                let tick_event = intro_state.tick(ctx);
+                let tick_event = intro_state.tick();
                 if tick_event.is_done() {
                     *self = Playing(PlayingState::new());
                     return TickEvent::NeedsUpdate;
@@ -297,7 +277,7 @@ impl IntroState {
     fn new_chest_fall() -> Self {
         Self::ChestFall(Progress::new(TICKS_CHESTFALL))
     }
-    fn tick(&mut self, ctx: Ctx) -> TickEvent {
+    fn tick(&mut self) -> TickEvent {
         use IntroState::*;
         if let Title(p) = self {
             if p.tick().is_done() {
@@ -471,13 +451,13 @@ impl ChestState {
         }
     }
     
-    fn tick(&mut self, ctx: Ctx) -> TickEvent {
+    fn tick(&mut self) -> TickEvent {
         use OpeningState::*;
-        let tick_event = self.opening_state.tick(ctx);
+        let tick_event = self.opening_state.tick();
         if let TickEvent::Deploy = tick_event {
             self.opening_state = Deploying(DeployingState::new(self.contents));
             return TickEvent::None;
-        }        
+        }
         tick_event
     }
 
@@ -538,7 +518,7 @@ pub enum OpeningState {
 }
 
 impl OpeningState {
-    fn tick(&mut self, ctx: Ctx) -> TickEvent {
+    fn tick(&mut self) -> TickEvent {
         use OpeningState::*;
         match self {
             Growing(prg) => {
@@ -569,7 +549,7 @@ impl OpeningState {
         }
         TickEvent::None
     }
-    fn start_opening(&mut self, ctx: Ctx) {
+    fn start_opening(&mut self) {
          use OpeningState::*;
         *self = Growing(Progress::new(TICKS_CHEST_GROW));
     }
@@ -716,7 +696,7 @@ impl TurnState {
     }
 
     // TODO: refactor
-    fn handle_second(&mut self, support: bool, ctx: Ctx) -> Option<(usize, usize)> {
+    fn handle_second(&mut self, support: bool) -> Option<(usize, usize)> {
         use TurnState::*;
         let mut current_guess = None;
         match self {

@@ -89,7 +89,7 @@ impl EventHandler<ggez::GameError> for MyRunner {
         self.state_manager.tick(ctx);
         let messages = self.message_manager.get_input_messages();
         for m in messages {
-            self.state_manager.handle_input(m, ctx);
+            self.state_manager.handle_input(m);
         }
         //
         if self.message_manager.needs_state() {
