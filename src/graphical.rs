@@ -584,9 +584,6 @@ impl Graphical {
         if let Some((row, col)) = turn_state.proposed_guess() {
             let chest_loc = self.get_chest_location(row, col);
             let p = chest_loc.plus(SELECTION_OFFSET);
-
-            //Selection sound
-
             match turn_state.current_team() {
                 Team::Red => {
                     self.select_red.draw(ctx, p)?;

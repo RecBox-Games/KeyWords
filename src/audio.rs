@@ -93,42 +93,39 @@ impl AudioManager {
     pub fn update(&mut self, state_manager: &StateManager, ctx: Ctx) {
         if !self.is_audio_initialized {
             self.initialize_audio(ctx);
+            self.is_audio_initialized = true;
         }
         let chest_content = state_manager.content_chest_deploying();
+        
+        //Chest Fall sound
         if(!state_manager.is_title()  & self.previous_states.is_title) {
-            //INSERT CHEST FALL SOUND HERE
             self.play_sounds(ctx, Audio::Chestfall);            
         }
-        
+        //Selection sound 
         if(state_manager.something_selected()  & !self.previous_states.is_chest_selected) {
-            //INSERT SELECTION SOUND HERE
             self.play_sounds(ctx, Audio::Select);            
         }
-       
+        //Drumroll sound
         if(state_manager.is_chest_opening() & !self.previous_states.is_chest_opening){
-            //INSERT DRUMROLL SOUND HERE
             self.play_sounds(ctx, Audio::Drumroll);
         }
+        //Unlocking sound
         if(state_manager.is_unlocking()  & !self.previous_states.is_chest_unlocking) {
-            //INSERT UNLOCKING SOUND HERE
-            self.play_sounds(ctx, Audio::Unlock);
+             self.play_sounds(ctx, Audio::Unlock);
         }
+        //Good, bad, empty hum after unlocking the box
         if(chest_content != self.previous_states.content_chest_deploying) {
             if chest_content == 1 {
-                //INSERT GOOD HUM HERE
-                self.play_sounds(ctx, Audio::Hum);
+                 self.play_sounds(ctx, Audio::Hum);
             }
             else if chest_content ==  2{
-                //INSERT EXPLODE HERE
-                self.play_sounds(ctx, Audio::Womp);
+                 self.play_sounds(ctx, Audio::Womp);
             }
             else if chest_content ==  0{
-                //INSERT EMPTY SPLASH HERE
-                self.play_sounds(ctx, Audio::EmptySplash);
+                 self.play_sounds(ctx, Audio::EmptySplash);
             }
         }
-        
-      
+       
         //Update previous state
         self.previous_states.is_chest_selected = state_manager.something_selected();
         self.previous_states.is_title = state_manager.is_title();
@@ -175,7 +172,6 @@ impl StateManager {
         return false;
 
     }
-    
     fn is_chest_opening(&self) -> bool {
         if let GameState::Playing(_) = &self.game_state {
             for i in 0..ROWS {
@@ -189,6 +185,8 @@ impl StateManager {
         }
         return false;
     }
+
+    //Good or bad content (0 if empty, 1 if good, 2 if bad, -1 if not deploying state)
     fn content_chest_deploying(&self) -> i32 {
         use ChestContent::*;
         
@@ -213,60 +211,6 @@ impl StateManager {
             return -1;
         }
         return -1;
-    }
-
-    fn projectile_chest_deploying(&self) -> i32 {
-        if let GameState::Playing(_) = &self.game_state {
-            for i in 0..ROWS {
-                for j in 0..COLUMNS {
-                }
-                
-            }
-            
-
-        }
-        
-
-        return -1;
-    }
-
-    
-    
-
-
-
-    
-    /*
-    fn projectile_good(&self, ctx: Ctx) -> bool {
-        use ChestContent::*;
-        use OpeningState::*;
-
-        if let GameState::Playing(ps) = &self.game_state {
-            for i in 0..ROWS {
-                for j in 0..COLUMNS {
-                    if self.chest_states[i][j].opening_state {
-                        true
-                    }
-
-
-                    
-                    if self.chest_states[i][j].                {
-                        true
-                    }
-                }
-            }
-
-        }
-        
-        
-        // let GameState::Playing(ps)  = &self.game_state{
-         // if self.chest_states 
-      //}
-       //lse {
-        //  false
-      false 
-    }
-     */
-  
+    }  
 }
 
