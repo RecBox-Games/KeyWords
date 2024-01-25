@@ -5,6 +5,7 @@ use crate::state::*;
 use crate::utility::ROWS;
 use crate::utility::COLUMNS;
 use std::collections::HashMap;
+use std::time::{Duration, Instant};
 
 type Ctx<'a> = &'a mut Context;
 
@@ -53,6 +54,7 @@ pub struct AudioManager {
     previous_states: PreviousStates,
     is_audio_initialized: bool,
     sounds: HashMap<Audio, Source>,
+    chestfall_start: Option<Instant>,
 }
 impl AudioManager {
     pub fn new(ctx: Ctx) -> Self {
@@ -60,6 +62,7 @@ impl AudioManager {
             previous_states: PreviousStates::new(),
             is_audio_initialized: false,
             sounds: HashMap::new(),
+            chestfall_start: None,
         }
     }
 
@@ -77,6 +80,7 @@ impl AudioManager {
         self.sounds.insert(Audio::Drumroll, Source::from_data(ctx, include_bytes!("../resources/audio/drumroll.mp3").to_vec().into()).unwrap());
         self.sounds.insert(Audio::HeartForms, Source::from_data(ctx, include_bytes!("../resources/audio/heart_forms.mp3").to_vec().into()).unwrap());
         self.sounds.insert(Audio::Confirm, Source::from_data(ctx, include_bytes!("../resources/audio/confirm.mp3").to_vec().into()).unwrap());
+        self.sounds.get_mut(&Audio::Confirm).unwrap().set_volume(5.0);
     }
 
 
@@ -99,7 +103,15 @@ impl AudioManager {
         
         //Chest Fall sound
         if(!state_manager.is_title()  & self.previous_states.is_title) {
-            self.play_sounds(ctx, Audio::Chestfall);            
+            self.chestfall_start = Some(Instant::now());
+                
+        }
+        if let Some(t) = self.chestfall_start {
+                if t.elapsed() > Duration::from_millis(100) {
+                    self.play_sounds(ctx, Audio::Chestfall);
+                    self.chestfall_start = None;
+                }
+
         }
         //Selection sound 
         if(state_manager.something_selected()  & !self.previous_states.is_chest_selected) {
@@ -109,7 +121,7 @@ impl AudioManager {
         if(!state_manager.something_selected()  & self.previous_states.is_chest_selected) {
             // Confirm
             if (state_manager.is_chest_opening()) /* is chest opening */ {
-                self.play_sounds(ctx, Audio::Confirm);
+                self.play_sounds(ctx, Audio::Drumroll);
             }
             // Reject
             else {
@@ -117,8 +129,9 @@ impl AudioManager {
             }
         }
         //Drumroll sound
-        if(state_manager.is_chest_opening() & !self.previous_states.is_chest_opening){            
-            self.play_sounds(ctx, Audio::Drumroll);
+        if(state_manager.is_chest_opening() & !self.previous_states.is_chest_opening){
+           //self.sounds.get_mut(&Audio::Confirm).unwrap().play(ctx).unwrap();
+           self.play_sounds(ctx, Audio::Confirm);
         }
         //Unlocking sound
         if(state_manager.is_unlocking()  & !self.previous_states.is_chest_unlocking) {
