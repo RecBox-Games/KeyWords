@@ -108,8 +108,9 @@ export const BUTTON_LABELS = [
     "ok","ok",
     "...","...",
     "That's enough",
-    "This is not fun",
-    "for anyone",
+    "Read Instructions"
+];
+/*
     "You know what",
     "I'm done",
     "Goodbye",
@@ -152,3 +153,4 @@ export const BUTTON_LABELS = [
     "JUST SAY",
     "Read Instructions",
 ];
+*/
