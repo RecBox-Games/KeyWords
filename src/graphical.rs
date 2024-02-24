@@ -5,7 +5,6 @@ use crate::state::*;
 use crate::utility::*;
 use ggez::{Context, GameResult};
 use ggez::graphics::{Rect, Color};
-
 //================================= Constants ================================//
 const SPARKLE_OFFSET: Point = Point{x:386.0, y:40.0};
 const FONT_SIZE_WORDS: f32 = 38.0;
@@ -146,6 +145,7 @@ impl Graphical {
             header_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
             clue_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
             keys_text: TextElem::new(ctx, "Welcome to Keywords!", HEADER_TEXT_SIZE, 1.0, 1.0),
+
         }
     }
 
@@ -165,7 +165,7 @@ impl Graphical {
             GameState::Over(red_health_state, blue_health_state, progress) => {
                self.draw_over(ctx, &state.chest_states,
                                &red_health_state, &blue_health_state,
-                               progress.as_decimal())?;                 
+                               progress.as_decimal())?;                
             }
         }
         Ok(())
@@ -207,7 +207,7 @@ impl Graphical {
         self.draw_containers(ctx)?;
         self.draw_hearts_forming(ctx, progress.as_decimal())?;
         self.draw_chests_falling(ctx, progress.as_decimal(), chest_states)?;
-        //
+                
         Ok(())
     }
 
@@ -423,7 +423,6 @@ impl Graphical {
         }
         Ok(())
     }
-    
     fn draw_opening_chests(&mut self, ctx: Ctx,
                    chest_states: &Vec<Vec<ChestState>>) -> GR {
         for j in 0..ROWS {
@@ -499,6 +498,7 @@ impl Graphical {
 
     fn draw_deploying(&mut self, ctx: Ctx, deploying_state: &DeployingState,
                       team: Team, red_health: usize, blue_health: usize) -> GR {
+	
         let base_p = Point{x:CONTENTS_X, y:CONTENTS_Y};
         let offset = Point{x:-CONTENTS_SPACING_X, y:0.0}
         .scale(deploying_state.total_projectiles as f32 / 2.0);
@@ -613,7 +613,7 @@ impl Graphical {
         Ok(())
     }
 
-//        ========================= Draw Over ========================        //
+//        ========================= Draw Over ========================        //Insert sound here to mark game over
     fn draw_over(&mut self, ctx: Ctx, chest_states: &Vec<Vec<ChestState>>,
                  red_health_state: &HealthState, blue_health_state: &HealthState,
                  prg: f32) -> GR {
@@ -699,9 +699,12 @@ fn new_sparkle(ctx: Ctx) -> SpriteElem {
     sparkle
 }
 
+
 fn new_chest(ctx: Ctx) -> SpriteElem {
     let mut chest = SpriteElem::new(ctx, SCALE_CHEST_X, SCALE_CHEST_Y,
                                     "/chest_2.png");
+    
+
     let q = 1.0/10.0;
     chest.set_animation(
 	vec![

@@ -6,6 +6,7 @@ mod state;
 mod graphical;
 mod events;
 mod messages;
+mod audio;
 
 use ggez::{Context, ContextBuilder, GameResult, conf};
 use ggez::event::{self, EventHandler, KeyCode, KeyMods};
@@ -16,6 +17,7 @@ use crate::utility::*;
 use crate::graphical::*;
 use crate::state::*;
 use crate::messages::*;
+use crate::audio::*;
 
 //=================================== Main ===================================//
 fn main() {
@@ -63,6 +65,7 @@ struct MyRunner {
     graphical: Graphical,
     state_manager: StateManager,
     message_manager: MessageManager,
+    audio_manager: AudioManager,
     keyboard_input: String,
 }
 
@@ -72,7 +75,8 @@ impl MyRunner {
 	    graphical: Graphical::new(ctx),
             state_manager: StateManager::new(),
             message_manager: MessageManager::new(),
-            keyboard_input: String::new(),
+            audio_manager: AudioManager::new(ctx),
+            keyboard_input: String::new(),          
         };
         
         Ok(runner)
@@ -81,8 +85,8 @@ impl MyRunner {
 }
 
 impl EventHandler<ggez::GameError> for MyRunner {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        self.state_manager.tick();
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        self.state_manager.tick(ctx);
         let messages = self.message_manager.get_input_messages();
         for m in messages {
             self.state_manager.handle_input(m);
@@ -95,6 +99,7 @@ impl EventHandler<ggez::GameError> for MyRunner {
             self.message_manager.send_state_to_all(&self.state_manager);
             self.state_manager.state_update = false;
         }
+        self.audio_manager.update(&self.state_manager, ctx);
         Ok(())
     }
 

@@ -1,10 +1,12 @@
+use crate::state;
 //==================================<===|===>===================================
 use crate::utility::*;
 use crate::events::*;
 use crate::messages::*;
 use rand::{seq::IteratorRandom, thread_rng};
+use ggez::Context;
+use ggez::audio::{Source, SoundSource};
 use std::mem::take;
-
 
 //================================= Constants ==================================
 // Ticks
@@ -32,7 +34,7 @@ pub const N_BOMB2: usize = 4;
 pub const N_BOMB4: usize = 1;
 pub const N_HEAL2: usize = 1;
 
-
+type Ctx<'a> = &'a mut Context;
 //=============================== StateManager =================================
 pub struct StateManager {
     pub game_state: GameState,
@@ -49,7 +51,7 @@ impl StateManager {
         }
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, ctx: Ctx) {
         let game_tick_event = self.game_state.tick();
         if game_tick_event.needs_update() {
             self.state_update = true;
@@ -69,8 +71,8 @@ impl StateManager {
             for j in 0..ROWS {
                 for i in 0..COLUMNS {
                     let tick_event = self.chest_states[j][i].tick();
-                    if let TickEvent::ProjectileHit(projectile) = tick_event { // TODO refactor
-                        playing_state.handle_projectile_hit(projectile);
+                    if let TickEvent::ProjectileHit(projectile) = tick_event {
+                        playing_state.handle_projectile_hit(ctx, projectile);
                         self.state_update = true;
                     }
                     if let TickEvent::DoneOpening = tick_event {
@@ -175,6 +177,7 @@ impl StateManager {
     fn handle_guess(&mut self, row: usize, col: usize) {
         if let GameState::Playing(playing_state) = &mut self.game_state {
             playing_state.turn_state.handle_guess(row, col);
+            //Set selected boolean to true
         } else {
             println!("Warning: bad guess (1)");
         }
@@ -270,8 +273,10 @@ pub enum IntroState {
 }
 
 impl IntroState {
-    fn new() -> Self { Self::Title(Progress::new(TICKS_TITLE)) }
-    fn new_chest_fall() -> Self { Self::ChestFall(Progress::new(TICKS_CHESTFALL)) }
+    fn new() -> Self {        Self::Title(Progress::new(TICKS_TITLE))     }
+    fn new_chest_fall() -> Self {
+        Self::ChestFall(Progress::new(TICKS_CHESTFALL))
+    }
     fn tick(&mut self) -> TickEvent {
         use IntroState::*;
         if let Title(p) = self {
@@ -279,7 +284,9 @@ impl IntroState {
                 *self = Self::new_chest_fall();
                 return TickEvent::NeedsUpdate;
             }
-        } else if let ChestFall(p) = self {
+        }
+
+        else if let ChestFall(p) = self {
             return p.tick();
         }
         TickEvent::None
@@ -363,20 +370,41 @@ impl PlayingState {
         TickEvent::None
     }
 
-    fn handle_projectile_hit(&mut self, projectile: Projectile) {
+    fn handle_projectile_hit(&mut self, ctx: Ctx, projectile: Projectile) {
         match (projectile, self.current_team()) {
-            (Projectile::Sword, Team::Red) |
-            (Projectile::Bomb, Team::Blue) => {
+            //MARK: PLAY SLICE
+            (Projectile::Sword, Team::Red) => {
+                let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/slice.mp3").to_vec().into()).expect("Load complete");
+        sound_source.play_detached(ctx);
                 self.blue_health_state.take_damage(1, MAX_HEALTH_BLUE);
             }
-            (Projectile::Sword, Team::Blue) |
+            (Projectile::Bomb, Team::Blue) => {
+                let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/explode.mp3").to_vec().into()).expect("Load complete");
+        sound_source.play_detached(ctx);
+                self.blue_health_state.take_damage(1, MAX_HEALTH_BLUE);
+            }
+
+            (Projectile::Sword, Team::Blue) => {           
+                let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/slice.mp3").to_vec().into()).expect("Load complete");
+        sound_source.play_detached(ctx);
+                self.red_health_state.take_damage(1, MAX_HEALTH_RED);
+            }
+            
+            
             (Projectile::Bomb, Team::Red) => {
+                let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/explode.mp3").to_vec().into()).expect("Load complete");
+        sound_source.play_detached(ctx);
                 self.red_health_state.take_damage(1, MAX_HEALTH_RED);
             }
             (Projectile::Heart, Team::Red) => {
+                //MARK: Play heart sound here
+                let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/heart_forms.mp3").to_vec().into()).expect("Load complete");
+        sound_source.play_detached(ctx);
                 self.red_health_state.take_damage(-1, MAX_HEALTH_RED);
             }
             (Projectile::Heart, Team::Blue) => {
+                let mut sound_source = Source::from_data(ctx, include_bytes!("../resources/audio/heart_forms.mp3").to_vec().into()).expect("Load complete");
+        sound_source.play_detached(ctx);
                 self.blue_health_state.take_damage(-1, MAX_HEALTH_BLUE);
             }
         }
@@ -521,9 +549,8 @@ impl OpeningState {
         }
         TickEvent::None
     }
-
     fn start_opening(&mut self) {
-        use OpeningState::*;
+         use OpeningState::*;
         *self = Growing(Progress::new(TICKS_CHEST_GROW));
     }
 }
@@ -871,7 +898,8 @@ pub fn chests_are_settled(chests: &Vec<Vec<ChestState>>) -> bool {
 impl std::fmt::Display for StateManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut turn_state_string = String::from("tutorial");
-        if let GameState::Intro(IntroState::ChestFall(_)) = &self.game_state {
+        if let GameState::Intro(IntroState::ChestFall(_)) = &self.game_state
+        {
             turn_state_string = String::from("none");
         }
         let mut health_state_string = String::from("none");
