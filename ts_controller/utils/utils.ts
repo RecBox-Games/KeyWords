@@ -59,7 +59,7 @@ export const start_turn = (turn_state: TurnState) => {
 
                 }
             } else {
-                let clueText = "Your clue: " + board.clue;
+                let clueText = "Clue: " + board.clue;
                 let guessesText = board.currentGuesses.toString();
                 let keysText = "Keys: " + guessesText;
                 let verbalClueText = "Verbal clue   ";                

@@ -31,7 +31,7 @@ export const size_topbar= (topBar:TopBar) => {
     const boundingBox:Rectangle = {x: ctx.dimensions.x * 0.25, y: ctx.dimensions.y * 0.013,
                                    w: ctx.dimensions.x * 0.5, h: ctx.dimensions.y * 0.11};
     topBar.textBg.dst = {...boundingBox};
-    topBar.text.boundingBox = {...boundingBox, h: ctx.dimensions.y * 0.07};
+    topBar.text.boundingBox = {...boundingBox, h: ctx.dimensions.y * 0.08};
     topBar.subText.boundingBox = {...boundingBox};
     //
     const ctxw = ctx.dimensions.x;
@@ -45,6 +45,9 @@ export const size_topbar= (topBar:TopBar) => {
     //
     topBar.acceptButton._boundingBox = topBar.accept.dst;
     topBar.denyButton._boundingBox = topBar.deny.dst;
+    //
+    var text_size = ctxh * 0.05 + ctxw * 0.01;
+    topBar.text.font = `${text_size}px arial`;
     //
     const dst: Rectangle = {
         x: ctxw * 0.018, y: ctxh * 0.14,

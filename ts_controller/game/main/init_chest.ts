@@ -1,3 +1,4 @@
+import { get_context } from "../../controller_lib/init.js";
 import { DEFAULT_DRAWABLE_IMG, DEFAULT_DRAWABLE_TEXT, DrawableImage, DrawableText } from "../../controller_lib/types/drawables.js";
 import { Rectangle } from "../../controller_lib/types/shapes.js";
 import { get_asset } from "../../utils/assets.js";
@@ -74,11 +75,16 @@ export const fill_chest = (chest: Chest, state: ChestState, role: TurnRole) => {
 
 export const construct_chest = (id:number) : Chest => {
     //fetch content from assets.ts
+    const ctx = get_context();
+    const ctxw = ctx.dimensions.x;
+    const ctxh = ctx.dimensions.y;
+    var text_size = Math.floor(ctxh * 0.03 + ctxw * 0.01);
+    var the_font = "{text_size}px arial";
     const newChest: Chest = {
         x: -1,
         y: -1,
         state: {word: "", open: false, content: ""},
-        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF", font:'20px arial'},
+        text: {...DEFAULT_DRAWABLE_TEXT, color:"#FFFFFF", font: the_font},
         contentimg: [],
         sprite: {...DEFAULT_DRAWABLE_IMG, src: {x:0, y:0, w:37, h:29}}// {..box} or else it will assign as reference
         // sprite: {...DEFAULT_DRAWABLE_RECT, boundingBox: {...box}}// {..box} or else it will assign as reference

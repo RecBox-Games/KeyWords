@@ -34,16 +34,17 @@ export function try_post_popup(header: string, message: string) {
 
 export function post_popup(header: string, message: string) {
     var scr_height = get_context().dimensions.y;
+    var scr_width = get_context().dimensions.x;
     fill_popup();
     size_popup();
-    var text_size = Math.floor(12 + scr_height*0.04);
-    popup.header.font = `${text_size}px times`;
+    var text_size = Math.floor(scr_height*0.06 + scr_width*0.01);
+    popup.header.font = `${text_size}px arial`;
     popup.header.text = header;
-    text_size = Math.floor(5 + scr_height*0.03);
-    popup.message.font = `${text_size}px times`;
+    text_size = Math.floor(scr_height*0.03 + scr_width*0.01);
+    popup.message.font = `${text_size}px arial`;
     popup.message.text = message;
     text_size *= 1.3;
-    popup.gotit_text.font = `${text_size}px times`;
+    popup.gotit_text.font = `${text_size}px arial`;
     popup.gotit_text.text = BUTTON_LABELS[0];
     popup.is_showing = true;
 }

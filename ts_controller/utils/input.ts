@@ -61,10 +61,10 @@ export function style_input() {
     const ctx = get_context();
 
     input.element.type = 'text';
-    input.element.placeholder = ' Enter clue here';
+    input.element.placeholder = ' Enter clue';
     input.element.style.display = 'none';
     input.element.style.position = 'Absolute';
-    input.element.style.fontSize = ctx.dimensions.y * 0.034 + 'px';
+    input.element.style.fontSize = ctx.dimensions.y * 0.06 + 'px';
     input.element.style.background = '#eaeae8';
     input.element.style.border = '2px solid black';
     input.element.style.color = 'black';
@@ -72,9 +72,15 @@ export function style_input() {
     input.element.style.top = '-.1v';
     input.element.style.left = "77%";
     input.element.style.width = '19%';
-    input.element.maxLength = 20;       //Limit the number of characters in the clue
+    input.element.maxLength = 18;       //Limit the number of characters in the clue
     input.element.setAttribute('autocomplete', 'off'); //Disable autocomplete
     input.element.setAttribute('autocorrect', 'off');  //Disable autocorrect
+    // prevent spaces in the input
+    /*input.element.addEventListener('keydown', function(event) {
+        if (event.key === ' ' || event.keyCode === 32) {
+            event.preventDefault();
+        }
+    });*/
 }   
 
 
