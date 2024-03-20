@@ -33,7 +33,15 @@ fn main() {
     my_window_mode.min_height = 300.0;
     my_window_mode.width      = SCREEN_WIDTH;
     my_window_mode.height     = SCREEN_HEIGHT;
-    //my_window_mode.fullscreen_type = conf::FullscreenType::True;
+
+    // NOTE: the below line has been commented out for a long time. It works
+    // without this line but I worry there will be performance decrese without
+    // it. (The assumption being that if the windowing system knows this app is
+    // fullscreen then it won't bother drawing anything below but it might if
+    // it doesn't know. That being said it is more convenient during testing
+    // for it to not be fullscreen. Additionally I feel like there was a real
+    // reason it was commented out that I just can't remember.
+    my_window_mode.fullscreen_type = conf::FullscreenType::True;
 
     // Make a Context and an EventLoop.
     let (mut ctx, event_loop) =

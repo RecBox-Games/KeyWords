@@ -453,7 +453,7 @@ impl Graphical {
             }
             OpeningState::Growing(prg) => {
                 let p = interpolate2(point, pop_up_point, center_chest_point,
-                                    Interpolation::Damp, prg.as_decimal());
+                                    Interpolation::Linear, prg.as_decimal());
                 let s = interpolate(Point{x:1.0, y:1.0}, CENTER_CHEST_SCALE,
                                     Interpolation::RoundEnd, prg.as_decimal());
                 self.draw_chest_scaled(ctx, p, s, word, COLOR_WORDS, 0.0)?; 
@@ -472,7 +472,7 @@ impl Graphical {
                 let p = interpolate(center_chest_point, point,
                                     Interpolation::Linear, prg.as_decimal());
                 let s = interpolate(CENTER_CHEST_SCALE, Point{x:1.0, y:1.0},
-                                    Interpolation::RoundStart, prg.as_decimal());
+                                    Interpolation::Linear, prg.as_decimal());
                 self.draw_chest_scaled(ctx, p, s, word, COLOR_WORDS, 0.99)?;
             }
             OpeningState::Open => {
